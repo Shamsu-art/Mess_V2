@@ -294,7 +294,7 @@
     </div>
   </div>
 
-  <!-- 👤 GENERAL POPUP MODAL -->
+  <!-- 👤 GENERAL POPUP MODAL (Member Details Modal) -->
   <div class="modal fade" id="memberModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content rounded-4 border-0 shadow">
@@ -305,8 +305,8 @@
           </div>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-        <div class="modal-body bg-body px-1 py-3" style="max-height: 450px; overflow-y: auto;">
-          <div id="memberTxList"></div>
+        <div class="modal-body bg-body px-3 py-3" style="max-height: 500px; overflow-y: auto;">
+          <div id="memberModalContent"></div>
         </div>
       </div>
     </div>
@@ -578,8 +578,18 @@
       }
 
       renderLoggedMemberCard();
-      let otherMembers = globalData.summary.filter(m => m.id.toLowerCase() !== loggedInUser.id.toLowerCase());
-      renderMemberList(otherMembers);
+      
+      // Filter out members who have no activity (share, spent, paid, netBalance all 0) for the current month
+      let activeOtherMembers = globalData.summary.filter(m => {
+        if (m.id.toLowerCase() === loggedInUser.id.toLowerCase()) return false;
+        let hasShare = (m.share || 0) > 0;
+        let hasSpent = (m.spent || 0) > 0;
+        let hasPaid = (m.paid || 0) > 0;
+        let hasBalance = Math.abs(m.netBalance || 0) > 0.005;
+        return hasShare || hasSpent || hasPaid || hasBalance;
+      });
+
+      renderMemberList(activeOtherMembers);
     }
 
     function renderLoggedMemberCard() {
@@ -618,19 +628,19 @@
           </div>
 
           <div class="row g-2 text-center pt-2">
-            <div class="col-12 mb-1" style="cursor: pointer;" onclick="showMemberBreakdown('${m.id}', '${m.name}', false)">
+            <div class="col-12 mb-1" style="cursor: pointer;" onclick="showMemberBreakdown('${m.id}', '${m.name}')">
               <div class="p-2 bg-body-tertiary rounded-3 border">
                 <div class="stat-label text-primary"><i class="bi bi-pie-chart-fill me-1"></i>SHARE (Click for Details)</div>
                 <div class="fs-5 fw-bold text-body">AED ${m.share.toFixed(2)}</div>
               </div>
             </div>
-            <div class="col-6" style="cursor: pointer;" onclick="showMemberTransactions('${m.id}', '${m.name}', false)">
+            <div class="col-6" style="cursor: pointer;" onclick="showMemberTransactions('${m.id}', '${m.name}')">
               <div class="p-2 bg-body-tertiary rounded-3 border">
                 <div class="stat-label text-secondary">PURCHASED</div>
                 <div class="fs-6 fw-bold text-body">AED ${m.spent.toFixed(2)}</div>
               </div>
             </div>
-            <div class="col-6" style="cursor: pointer;" onclick="showMemberPaymentsDetail('${m.id}', '${m.name}', false)">
+            <div class="col-6" style="cursor: pointer;" onclick="showMemberPaymentsDetail('${m.id}', '${m.name}')">
               <div class="p-2 bg-body-tertiary rounded-3 border">
                 <div class="stat-label text-success">PAID</div>
                 <div class="fs-6 fw-bold text-success">AED ${m.paid.toFixed(2)}</div>
@@ -640,14 +650,13 @@
         </div>`;
     }
 
-    // 🔽 Updated Other Members Card Layout (As requested)
     function renderMemberList(summaryList) {
       let container = document.getElementById('memberListContainer');
       container.innerHTML = '';
       document.getElementById('memberCount').innerText = summaryList.length;
 
       if (!summaryList || summaryList.length === 0) {
-        container.innerHTML = '<div class="card card-custom p-3 text-center text-muted bg-body">മറ്റു അംഗങ്ങൾ ലഭ്യമല്ല.</div>';
+        container.innerHTML = '<div class="card card-custom p-3 text-center text-muted bg-body">ഈ മാസത്തിൽ ബില്ലുകൾ ഉള്ള മറ്റു അംഗങ്ങൾ ഇല്ല.</div>';
         return;
       }
 
@@ -663,7 +672,7 @@
         let cleanPhoneStr = m.phone ? m.phone.toString().replace(/^['"]/, '').trim() : '';
 
         let cardHtml = `
-          <div class="card member-card ${cardClass} bg-body mb-3 shadow-sm" onclick="showMemberBreakdown('${m.id}', '${m.name}', true)" style="cursor: pointer;">
+          <div class="card member-card ${cardClass} bg-body mb-3 shadow-sm" onclick="showMemberFullCard('${m.id}')" style="cursor: pointer;">
             <div class="d-flex justify-content-between align-items-center">
               <div>
                 <h5 class="fw-bold text-body mb-1">${m.name}</h5>
@@ -681,17 +690,83 @@
 
     function filterMembers() {
       let q = document.getElementById('searchInput').value.toLowerCase();
-      let otherMembers = globalData.summary.filter(m => m.id.toLowerCase() !== loggedInUser.id.toLowerCase() && m.name.toLowerCase().includes(q));
-      renderMemberList(otherMembers);
+      let activeOtherMembers = globalData.summary.filter(m => {
+        if (m.id.toLowerCase() === loggedInUser.id.toLowerCase()) return false;
+        let hasShare = (m.share || 0) > 0;
+        let hasSpent = (m.spent || 0) > 0;
+        let hasPaid = (m.paid || 0) > 0;
+        let hasBalance = Math.abs(m.netBalance || 0) > 0.005;
+        return (hasShare || hasSpent || hasPaid || hasBalance) && m.name.toLowerCase().includes(q);
+      });
+      renderMemberList(activeOtherMembers);
     }
 
-    function showMemberBreakdown(memberId, memberName, isAdminView = false) {
+    // 🔽 Opens Full Profile Card Modal for Other Members (Like Logged-In User Card)
+    function showMemberFullCard(memberId) {
       let m = globalData.summary.find(x => x.id.toLowerCase() === memberId.toLowerCase());
       if (!m) return;
 
-      let container = document.getElementById('memberTxList');
-      let titleName = isAdminView ? `${memberName} - ` : '';
-      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-pie-chart-fill text-primary me-1"></i> ${titleName}Share Detail`;
+      let net = Math.round((m.netBalance || 0) * 100) / 100;
+      if (Object.is(net, -0)) net = 0;
+
+      let isPositive = net >= 0;
+      let cardClass = net === 0 ? 'positive' : (isPositive ? 'positive' : 'negative');
+      let badgeClass = net === 0 ? 'pos' : (isPositive ? 'pos' : 'neg');
+      let balSign = net > 0 ? '+' : (net < 0 ? '-' : '');
+      let balText = balSign + 'AED ' + Math.abs(net).toFixed(2);
+      let balSubText = net === 0 ? 'SETTLED' : (isPositive ? 'കിട്ടാനുണ്ട്' : 'കൊടുക്കാനുണ്ട്');
+
+      let photoHtml = m.photo ? `<img src="${m.photo}" class="profile-avatar shadow-sm" alt="Photo">` : `<div class="profile-avatar d-flex align-items-center justify-content-center bg-primary text-white fw-bold fs-3 mx-auto">${m.name.charAt(0)}</div>`;
+      let cleanPhoneStr = m.phone ? m.phone.toString().replace(/^['"]/, '').trim() : '';
+
+      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-person-circle text-primary me-1"></i> Member Profile`;
+      document.getElementById('memberModalSubTitle').innerText = m.name;
+
+      let modalContent = `
+        <div class="card member-card ${cardClass} shadow-sm text-center border-0 bg-transparent p-0">
+          <div class="mb-2 mt-1">
+            ${photoHtml}
+          </div>
+          <h4 class="fw-bold text-body mb-1">${m.name}</h4>
+          <div class="text-muted small mb-3"><i class="bi bi-telephone-fill me-1"></i>${cleanPhoneStr}</div>
+
+          <div class="mb-3 p-3 bg-light dark-bg-dark rounded-4">
+            <div class="balance-badge ${badgeClass} mb-1">${balText}</div>
+            <div style="font-size: 0.75rem;" class="text-muted fw-bold">${balSubText}</div>
+          </div>
+
+          <div class="row g-2 text-center pt-2">
+            <div class="col-12 mb-1" style="cursor: pointer;" onclick="showMemberBreakdown('${m.id}', '${m.name}')">
+              <div class="p-2 bg-body-tertiary rounded-3 border">
+                <div class="stat-label text-primary"><i class="bi bi-pie-chart-fill me-1"></i>SHARE (Click for Details)</div>
+                <div class="fs-5 fw-bold text-body">AED ${m.share.toFixed(2)}</div>
+              </div>
+            </div>
+            <div class="col-6" style="cursor: pointer;" onclick="showMemberTransactions('${m.id}', '${m.name}')">
+              <div class="p-2 bg-body-tertiary rounded-3 border">
+                <div class="stat-label text-secondary">PURCHASED</div>
+                <div class="fs-6 fw-bold text-body">AED ${m.spent.toFixed(2)}</div>
+              </div>
+            </div>
+            <div class="col-6" style="cursor: pointer;" onclick="showMemberPaymentsDetail('${m.id}', '${m.name}')">
+              <div class="p-2 bg-body-tertiary rounded-3 border">
+                <div class="stat-label text-success">PAID</div>
+                <div class="fs-6 fw-bold text-success">AED ${m.paid.toFixed(2)}</div>
+              </div>
+            </div>
+          </div>
+        </div>`;
+
+      document.getElementById('memberModalContent').innerHTML = modalContent;
+      if (!myMemberModal) myMemberModal = new bootstrap.Modal(document.getElementById('memberModal'));
+      myMemberModal.show();
+    }
+
+    function showMemberBreakdown(memberId, memberName) {
+      let m = globalData.summary.find(x => x.id.toLowerCase() === memberId.toLowerCase());
+      if (!m) return;
+
+      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-pie-chart-fill text-primary me-1"></i> ${m.name} - Share Detail`;
       document.getElementById('memberModalSubTitle').innerText = "Category wise share calculation";
 
       let html = `<div class="list-group list-group-flush mb-3">`;
@@ -759,24 +834,23 @@
         html += `<div class="text-center text-muted small py-2 border-top pt-2">ഈ മാസത്തിൽ ബില്ലുകൾ ഒന്നും ലഭ്യമല്ല.</div>`;
       }
 
-      container.innerHTML = html;
+      document.getElementById('memberModalContent').innerHTML = html;
       if (!myMemberModal) myMemberModal = new bootstrap.Modal(document.getElementById('memberModal'));
       myMemberModal.show();
     }
 
-    function showMemberPaymentsDetail(memberId, memberName, isAdminView = false) {
+    function showMemberPaymentsDetail(memberId, memberName) {
       let payments = globalData.allPayments.filter(p => {
         let payMonth = p[2] ? String(p[2]).trim() : '';
         let mId = p[3] ? String(p[3]).trim() : '';
         return payMonth === globalData.selectedMonth && (mId.toLowerCase() === memberId.toLowerCase() || mId.toLowerCase() === memberName.toLowerCase());
       });
 
-      let container = document.getElementById('memberTxList');
       document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-wallet2 text-success me-1"></i> Payments Details`;
-      document.getElementById('memberModalSubTitle').innerText = `Total Transactions: ${payments.length}`;
+      document.getElementById('memberModalSubTitle').innerText = `${memberName} - Total Transactions: ${payments.length}`;
 
       if (payments.length === 0) {
-        container.innerHTML = `<div class="text-center text-muted py-4"><i class="bi bi-info-circle fs-3 d-block mb-2"></i>Payments ഒന്നും രേഖപ്പെടുത്തിയിട്ടില്ല.</div>`;
+        document.getElementById('memberModalContent').innerHTML = `<div class="text-center text-muted py-4"><i class="bi bi-info-circle fs-3 d-block mb-2"></i>Payments ഒന്നും രേഖപ്പെടുത്തിയിട്ടില്ല.</div>`;
       } else {
         let html = '<ul class="list-group list-group-flush small">';
         payments.forEach(p => {
@@ -796,13 +870,13 @@
           </li>`;
         });
         html += '</ul>';
-        container.innerHTML = html;
+        document.getElementById('memberModalContent').innerHTML = html;
       }
       if (!myMemberModal) myMemberModal = new bootstrap.Modal(document.getElementById('memberModal'));
       myMemberModal.show();
     }
 
-    function showMemberTransactions(memberId, memberName, isAdminView = false) {
+    function showMemberTransactions(memberId, memberName) {
       let mIdTrim = memberId.toString().trim().toLowerCase();
       let mNameTrim = memberName ? memberName.toString().trim().toLowerCase() : '';
 
@@ -811,13 +885,11 @@
         return (paidBy === mIdTrim) || (mNameTrim && paidBy === mNameTrim);
       });
 
-      let container = document.getElementById('memberTxList');
-      let titleName = isAdminView ? `${memberName} - ` : '';
-      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-cart-fill text-danger me-1"></i> ${titleName}Purchased Bills`;
-      document.getElementById('memberModalSubTitle').innerText = `Purchased Bills: ${memberTx.length}`;
+      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-cart-fill text-danger me-1"></i> Purchased Bills`;
+      document.getElementById('memberModalSubTitle').innerText = `${memberName} - Total: ${memberTx.length}`;
 
       if (memberTx.length === 0) {
-        container.innerHTML = `<div class="text-center text-muted py-4"><i class="bi bi-info-circle fs-3 d-block mb-2"></i>ഈ മാസത്തിൽ ഇദ്ദേഹം പർച്ചേസ് ചെയ്ത ബില്ലുകൾ ഒന്നും ലഭ്യമല്ല.</div>`;
+        document.getElementById('memberModalContent').innerHTML = `<div class="text-center text-muted py-4"><i class="bi bi-info-circle fs-3 d-block mb-2"></i>ഈ മാസത്തിൽ ഇദ്ദേഹം പർച്ചേസ് ചെയ്ത ബില്ലുകൾ ഒന്നും ലഭ്യമല്ല.</div>`;
       } else {
         let html = '<ul class="list-group list-group-flush small">';
         memberTx.forEach(e => {
@@ -842,20 +914,19 @@
           </li>`;
         });
         html += '</ul>';
-        container.innerHTML = html;
+        document.getElementById('memberModalContent').innerHTML = html;
       }
       if (!myMemberModal) myMemberModal = new bootstrap.Modal(document.getElementById('memberModal'));
       myMemberModal.show();
     }
 
     function showAllExpensesModal() {
-      let container = document.getElementById('memberTxList');
       document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-cart-fill text-danger me-1"></i> ALL EXPENSES`;
       document.getElementById('memberModalSubTitle').innerHTML = `Mess: ${globalData.messTotalExp.toFixed(2)} | Water: ${globalData.waterTotalExp.toFixed(2)} | Special: ${globalData.specialTotalExp.toFixed(2)}`;
 
       let txs = globalData.recentExpenses;
       if (txs.length === 0) {
-        container.innerHTML = `<div class="text-center text-muted py-4">ചിലവുകൾ ഒന്നും രേഖപ്പെടുത്തിയിട്ടില്ല.</div>`;
+        document.getElementById('memberModalContent').innerHTML = `<div class="text-center text-muted py-4">ചിലവുകൾ ഒന്നും രേഖപ്പെടുത്തിയിട്ടില്ല.</div>`;
       } else {
         let html = '<ul class="list-group list-group-flush small">';
         txs.forEach(e => {
@@ -876,20 +947,19 @@
           </li>`;
         });
         html += '</ul>';
-        container.innerHTML = html;
+        document.getElementById('memberModalContent').innerHTML = html;
       }
       if (!myMemberModal) myMemberModal = new bootstrap.Modal(document.getElementById('memberModal'));
       myMemberModal.show();
     }
 
     function showAllPaymentsModal() {
-      let container = document.getElementById('memberTxList');
       document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-wallet2 text-success me-1"></i> ALL COLLECTIONS`;
       document.getElementById('memberModalSubTitle').innerText = `Total Collected: AED ${globalData.totalPaymentsMonth.toFixed(2)}`;
 
       let payments = globalData.allPayments.filter(p => String(p[2]).trim() === globalData.selectedMonth);
       if (payments.length === 0) {
-        container.innerHTML = `<div class="text-center text-muted py-4">Payments ഒന്നും രേഖപ്പെടുത്തിയിട്ടില്ല.</div>`;
+        document.getElementById('memberModalContent').innerHTML = `<div class="text-center text-muted py-4">Payments ഒന്നും രേഖപ്പെടുത്തിയിട്ടില്ല.</div>`;
       } else {
         let html = '<ul class="list-group list-group-flush small">';
         payments.forEach(p => {
@@ -915,7 +985,7 @@
           </li>`;
         });
         html += '</ul>';
-        container.innerHTML = html;
+        document.getElementById('memberModalContent').innerHTML = html;
       }
       if (!myMemberModal) myMemberModal = new bootstrap.Modal(document.getElementById('memberModal'));
       myMemberModal.show();
@@ -952,7 +1022,6 @@
       }
     }
 
-    // 🔽 Fixed Profile Update to properly send and save data without hanging
     function handleProfileUpdate(event) {
       event.preventDefault();
       let newPhone = document.getElementById('profileEditPhone').value.trim();
