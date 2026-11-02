@@ -590,8 +590,15 @@
 
       let badge = document.getElementById('monthStatusBadge');
       
-      // പഴയ HTML കോഡിലെ അതേ രീതിയിലുള്ള ചെക്കിംഗ്
-      let isSettled = globalData.summary.length > 0 && globalData.summary.every(m => Math.abs(m.netBalance) < 0.005);
+      // 1. നിലവിലെ സിസ്റ്റം ഡേറ്റ് അനുസരിച്ചുള്ള നടപ്പുമാസം (Current Month) കണ്ടെത്തുന്നു (ഉദാ: "11-2026")
+      let today = new Date();
+      let currentMonthStr = ("0" + (today.getMonth() + 1)).slice(-2) + "-" + today.getFullYear();
+      
+      // 2. നിലവിൽ സെലക്റ്റ് ചെയ്തിരിക്കുന്നത് നടപ്പുമാസം ആണോ എന്ന് പരിശോധിക്കുന്നു
+      let isCurrentMonth = (globalData.selectedMonth === currentMonthStr);
+
+      // 3. നടപ്പുമാസം ആണെങ്കിൽ ഒരിക്കലും Closed കാട്ടരുത്. കഴിഞ്ഞ മാസങ്ങൾ ആണെങ്കിൽ മാത്രം ബാലൻസ് നോക്കി Closed ആക്കാം.
+      let isSettled = !isCurrentMonth && globalData.summary.length > 0 && globalData.summary.every(m => Math.abs(m.netBalance) < 0.005);
 
       if (isSettled) {
         badge.className = "badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1";
