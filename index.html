@@ -130,7 +130,6 @@
       border: 3px solid #0d6efd;
     }
 
-    /* 🔽 Narrow padding for lists to maximize gap between item and amount */
     .narrow-list-item {
       padding-left: 2px !important;
       padding-right: 2px !important;
@@ -280,13 +279,9 @@
               <label class="form-label small fw-bold mb-1">Mobile Number</label>
               <input type="text" id="profileEditPhone" class="form-control form-control-sm" required>
             </div>
-            <div class="mb-2 text-start">
-              <label class="form-label small fw-bold mb-1">Upload New Photo (Direct from Gallery)</label>
+            <div class="mb-3 text-start">
+              <label class="form-label small fw-bold mb-1">Change Photo</label>
               <input type="file" id="profileEditFile" class="form-control form-control-sm" accept="image/*" onchange="previewSelectedImage(event)">
-            </div>
-            <div class="mb-2 text-start">
-              <label class="form-label small fw-bold mb-1">Photo URL (Google Drive / Web Link)</label>
-              <input type="text" id="profileEditPhoto" class="form-control form-control-sm" placeholder="Paste image link">
             </div>
             <div class="mb-3 text-start">
               <label class="form-label small fw-bold mb-1">DOB Year</label>
@@ -335,7 +330,7 @@
     </div>
   </div>
 
-  <!-- 🔄 LOADING MODAL (For Month Change / History) -->
+  <!-- 🔄 LOADING MODAL -->
   <div class="modal fade" id="loadingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-sm">
       <div class="modal-content rounded-4 border-0 shadow text-center p-4 bg-body">
@@ -397,7 +392,7 @@
       return mStr;
     }
 
-    // 🔽 Strict dd-mm-yyyy Date Formatting Function
+    // 📅 Date Formatter (dd-mm-yyyy)
     function formatDateDDMMYYYY(dStr) {
       if (!dStr) return '-';
       let d = new Date(dStr);
@@ -645,6 +640,7 @@
         </div>`;
     }
 
+    // 🔽 Updated Other Members Card Layout (As requested)
     function renderMemberList(summaryList) {
       let container = document.getElementById('memberListContainer');
       container.innerHTML = '';
@@ -659,29 +655,24 @@
         let net = Math.round((m.netBalance || 0) * 100) / 100;
         if (Object.is(net, -0)) net = 0;
         let isPositive = net >= 0;
-        let cardClass = isPositive ? 'positive' : 'negative';
-        let badgeClass = isPositive ? 'pos' : 'neg';
+        let cardClass = net === 0 ? 'positive' : (isPositive ? 'positive' : 'negative');
+        let badgeClass = net === 0 ? 'pos' : (isPositive ? 'pos' : 'neg');
         let balSign = net > 0 ? '+' : (net < 0 ? '-' : '');
         let balText = balSign + 'AED ' + Math.abs(net).toFixed(2);
-        let balSubText = net === 0 ? 'SETTLED' : (isPositive ? 'കിട്ടാനുണ്ട്' : 'കൊടുക്കാനുണ്ട്');
+        let balSubText = net === 0 ? 'Settled' : (isPositive ? 'കിട്ടാനുണ്ട്' : 'കൊടുക്കാനുണ്ട്');
         let cleanPhoneStr = m.phone ? m.phone.toString().replace(/^['"]/, '').trim() : '';
 
         let cardHtml = `
-          <div class="member-card ${cardClass} bg-body mb-3 shadow-sm" onclick="showMemberTransactions('${m.id}', '${m.name}', true)" style="cursor: pointer;">
-            <div class="d-flex justify-content-between align-items-start mb-2">
+          <div class="card member-card ${cardClass} bg-body mb-3 shadow-sm" onclick="showMemberBreakdown('${m.id}', '${m.name}', true)" style="cursor: pointer;">
+            <div class="d-flex justify-content-between align-items-center">
               <div>
-                <span class="fw-bold text-body fs-6 me-1">${m.name}</span>
-                <div class="text-muted" style="font-size:0.75rem;"><i class="bi bi-telephone-fill me-1 text-secondary"></i>${cleanPhoneStr}</div>
+                <h5 class="fw-bold text-body mb-1">${m.name}</h5>
+                <div class="text-muted small"><i class="bi bi-telephone-fill me-1 text-secondary"></i>${cleanPhoneStr}</div>
               </div>
               <div class="text-end">
-                <div class="balance-badge ${badgeClass}" style="font-size: 0.9rem; padding: 4px 10px;">${balText}</div>
+                <div class="balance-badge ${badgeClass}" style="font-size: 0.95rem; padding: 4px 12px;">${balText}</div>
                 <div style="font-size: 0.70rem; margin-top:2px;" class="text-muted fw-bold">${balSubText}</div>
               </div>
-            </div>
-            <div class="row g-1 text-center mt-2 pt-2 border-top">
-              <div class="col-4 border-end"><div class="stat-label">PURCHASED</div><div class="stat-value text-body">AED ${m.spent.toFixed(2)}</div></div>
-              <div class="col-4 border-end"><div class="stat-label text-success">PAID</div><div class="stat-value text-success">AED ${m.paid.toFixed(2)}</div></div>
-              <div class="col-4"><div class="stat-label text-danger">SHARE</div><div class="stat-value text-danger">AED ${m.share.toFixed(2)}</div></div>
             </div>
           </div>`;
         container.innerHTML += cardHtml;
@@ -732,7 +723,6 @@
         return participants.includes(mIdTrim) || (mNameTrim && participants.includes(mNameTrim));
       });
 
-      // 🔽 View Invoices Section: Item -> Date -> Buyer Name (Stacked vertically, icons only, dd-mm-yyyy)
       if (memberTx.length > 0) {
         html += `
           <div class="border-top pt-2">
@@ -942,7 +932,6 @@
       document.getElementById('profileModalImg').src = loggedInUser.photo || 'https://via.placeholder.com/90';
       document.getElementById('profileModalName').innerText = loggedInUser.name;
       document.getElementById('profileEditPhone').value = loggedInUser.phone || '';
-      document.getElementById('profileEditPhoto').value = loggedInUser.photo || '';
       document.getElementById('profileEditDob').value = loggedInUser.dob || '';
       document.getElementById('profileEditFile').value = '';
       uploadedBase64Image = "";
@@ -963,17 +952,18 @@
       }
     }
 
+    // 🔽 Fixed Profile Update to properly send and save data without hanging
     function handleProfileUpdate(event) {
       event.preventDefault();
       let newPhone = document.getElementById('profileEditPhone').value.trim();
-      let newPhoto = uploadedBase64Image || document.getElementById('profileEditPhoto').value.trim();
+      let newPhoto = uploadedBase64Image || loggedInUser.photo || '';
 
       if (myLoadingModal) myLoadingModal.show();
 
       google.script.run
         .withSuccessHandler(res => {
           if (myLoadingModal) myLoadingModal.hide();
-          if (res.success) {
+          if (res && res.success) {
             alert("പ്രൊഫൈൽ വിജയകരമായി അപ്ഡേറ്റ് ചെയ്തു!");
             loggedInUser.phone = newPhone;
             loggedInUser.photo = newPhoto;
@@ -985,10 +975,10 @@
               sessionStorage.setItem('mess_logged_user', JSON.stringify(loggedInUser));
             }
 
-            myProfileModal.hide();
+            if (myProfileModal) myProfileModal.hide();
             loadDataWithSpinner(globalData.selectedMonth);
           } else {
-            alert("Error: " + res.message);
+            alert("Error: " + (res ? res.message : "Unknown error"));
           }
         })
         .withFailureHandler(err => {
