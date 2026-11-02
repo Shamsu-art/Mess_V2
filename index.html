@@ -132,8 +132,8 @@
 
     /* 🔽 Narrow padding for lists to maximize gap between item and amount */
     .narrow-list-item {
-      padding-left: 4px !important;
-      padding-right: 4px !important;
+      padding-left: 2px !important;
+      padding-right: 2px !important;
     }
   </style>
 </head>
@@ -310,7 +310,7 @@
           </div>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-        <div class="modal-body bg-body px-2 py-3" style="max-height: 450px; overflow-y: auto;">
+        <div class="modal-body bg-body px-1 py-3" style="max-height: 450px; overflow-y: auto;">
           <div id="memberTxList"></div>
         </div>
       </div>
@@ -397,7 +397,7 @@
       return mStr;
     }
 
-    // 🔽 Utility to format any date string into dd-mm-yyyy format
+    // 🔽 Strict dd-mm-yyyy Date Formatting Function
     function formatDateDDMMYYYY(dStr) {
       if (!dStr) return '-';
       let d = new Date(dStr);
@@ -407,7 +407,6 @@
         let year = d.getFullYear();
         return `${day}-${month}-${year}`;
       }
-      // If already formatted or string, return as is
       return dStr;
     }
 
@@ -733,7 +732,7 @@
         return participants.includes(mIdTrim) || (mNameTrim && participants.includes(mNameTrim));
       });
 
-      // View Invoices Section (Icons only, no labels, dd-mm-yyyy date format)
+      // 🔽 View Invoices Section: Item -> Date -> Buyer Name (Stacked vertically, icons only, dd-mm-yyyy)
       if (memberTx.length > 0) {
         html += `
           <div class="border-top pt-2">
@@ -753,8 +752,9 @@
           html += `<li class="list-group-item px-1 py-2 border-bottom bg-transparent narrow-list-item">
             <div class="d-flex justify-content-between align-items-start">
               <div>
-                <div class="fw-bold text-body">${item}</div>
-                <div class="text-muted" style="font-size:0.75rem;"><i class="bi bi-calendar-event me-1 text-primary"></i>${formattedDate} &nbsp;|&nbsp; <i class="bi bi-person-fill me-1 text-secondary"></i><strong>${purchaserName}</strong></div>
+                <div class="fw-bold text-body mb-1">${item}</div>
+                <div class="text-muted mb-1" style="font-size:0.75rem;"><i class="bi bi-calendar-event me-1 text-primary"></i>${formattedDate}</div>
+                <div class="text-muted" style="font-size:0.75rem;"><i class="bi bi-person-fill me-1 text-secondary"></i><strong>${purchaserName}</strong></div>
               </div>
               <div class="text-end">
                 <span class="fw-bold text-danger">AED ${amount}</span>
@@ -840,8 +840,9 @@
           html += `<li class="list-group-item px-1 py-2 border-bottom bg-transparent narrow-list-item">
             <div class="d-flex justify-content-between align-items-start">
               <div>
-                <div class="fw-bold text-body fs-6">${item}</div>
-                <div class="text-muted small"><i class="bi bi-calendar-event me-1 text-primary"></i>${formattedDate} &nbsp;|&nbsp; <i class="bi bi-person-fill me-1 text-secondary"></i><strong>${purchaserName}</strong></div>
+                <div class="fw-bold text-body fs-6 mb-1">${item}</div>
+                <div class="text-muted mb-1" style="font-size:0.75rem;"><i class="bi bi-calendar-event me-1 text-primary"></i>${formattedDate}</div>
+                <div class="text-muted" style="font-size:0.75rem;"><i class="bi bi-person-fill me-1 text-secondary"></i><strong>${purchaserName}</strong></div>
               </div>
               <div class="text-end">
                 <span class="fw-bold text-danger fs-6">AED ${amount}</span>
@@ -876,8 +877,9 @@
           html += `<li class="list-group-item border-bottom bg-transparent py-2 narrow-list-item">
             <div class="d-flex justify-content-between align-items-center">
               <div>
-                <div class="fw-bold text-body fs-6">${item}</div>
-                <div class="text-muted small"><i class="bi bi-calendar-event me-1 text-primary"></i>${formattedDate} &nbsp;|&nbsp; <i class="bi bi-person-fill me-1 text-secondary"></i><strong>${purchaser}</strong></div>
+                <div class="fw-bold text-body fs-6 mb-1">${item}</div>
+                <div class="text-muted mb-1" style="font-size:0.75rem;"><i class="bi bi-calendar-event me-1 text-primary"></i>${formattedDate}</div>
+                <div class="text-muted" style="font-size:0.75rem;"><i class="bi bi-person-fill me-1 text-secondary"></i><strong>${purchaser}</strong></div>
               </div>
               <span class="fw-bold text-danger fs-6">AED ${amt}</span>
             </div>
