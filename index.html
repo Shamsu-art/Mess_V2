@@ -129,6 +129,12 @@
       border-radius: 50%;
       border: 3px solid #0d6efd;
     }
+
+    /* 🔽 Narrow padding for lists to maximize gap between item and amount */
+    .narrow-list-item {
+      padding-left: 4px !important;
+      padding-right: 4px !important;
+    }
   </style>
 </head>
 <body>
@@ -304,7 +310,7 @@
           </div>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-        <div class="modal-body p-3 bg-body" style="max-height: 450px; overflow-y: auto;">
+        <div class="modal-body bg-body px-2 py-3" style="max-height: 450px; overflow-y: auto;">
           <div id="memberTxList"></div>
         </div>
       </div>
@@ -389,6 +395,20 @@
         if (mNum >= 1 && mNum <= 12) return monthNames[mNum - 1] + " " + year;
       }
       return mStr;
+    }
+
+    // 🔽 Utility to format any date string into dd-mm-yyyy format
+    function formatDateDDMMYYYY(dStr) {
+      if (!dStr) return '-';
+      let d = new Date(dStr);
+      if (!isNaN(d.getTime())) {
+        let day = String(d.getDate()).padStart(2, '0');
+        let month = String(d.getMonth() + 1).padStart(2, '0');
+        let year = d.getFullYear();
+        return `${day}-${month}-${year}`;
+      }
+      // If already formatted or string, return as is
+      return dStr;
     }
 
     function fetchDataSilent(month, callback) {
@@ -686,21 +706,20 @@
 
       let html = `<div class="list-group list-group-flush mb-3">`;
       
-      // Conditionally show Mess, Water, Special only if value > 0
       if (m.messSpent > 0) {
-        html += `<div class="list-group-item d-flex justify-content-between align-items-center bg-transparent">
+        html += `<div class="list-group-item d-flex justify-content-between align-items-center bg-transparent narrow-list-item">
           <div><i class="bi bi-cup-hot text-primary me-2"></i>Mess</div>
           <span class="fw-bold text-body">AED ${m.messSpent.toFixed(2)}</span>
         </div>`;
       }
       if (m.waterSpent > 0) {
-        html += `<div class="list-group-item d-flex justify-content-between align-items-center bg-transparent">
+        html += `<div class="list-group-item d-flex justify-content-between align-items-center bg-transparent narrow-list-item">
           <div><i class="bi bi-droplet text-info me-2"></i>Water</div>
           <span class="fw-bold text-body">AED ${m.waterSpent.toFixed(2)}</span>
         </div>`;
       }
       if (m.specialSpent > 0) {
-        html += `<div class="list-group-item d-flex justify-content-between align-items-center bg-transparent">
+        html += `<div class="list-group-item d-flex justify-content-between align-items-center bg-transparent narrow-list-item">
           <div><i class="bi bi-star text-warning me-2"></i>Special</div>
           <span class="fw-bold text-body">AED ${m.specialSpent.toFixed(2)}</span>
         </div>`;
@@ -714,7 +733,7 @@
         return participants.includes(mIdTrim) || (mNameTrim && participants.includes(mNameTrim));
       });
 
-      // View Invoices Button & Toggle Section
+      // View Invoices Section (Icons only, no labels, dd-mm-yyyy date format)
       if (memberTx.length > 0) {
         html += `
           <div class="border-top pt-2">
@@ -725,17 +744,17 @@
               <ul class="list-group list-group-flush small">`;
         
         memberTx.forEach(e => {
-          let date = e[1] || '-';
+          let formattedDate = formatDateDDMMYYYY(e[1]);
           let item = e[3] || 'Expense';
           let amount = Number(e[5] || 0).toFixed(2);
           let purchaserName = e[4] || 'Unknown';
           let invoiceUrl = e[8] || '';
 
-          html += `<li class="list-group-item px-0 py-2 border-bottom bg-transparent">
+          html += `<li class="list-group-item px-1 py-2 border-bottom bg-transparent narrow-list-item">
             <div class="d-flex justify-content-between align-items-start">
               <div>
                 <div class="fw-bold text-body">${item}</div>
-                <div class="text-muted" style="font-size:0.72rem;"><i class="bi bi-calendar-event me-1"></i>${date} | <i class="bi bi-person-fill me-1"></i>Buyer: <strong>${purchaserName}</strong></div>
+                <div class="text-muted" style="font-size:0.75rem;"><i class="bi bi-calendar-event me-1 text-primary"></i>${formattedDate} &nbsp;|&nbsp; <i class="bi bi-person-fill me-1 text-secondary"></i><strong>${purchaserName}</strong></div>
               </div>
               <div class="text-end">
                 <span class="fw-bold text-danger">AED ${amount}</span>
@@ -771,14 +790,15 @@
       } else {
         let html = '<ul class="list-group list-group-flush small">';
         payments.forEach(p => {
-          let date = p[1] || p[0] || '-';
+          let formattedDate = formatDateDDMMYYYY(p[1] || p[0]);
           let amt = parseFloat(p[4]).toFixed(2);
-          let noteHtml = p[5] ? `<div class="text-muted mt-1" style="font-size:0.75rem;"><i class="bi bi-chat-left-text me-1"></i>${p[5]}</div>` : '';
+          let noteStr = p[5] ? String(p[5]).trim() : '';
+          let noteHtml = noteStr ? `<div class="text-muted mt-1" style="font-size:0.75rem;"><i class="bi bi-chat-left-text me-1"></i>${noteStr}</div>` : '';
           
-          html += `<li class="list-group-item border-bottom bg-transparent py-2">
+          html += `<li class="list-group-item border-bottom bg-transparent py-2 narrow-list-item">
             <div class="d-flex justify-content-between align-items-center">
               <div>
-                <div class="fw-bold text-body fs-6"><i class="bi bi-calendar-event me-1 text-primary"></i>${date}</div>
+                <div class="fw-bold text-body fs-6"><i class="bi bi-calendar-event me-1 text-primary"></i>${formattedDate}</div>
                 ${noteHtml}
               </div>
               <span class="fw-bold text-success fs-6">+ AED ${amt}</span>
@@ -811,17 +831,17 @@
       } else {
         let html = '<ul class="list-group list-group-flush small">';
         memberTx.forEach(e => {
-          let date = e[1] || '-';
+          let formattedDate = formatDateDDMMYYYY(e[1]);
           let item = e[3] || 'Expense';
           let amount = Number(e[5] || 0).toFixed(2);
           let purchaserName = e[4] || 'Unknown';
           let invoiceUrl = e[8] || '';
 
-          html += `<li class="list-group-item px-0 py-2 border-bottom bg-transparent">
+          html += `<li class="list-group-item px-1 py-2 border-bottom bg-transparent narrow-list-item">
             <div class="d-flex justify-content-between align-items-start">
               <div>
                 <div class="fw-bold text-body fs-6">${item}</div>
-                <div class="text-muted small">Date: ${date} | Buyer: <strong>${purchaserName}</strong></div>
+                <div class="text-muted small"><i class="bi bi-calendar-event me-1 text-primary"></i>${formattedDate} &nbsp;|&nbsp; <i class="bi bi-person-fill me-1 text-secondary"></i><strong>${purchaserName}</strong></div>
               </div>
               <div class="text-end">
                 <span class="fw-bold text-danger fs-6">AED ${amount}</span>
@@ -848,17 +868,16 @@
       } else {
         let html = '<ul class="list-group list-group-flush small">';
         txs.forEach(e => {
+          let formattedDate = formatDateDDMMYYYY(e[1]);
           let item = e[3] || 'Expense';
-          let date = e[1] || '-';
           let purchaser = e[4] || '-';
           let amt = Number(e[5]).toFixed(2);
 
-          html += `<li class="list-group-item border-bottom bg-transparent py-2">
+          html += `<li class="list-group-item border-bottom bg-transparent py-2 narrow-list-item">
             <div class="d-flex justify-content-between align-items-center">
               <div>
                 <div class="fw-bold text-body fs-6">${item}</div>
-                <div class="text-muted small"><i class="bi bi-calendar-event me-1"></i>${date}</div>
-                <div class="text-muted small"><i class="bi bi-person-fill me-1 text-secondary"></i>Buyer: <strong>${purchaser}</strong></div>
+                <div class="text-muted small"><i class="bi bi-calendar-event me-1 text-primary"></i>${formattedDate} &nbsp;|&nbsp; <i class="bi bi-person-fill me-1 text-secondary"></i><strong>${purchaser}</strong></div>
               </div>
               <span class="fw-bold text-danger fs-6">AED ${amt}</span>
             </div>
@@ -882,7 +901,7 @@
       } else {
         let html = '<ul class="list-group list-group-flush small">';
         payments.forEach(p => {
-          let date = p[1] || p[0] || '-';
+          let formattedDate = formatDateDDMMYYYY(p[1] || p[0]);
           let mIdOrName = p[3] ? String(p[3]).trim() : '';
           
           let matched = globalData.summary.find(x => x.id.toLowerCase() === mIdOrName.toLowerCase());
@@ -892,11 +911,11 @@
           let noteStr = p[5] ? String(p[5]).trim() : '';
           let noteHtml = noteStr ? `<div class="text-muted mt-1" style="font-size:0.75rem;"><i class="bi bi-chat-left-text me-1"></i>${noteStr}</div>` : '';
 
-          html += `<li class="list-group-item border-bottom bg-transparent py-2">
+          html += `<li class="list-group-item border-bottom bg-transparent py-2 narrow-list-item">
             <div class="d-flex justify-content-between align-items-center">
               <div>
-                <div class="fw-bold text-body fs-6"><i class="bi bi-calendar-event me-1 text-primary"></i>${date}</div>
-                <div class="text-muted small mt-1"><i class="bi bi-person-fill text-secondary me-1"></i>${resolvedName}</div>
+                <div class="fw-bold text-body fs-6"><i class="bi bi-calendar-event me-1 text-primary"></i>${formattedDate}</div>
+                <div class="text-muted small mt-1"><i class="bi bi-person-fill me-1 text-secondary"></i><strong>${resolvedName}</strong></div>
                 ${noteHtml}
               </div>
               <span class="fw-bold text-success fs-6">+ AED ${amt}</span>
