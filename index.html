@@ -1035,45 +1035,50 @@
     function handleProfileUpdate(event) {
   event.preventDefault();
   let newPhone = document.getElementById('profileEditPhone').value.trim();
-  let newPhoto = uploadedBase64Image || '';
+  let newPhoto = uploadedBase64Image || loggedInUser.photo || '';
 
   document.getElementById('loadingModalTitle').innerText = "പ്രൊഫൈൽ സേവ് ചെയ്യുന്നു...";
   if (myLoadingModal) myLoadingModal.show();
   
-  let updateUrl = API_URL + '?action=updateProfile' +
-                  '&memberId=' + encodeURIComponent(loggedInUser.id) +
-                  '&phone=' + encodeURIComponent(newPhone) +
-                  '&photo=' + encodeURIComponent(newPhoto);
+  let postData = {
+    action: 'updateProfile',
+    memberId: loggedInUser.id,
+    phone: newPhone,
+    photo: newPhoto
+  };
 
-  fetch(updateUrl)
-    .then(res => res.json())
-    .then(res => {
-      if (myLoadingModal) myLoadingModal.hide();
-      document.getElementById('loadingModalTitle').innerText = "വിവരങ്ങൾ ശേഖരിക്കുന്നു...";
+  fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify(postData)
+  })
+  .then(res => res.json())
+  .then(res => {
+    if (myLoadingModal) myLoadingModal.hide();
+    document.getElementById('loadingModalTitle').innerText = "വിവരങ്ങൾ ശേഖരിക്കുന്നു...";
+    
+    if (res && res.success) {
+      alert("പ്രൊഫൈൽ വിജയകരമായി അപ്ഡേറ്റ് ചെയ്തു!");
+      loggedInUser.phone = newPhone;
+      if (newPhoto) loggedInUser.photo = newPhoto;
       
-      if (res && res.success) {
-        alert("പ്രൊഫൈൽ വിജയകരമായി അപ്ഡേറ്റ് ചെയ്തു!");
-        loggedInUser.phone = newPhone;
-        if (newPhoto) loggedInUser.photo = newPhoto;
-        
-        let rememberMe = localStorage.getItem('mess_logged_user');
-        if (rememberMe) {
-          localStorage.setItem('mess_logged_user', JSON.stringify(loggedInUser));
-        } else {
-          sessionStorage.setItem('mess_logged_user', JSON.stringify(loggedInUser));
-        }
-
-        if (myProfileModal) myProfileModal.hide();
-        loadDataWithSpinner(globalData.selectedMonth);
+      let rememberMe = localStorage.getItem('mess_logged_user');
+      if (rememberMe) {
+        localStorage.setItem('mess_logged_user', JSON.stringify(loggedInUser));
       } else {
-        alert("Error: " + (res ? res.message : "Unknown error"));
+        sessionStorage.setItem('mess_logged_user', JSON.stringify(loggedInUser));
       }
-    })
-    .catch(err => {
-      if (myLoadingModal) myLoadingModal.hide();
-      document.getElementById('loadingModalTitle').innerText = "വിവരങ്ങൾ ശേഖരിക്കുന്നു...";
-      alert("Failed: " + err.message);
-    });
+
+      if (myProfileModal) myProfileModal.hide();
+      loadDataWithSpinner(globalData.selectedMonth);
+    } else {
+      alert("Error: " + (res ? res.message : "Unknown error"));
+    }
+  })
+  .catch(err => {
+    if (myLoadingModal) myLoadingModal.hide();
+    document.getElementById('loadingModalTitle').innerText = "വിവരങ്ങൾ ശേഖരിക്കുന്നു...";
+    alert("Failed: " + err.message);
+  });
 }
   </script>
 </body>
