@@ -133,31 +133,30 @@
       border-radius: 50%;
       border: 2px solid #0d6efd;
     }
-
-    .loader {
-      text-align: center;
-      padding: 30px;
-      font-weight: 600;
-      color: #0d6efd;
-    }
   </style>
 </head>
 <body>
 
   <!-- 🔐 LOGIN SECTION -->
-  <div id="loginSection" class="container d-flex align-items-center justify-content-center" style="min-height: 100vh; display: flex;">
+  <div id="loginSection" class="container d-flex align-items-center justify-content-center" style="min-height: 100vh;">
     <div class="card card-custom p-4 bg-body shadow-lg" style="width: 100%; max-width: 400px;">
       <div class="text-center mb-4">
         <img id="loginLogo" src="" alt="Logo" class="rounded-circle mb-3 border" style="width: 80px; height: 80px; object-fit: cover; display: none;">
         <h4 class="fw-bold text-primary" id="loginMessName">MESS LOGIN</h4>
         <p class="small text-muted" id="loginLocation">Please login with Mobile & DOB Year</p>
       </div>
+      
+      <!-- Custom Error Alert (No browser alert popup) -->
+      <div id="loginErrorAlert" class="alert alert-danger py-2 small d-none text-center" role="alert">
+        മൊബൈൽ നമ്പറോ ജനിച്ച വർഷമോ തെറ്റാണ്! കൃത്യമായി പരിശോധിക്കുക.
+      </div>
+
       <form id="loginForm" onsubmit="handleLogin(event)">
         <div class="mb-3">
           <label class="form-label small fw-bold">Mobile Number</label>
           <div class="input-group">
             <span class="input-group-text"><i class="bi bi-phone"></i></span>
-            <input type="text" id="loginPhone" class="form-control" placeholder="ဥദാ: 501234567 അല്ലെങ്കിൽ +971..." required>
+            <input type="text" id="loginPhone" class="form-control" placeholder="ဥദാ: 501234567" required>
           </div>
           <div class="form-text" style="font-size: 0.7rem;">അവസാന 9 അക്കങ്ങൾ മാത്രം നൽകിയാലും മതിയാകും.</div>
         </div>
@@ -358,7 +357,8 @@
         } catch(e) {}
       }
 
-      loadData(null);
+      // Initial silent fetch (No loading popup on first open)
+      fetchDataSilent();
     };
 
     function toggleTheme() {
@@ -382,7 +382,25 @@
       return mStr;
     }
 
-    function loadData(month) {
+    // Silent fetch on load (doesn't show loading popup immediately)
+    function fetchDataSilent(month, callback) {
+      let requestUrl = API_URL;
+      if (month) requestUrl += '?month=' + encodeURIComponent(month);
+
+      fetch(requestUrl)
+        .then(res => res.json())
+        .then(data => {
+          globalData = data;
+          applySettings(data);
+          if (callback) callback();
+        })
+        .catch(err => {
+          console.error("Fetch error: " + err.message);
+        });
+    }
+
+    // Fetch with loading modal (used when switching months or after login)
+    function loadDataWithSpinner(month) {
       if (myLoadingModal) myLoadingModal.show();
       let requestUrl = API_URL;
       if (month) requestUrl += '?month=' + encodeURIComponent(month);
@@ -392,26 +410,12 @@
         .then(data => {
           globalData = data;
           if (myLoadingModal) setTimeout(() => myLoadingModal.hide(), 300);
-          
-          // Setup Settings Branding
-          if (data.settings) {
-            document.getElementById('pageTitle').innerText = data.settings.messName;
-            document.getElementById('loginMessName').innerText = data.settings.messName;
-            document.getElementById('loginLocation').innerText = data.settings.location;
-            document.getElementById('headerMessName').innerText = data.settings.messName;
-            document.getElementById('headerLocation').innerText = data.settings.location;
-            if (data.settings.logo) {
-              let logoImg = document.getElementById('loginLogo');
-              logoImg.src = data.settings.logo;
-              logoImg.style.display = 'inline-block';
-            }
-          }
+          applySettings(data);
 
           if (loggedInUser) {
-            // Verify if user still exists in summary
             let found = data.summary.find(m => m.id.toLowerCase() === loggedInUser.id.toLowerCase());
             if (found) {
-              loggedInUser = found; // update latest stats
+              loggedInUser = found;
               showDashboard();
             } else {
               handleLogout();
@@ -426,6 +430,33 @@
         });
     }
 
+    function applySettings(data) {
+      if (data.settings) {
+        document.getElementById('pageTitle').innerText = data.settings.messName;
+        document.getElementById('loginMessName').innerText = data.settings.messName;
+        document.getElementById('loginLocation').innerText = data.settings.location;
+        document.getElementById('headerMessName').innerText = data.settings.messName;
+        document.getElementById('headerLocation').innerText = data.settings.location;
+        if (data.settings.logo) {
+          let logoImg = document.getElementById('loginLogo');
+          logoImg.src = data.settings.logo;
+          logoImg.style.display = 'inline-block';
+        }
+      }
+
+      if (loggedInUser) {
+        let found = data.summary.find(m => m.id.toLowerCase() === loggedInUser.id.toLowerCase());
+        if (found) {
+          loggedInUser = found;
+          showDashboard();
+        } else {
+          showLogin();
+        }
+      } else {
+        showLogin();
+      }
+    }
+
     function cleanPhone(p) {
       if (!p) return '';
       let digits = p.toString().replace(/\D/g, '');
@@ -436,9 +467,19 @@
       event.preventDefault();
       let phoneInput = cleanPhone(document.getElementById('loginPhone').value);
       let dobInput = document.getElementById('loginDob').value.trim();
+      let errorAlert = document.getElementById('loginErrorAlert');
 
-      if (!globalData || !globalData.summary) return;
+      errorAlert.classList.add('d-none');
 
+      if (!globalData || !globalData.summary) {
+        fetchDataSilent(null, () => processLoginCheck(phoneInput, dobInput));
+      } else {
+        processLoginCheck(phoneInput, dobInput);
+      }
+    }
+
+    function processLoginCheck(phoneInput, dobInput) {
+      let errorAlert = document.getElementById('loginErrorAlert');
       let matchedUser = globalData.summary.find(m => {
         let mPhone = cleanPhone(m.phone);
         let mDob = m.dob ? m.dob.toString().trim() : '';
@@ -448,9 +489,9 @@
       if (matchedUser) {
         loggedInUser = matchedUser;
         localStorage.setItem('mess_logged_user', JSON.stringify(loggedInUser));
-        showDashboard();
+        loadDataWithSpinner(null); // Now show loading and open dashboard
       } else {
-        alert("മൊബൈൽ നമ്പറോ ജനിച്ച വർഷമോ തെറ്റാണ്! കൃത്യമായി പരിശോധിക്കുക.");
+        errorAlert.classList.remove('d-none'); // Show clean bootstrap error instead of browser alert
       }
     }
 
@@ -473,13 +514,12 @@
 
     function onMonthChange() {
       let selectedMonth = document.getElementById('monthSelect').value;
-      if (selectedMonth) loadData(selectedMonth);
+      if (selectedMonth) loadDataWithSpinner(selectedMonth);
     }
 
     function renderDashboardContent() {
       if (!globalData) return;
 
-      // Month selector
       let select = document.getElementById('monthSelect');
       select.innerHTML = '';
       globalData.availableMonths.forEach(m => {
@@ -490,7 +530,6 @@
         select.appendChild(opt);
       });
 
-      // Status Badge
       let badge = document.getElementById('monthStatusBadge');
       let isSettled = globalData.summary.length > 0 && globalData.summary.every(m => Math.abs(m.netBalance) < 0.005);
       if (isSettled) {
@@ -502,7 +541,6 @@
       }
       badge.classList.remove('d-none');
 
-      // Admin Summary & Section
       let isAdmin = (loggedInUser.role && loggedInUser.role.toLowerCase() === 'admin');
       if (isAdmin) {
         document.getElementById('adminSummarySection').style.display = 'block';
@@ -512,10 +550,7 @@
         document.getElementById('adminSummarySection').style.display = 'none';
       }
 
-      // Logged-in Member Card
       renderLoggedMemberCard();
-
-      // Other members list for Admin
       let otherMembers = globalData.summary.filter(m => m.id.toLowerCase() !== loggedInUser.id.toLowerCase());
       renderMemberList(otherMembers);
     }
@@ -625,7 +660,6 @@
       renderMemberList(otherMembers);
     }
 
-    // Modal Details (Mess, Water, Special breakdown)
     function showMemberBreakdown(memberId, memberName) {
       let m = globalData.summary.find(x => x.id === memberId);
       if (!m) return;
@@ -815,7 +849,7 @@
             loggedInUser.photo = newPhoto;
             localStorage.setItem('mess_logged_user', JSON.stringify(loggedInUser));
             myProfileModal.hide();
-            loadData(globalData.selectedMonth);
+            loadDataWithSpinner(globalData.selectedMonth);
           } else {
             alert("Error: " + res.message);
           }
