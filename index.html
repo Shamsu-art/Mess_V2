@@ -558,4 +558,424 @@
       if (isAdmin) {
         document.getElementById('adminSummarySection').style.display = 'block';
         document.getElementById('totalExpense').innerText = 'AED ' + globalData.totalExpenseMonth.toFixed(2);
-        document.getElementById('totalPayments').innerText = 'AED ' + globalData.totalPaymentsMonth.
+        document.getElementById('totalPayments').innerText = 'AED ' + globalData.totalPaymentsMonth.toFixed(2);
+      } else {
+        document.getElementById('adminSummarySection').style.display = 'none';
+      }
+
+      renderLoggedMemberCard();
+      let otherMembers = globalData.summary.filter(m => m.id.toLowerCase() !== loggedInUser.id.toLowerCase());
+      renderMemberList(otherMembers);
+    }
+
+    function renderLoggedMemberCard() {
+      let container = document.getElementById('loggedMemberContainer');
+      let m = loggedInUser;
+      let net = Math.round((m.netBalance || 0) * 100) / 100;
+      if (Object.is(net, -0)) net = 0;
+
+      let isPositive = net >= 0;
+      let cardClass = net === 0 ? 'positive' : (isPositive ? 'positive' : 'negative');
+      let badgeClass = net === 0 ? 'pos' : (isPositive ? 'pos' : 'neg');
+      let balSign = net > 0 ? '+' : (net < 0 ? '-' : '');
+      let balText = balSign + 'AED ' + Math.abs(net).toFixed(2);
+      let balSubText = net === 0 ? 'SETTLED' : (isPositive ? 'കിട്ടാനുണ്ട്' : 'കൊടുക്കാനുണ്ട്');
+
+      let photoHtml = m.photo ? `<img src="${m.photo}" class="profile-avatar shadow-sm" alt="Photo">` : `<div class="profile-avatar d-flex align-items-center justify-content-center bg-primary text-white fw-bold fs-3 mx-auto">${m.name.charAt(0)}</div>`;
+      let cleanPhoneStr = m.phone ? m.phone.toString().replace(/^['"]/, '').trim() : '';
+
+      container.innerHTML = `
+        <div class="card member-card ${cardClass} position-relative shadow-sm mb-4 text-center">
+          <div class="position-absolute top-0 end-0 m-3">
+            <button class="btn btn-sm btn-outline-secondary rounded-circle" onclick="openProfileModal()" title="Edit Profile">
+              <i class="bi bi-gear-fill"></i>
+            </button>
+          </div>
+
+          <div class="mb-2 mt-1">
+            ${photoHtml}
+          </div>
+          <h4 class="fw-bold text-body mb-1">${m.name}</h4>
+          <div class="text-muted small mb-3"><i class="bi bi-telephone-fill me-1"></i>${cleanPhoneStr}</div>
+
+          <div class="mb-3 p-3 bg-light dark-bg-dark rounded-4">
+            <div class="balance-badge ${badgeClass} mb-1">${balText}</div>
+            <div style="font-size: 0.75rem;" class="text-muted fw-bold">${balSubText}</div>
+          </div>
+
+          <div class="row g-2 text-center pt-2">
+            <div class="col-12 mb-1" style="cursor: pointer;" onclick="showMemberBreakdown('${m.id}', '${m.name}', false)">
+              <div class="p-2 bg-body-tertiary rounded-3 border">
+                <div class="stat-label text-primary"><i class="bi bi-pie-chart-fill me-1"></i>SHARE (Click for Details)</div>
+                <div class="fs-5 fw-bold text-body">AED ${m.share.toFixed(2)}</div>
+              </div>
+            </div>
+            <div class="col-6" style="cursor: pointer;" onclick="showMemberTransactions('${m.id}', '${m.name}', false)">
+              <div class="p-2 bg-body-tertiary rounded-3 border">
+                <div class="stat-label text-secondary">PURCHASED</div>
+                <div class="fs-6 fw-bold text-body">AED ${m.spent.toFixed(2)}</div>
+              </div>
+            </div>
+            <div class="col-6" style="cursor: pointer;" onclick="showMemberPaymentsDetail('${m.id}', '${m.name}', false)">
+              <div class="p-2 bg-body-tertiary rounded-3 border">
+                <div class="stat-label text-success">PAID</div>
+                <div class="fs-6 fw-bold text-success">AED ${m.paid.toFixed(2)}</div>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function renderMemberList(summaryList) {
+      let container = document.getElementById('memberListContainer');
+      container.innerHTML = '';
+      document.getElementById('memberCount').innerText = summaryList.length;
+
+      if (!summaryList || summaryList.length === 0) {
+        container.innerHTML = '<div class="card card-custom p-3 text-center text-muted bg-body">മറ്റു അംഗങ്ങൾ ലഭ്യമല്ല.</div>';
+        return;
+      }
+
+      summaryList.forEach(m => {
+        let net = Math.round((m.netBalance || 0) * 100) / 100;
+        if (Object.is(net, -0)) net = 0;
+        let isPositive = net >= 0;
+        let cardClass = isPositive ? 'positive' : 'negative';
+        let badgeClass = isPositive ? 'pos' : 'neg';
+        let balSign = net > 0 ? '+' : (net < 0 ? '-' : '');
+        let balText = balSign + 'AED ' + Math.abs(net).toFixed(2);
+        let balSubText = net === 0 ? 'SETTLED' : (isPositive ? 'കിട്ടാനുണ്ട്' : 'കൊടുക്കാനുണ്ട്');
+        let cleanPhoneStr = m.phone ? m.phone.toString().replace(/^['"]/, '').trim() : '';
+
+        let cardHtml = `
+          <div class="member-card ${cardClass} bg-body mb-3 shadow-sm" onclick="showMemberTransactions('${m.id}', '${m.name}', true)" style="cursor: pointer;">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <span class="fw-bold text-body fs-6 me-1">${m.name}</span>
+                <div class="text-muted" style="font-size:0.75rem;"><i class="bi bi-telephone-fill me-1 text-secondary"></i>${cleanPhoneStr}</div>
+              </div>
+              <div class="text-end">
+                <div class="balance-badge ${badgeClass}" style="font-size: 0.9rem; padding: 4px 10px;">${balText}</div>
+                <div style="font-size: 0.70rem; margin-top:2px;" class="text-muted fw-bold">${balSubText}</div>
+              </div>
+            </div>
+            <div class="row g-1 text-center mt-2 pt-2 border-top">
+              <div class="col-4 border-end"><div class="stat-label">PURCHASED</div><div class="stat-value text-body">AED ${m.spent.toFixed(2)}</div></div>
+              <div class="col-4 border-end"><div class="stat-label text-success">PAID</div><div class="stat-value text-success">AED ${m.paid.toFixed(2)}</div></div>
+              <div class="col-4"><div class="stat-label text-danger">SHARE</div><div class="stat-value text-danger">AED ${m.share.toFixed(2)}</div></div>
+            </div>
+          </div>`;
+        container.innerHTML += cardHtml;
+      });
+    }
+
+    function filterMembers() {
+      let q = document.getElementById('searchInput').value.toLowerCase();
+      let otherMembers = globalData.summary.filter(m => m.id.toLowerCase() !== loggedInUser.id.toLowerCase() && m.name.toLowerCase().includes(q));
+      renderMemberList(otherMembers);
+    }
+
+    function showMemberBreakdown(memberId, memberName, isAdminView = false) {
+      let m = globalData.summary.find(x => x.id.toLowerCase() === memberId.toLowerCase());
+      if (!m) return;
+
+      let container = document.getElementById('memberTxList');
+      let titleName = isAdminView ? `${memberName} - ` : '';
+      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-pie-chart-fill text-primary me-1"></i> ${titleName}Share Detail`;
+      document.getElementById('memberModalSubTitle').innerText = "Category wise share calculation";
+
+      let html = `<div class="list-group list-group-flush mb-3">`;
+      
+      // Conditionally show Mess, Water, Special only if value > 0
+      if (m.messSpent > 0) {
+        html += `<div class="list-group-item d-flex justify-content-between align-items-center bg-transparent">
+          <div><i class="bi bi-cup-hot text-primary me-2"></i>Mess</div>
+          <span class="fw-bold text-body">AED ${m.messSpent.toFixed(2)}</span>
+        </div>`;
+      }
+      if (m.waterSpent > 0) {
+        html += `<div class="list-group-item d-flex justify-content-between align-items-center bg-transparent">
+          <div><i class="bi bi-droplet text-info me-2"></i>Water</div>
+          <span class="fw-bold text-body">AED ${m.waterSpent.toFixed(2)}</span>
+        </div>`;
+      }
+      if (m.specialSpent > 0) {
+        html += `<div class="list-group-item d-flex justify-content-between align-items-center bg-transparent">
+          <div><i class="bi bi-star text-warning me-2"></i>Special</div>
+          <span class="fw-bold text-body">AED ${m.specialSpent.toFixed(2)}</span>
+        </div>`;
+      }
+      html += `</div>`;
+
+      let mIdTrim = memberId.toString().trim().toLowerCase();
+      let mNameTrim = memberName ? memberName.toString().trim().toLowerCase() : '';
+      let memberTx = globalData.recentExpenses.filter(e => {
+        let participants = e[7] ? e[7].toString().toLowerCase() : '';
+        return participants.includes(mIdTrim) || (mNameTrim && participants.includes(mNameTrim));
+      });
+
+      // View Invoices Button & Toggle Section
+      if (memberTx.length > 0) {
+        html += `
+          <div class="border-top pt-2">
+            <button class="btn btn-outline-primary w-100 fw-bold rounded-pill shadow-sm py-2" type="button" data-bs-toggle="collapse" data-bs-target="#involvedBillsCollapse" aria-expanded="false">
+              <i class="bi bi-receipt me-1"></i> View Invoices (${memberTx.length})
+            </button>
+            <div class="collapse mt-3" id="involvedBillsCollapse">
+              <ul class="list-group list-group-flush small">`;
+        
+        memberTx.forEach(e => {
+          let date = e[1] || '-';
+          let item = e[3] || 'Expense';
+          let amount = Number(e[5] || 0).toFixed(2);
+          let purchaserName = e[4] || 'Unknown';
+          let invoiceUrl = e[8] || '';
+
+          html += `<li class="list-group-item px-0 py-2 border-bottom bg-transparent">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <div class="fw-bold text-body">${item}</div>
+                <div class="text-muted" style="font-size:0.72rem;"><i class="bi bi-calendar-event me-1"></i>${date} | <i class="bi bi-person-fill me-1"></i>Buyer: <strong>${purchaserName}</strong></div>
+              </div>
+              <div class="text-end">
+                <span class="fw-bold text-danger">AED ${amount}</span>
+                ${invoiceUrl ? `<br><button onclick="openInvoiceModal('${invoiceUrl}')" class="btn btn-sm btn-outline-primary py-0 px-2 rounded-pill mt-1" style="font-size:0.65rem;"><i class="bi bi-file-earmark-image"></i> Invoice</button>` : ''}
+              </div>
+            </div>
+          </li>`;
+        });
+
+        html += `</ul></div></div>`;
+      } else {
+        html += `<div class="text-center text-muted small py-2 border-top pt-2">ഈ മാസത്തിൽ ബില്ലുകൾ ഒന്നും ലഭ്യമല്ല.</div>`;
+      }
+
+      container.innerHTML = html;
+      if (!myMemberModal) myMemberModal = new bootstrap.Modal(document.getElementById('memberModal'));
+      myMemberModal.show();
+    }
+
+    function showMemberPaymentsDetail(memberId, memberName, isAdminView = false) {
+      let payments = globalData.allPayments.filter(p => {
+        let payMonth = p[2] ? String(p[2]).trim() : '';
+        let mId = p[3] ? String(p[3]).trim() : '';
+        return payMonth === globalData.selectedMonth && (mId.toLowerCase() === memberId.toLowerCase() || mId.toLowerCase() === memberName.toLowerCase());
+      });
+
+      let container = document.getElementById('memberTxList');
+      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-wallet2 text-success me-1"></i> Payments Details`;
+      document.getElementById('memberModalSubTitle').innerText = `Total Transactions: ${payments.length}`;
+
+      if (payments.length === 0) {
+        container.innerHTML = `<div class="text-center text-muted py-4"><i class="bi bi-info-circle fs-3 d-block mb-2"></i>Payments ഒന്നും രേഖപ്പെടുത്തിയിട്ടില്ല.</div>`;
+      } else {
+        let html = '<ul class="list-group list-group-flush small">';
+        payments.forEach(p => {
+          let date = p[1] || p[0] || '-';
+          let amt = parseFloat(p[4]).toFixed(2);
+          let noteHtml = p[5] ? `<div class="text-muted mt-1" style="font-size:0.75rem;"><i class="bi bi-chat-left-text me-1"></i>${p[5]}</div>` : '';
+          
+          html += `<li class="list-group-item border-bottom bg-transparent py-2">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="fw-bold text-body fs-6"><i class="bi bi-calendar-event me-1 text-primary"></i>${date}</div>
+                ${noteHtml}
+              </div>
+              <span class="fw-bold text-success fs-6">+ AED ${amt}</span>
+            </div>
+          </li>`;
+        });
+        html += '</ul>';
+        container.innerHTML = html;
+      }
+      if (!myMemberModal) myMemberModal = new bootstrap.Modal(document.getElementById('memberModal'));
+      myMemberModal.show();
+    }
+
+    function showMemberTransactions(memberId, memberName, isAdminView = false) {
+      let mIdTrim = memberId.toString().trim().toLowerCase();
+      let mNameTrim = memberName ? memberName.toString().trim().toLowerCase() : '';
+
+      let memberTx = globalData.recentExpenses.filter(e => {
+        let paidBy = e[4] ? e[4].toString().trim().toLowerCase() : '';
+        return (paidBy === mIdTrim) || (mNameTrim && paidBy === mNameTrim);
+      });
+
+      let container = document.getElementById('memberTxList');
+      let titleName = isAdminView ? `${memberName} - ` : '';
+      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-cart-fill text-danger me-1"></i> ${titleName}Purchased Bills`;
+      document.getElementById('memberModalSubTitle').innerText = `Purchased Bills: ${memberTx.length}`;
+
+      if (memberTx.length === 0) {
+        container.innerHTML = `<div class="text-center text-muted py-4"><i class="bi bi-info-circle fs-3 d-block mb-2"></i>ഈ മാസത്തിൽ ഇദ്ദേഹം പർച്ചേസ് ചെയ്ത ബില്ലുകൾ ഒന്നും ലഭ്യമല്ല.</div>`;
+      } else {
+        let html = '<ul class="list-group list-group-flush small">';
+        memberTx.forEach(e => {
+          let date = e[1] || '-';
+          let item = e[3] || 'Expense';
+          let amount = Number(e[5] || 0).toFixed(2);
+          let purchaserName = e[4] || 'Unknown';
+          let invoiceUrl = e[8] || '';
+
+          html += `<li class="list-group-item px-0 py-2 border-bottom bg-transparent">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <div class="fw-bold text-body fs-6">${item}</div>
+                <div class="text-muted small">Date: ${date} | Buyer: <strong>${purchaserName}</strong></div>
+              </div>
+              <div class="text-end">
+                <span class="fw-bold text-danger fs-6">AED ${amount}</span>
+                ${invoiceUrl ? `<br><button onclick="openInvoiceModal('${invoiceUrl}')" class="btn btn-sm btn-outline-primary py-0 px-2 rounded-pill mt-1" style="font-size:0.7rem;"><i class="bi bi-file-earmark-image"></i> Invoice</button>` : ''}
+              </div>
+            </div>
+          </li>`;
+        });
+        html += '</ul>';
+        container.innerHTML = html;
+      }
+      if (!myMemberModal) myMemberModal = new bootstrap.Modal(document.getElementById('memberModal'));
+      myMemberModal.show();
+    }
+
+    function showAllExpensesModal() {
+      let container = document.getElementById('memberTxList');
+      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-cart-fill text-danger me-1"></i> ALL EXPENSES`;
+      document.getElementById('memberModalSubTitle').innerHTML = `Mess: ${globalData.messTotalExp.toFixed(2)} | Water: ${globalData.waterTotalExp.toFixed(2)} | Special: ${globalData.specialTotalExp.toFixed(2)}`;
+
+      let txs = globalData.recentExpenses;
+      if (txs.length === 0) {
+        container.innerHTML = `<div class="text-center text-muted py-4">ചിലവുകൾ ഒന്നും രേഖപ്പെടുത്തിയിട്ടില്ല.</div>`;
+      } else {
+        let html = '<ul class="list-group list-group-flush small">';
+        txs.forEach(e => {
+          let item = e[3] || 'Expense';
+          let date = e[1] || '-';
+          let purchaser = e[4] || '-';
+          let amt = Number(e[5]).toFixed(2);
+
+          html += `<li class="list-group-item border-bottom bg-transparent py-2">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="fw-bold text-body fs-6">${item}</div>
+                <div class="text-muted small"><i class="bi bi-calendar-event me-1"></i>${date}</div>
+                <div class="text-muted small"><i class="bi bi-person-fill me-1 text-secondary"></i>Buyer: <strong>${purchaser}</strong></div>
+              </div>
+              <span class="fw-bold text-danger fs-6">AED ${amt}</span>
+            </div>
+          </li>`;
+        });
+        html += '</ul>';
+        container.innerHTML = html;
+      }
+      if (!myMemberModal) myMemberModal = new bootstrap.Modal(document.getElementById('memberModal'));
+      myMemberModal.show();
+    }
+
+    function showAllPaymentsModal() {
+      let container = document.getElementById('memberTxList');
+      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-wallet2 text-success me-1"></i> ALL COLLECTIONS`;
+      document.getElementById('memberModalSubTitle').innerText = `Total Collected: AED ${globalData.totalPaymentsMonth.toFixed(2)}`;
+
+      let payments = globalData.allPayments.filter(p => String(p[2]).trim() === globalData.selectedMonth);
+      if (payments.length === 0) {
+        container.innerHTML = `<div class="text-center text-muted py-4">Payments ഒന്നും രേഖപ്പെടുത്തിയിട്ടില്ല.</div>`;
+      } else {
+        let html = '<ul class="list-group list-group-flush small">';
+        payments.forEach(p => {
+          let date = p[1] || p[0] || '-';
+          let mIdOrName = p[3] ? String(p[3]).trim() : '';
+          
+          let matched = globalData.summary.find(x => x.id.toLowerCase() === mIdOrName.toLowerCase());
+          let resolvedName = matched ? matched.name : mIdOrName;
+          
+          let amt = Number(p[4]).toFixed(2);
+          let noteStr = p[5] ? String(p[5]).trim() : '';
+          let noteHtml = noteStr ? `<div class="text-muted mt-1" style="font-size:0.75rem;"><i class="bi bi-chat-left-text me-1"></i>${noteStr}</div>` : '';
+
+          html += `<li class="list-group-item border-bottom bg-transparent py-2">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="fw-bold text-body fs-6"><i class="bi bi-calendar-event me-1 text-primary"></i>${date}</div>
+                <div class="text-muted small mt-1"><i class="bi bi-person-fill text-secondary me-1"></i>${resolvedName}</div>
+                ${noteHtml}
+              </div>
+              <span class="fw-bold text-success fs-6">+ AED ${amt}</span>
+            </div>
+          </li>`;
+        });
+        html += '</ul>';
+        container.innerHTML = html;
+      }
+      if (!myMemberModal) myMemberModal = new bootstrap.Modal(document.getElementById('memberModal'));
+      myMemberModal.show();
+    }
+
+    function openInvoiceModal(url) {
+      document.getElementById('modalSpinner').style.display = 'block';
+      document.getElementById('invoiceIframe').src = url;
+      if (!myInvoiceModal) myInvoiceModal = new bootstrap.Modal(document.getElementById('invoiceModal'));
+      myInvoiceModal.show();
+    }
+
+    function openProfileModal() {
+      document.getElementById('profileModalImg').src = loggedInUser.photo || 'https://via.placeholder.com/90';
+      document.getElementById('profileModalName').innerText = loggedInUser.name;
+      document.getElementById('profileEditPhone').value = loggedInUser.phone || '';
+      document.getElementById('profileEditPhoto').value = loggedInUser.photo || '';
+      document.getElementById('profileEditDob').value = loggedInUser.dob || '';
+      document.getElementById('profileEditFile').value = '';
+      uploadedBase64Image = "";
+
+      if (!myProfileModal) myProfileModal = new bootstrap.Modal(document.getElementById('profileModal'));
+      myProfileModal.show();
+    }
+
+    function previewSelectedImage(event) {
+      let file = event.target.files[0];
+      if (file) {
+        let reader = new FileReader();
+        reader.onload = function(e) {
+          uploadedBase64Image = e.target.result;
+          document.getElementById('profileModalImg').src = uploadedBase64Image;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function handleProfileUpdate(event) {
+      event.preventDefault();
+      let newPhone = document.getElementById('profileEditPhone').value.trim();
+      let newPhoto = uploadedBase64Image || document.getElementById('profileEditPhoto').value.trim();
+
+      if (myLoadingModal) myLoadingModal.show();
+
+      google.script.run
+        .withSuccessHandler(res => {
+          if (myLoadingModal) myLoadingModal.hide();
+          if (res.success) {
+            alert("പ്രൊഫൈൽ വിജയകരമായി അപ്ഡേറ്റ് ചെയ്തു!");
+            loggedInUser.phone = newPhone;
+            loggedInUser.photo = newPhoto;
+            
+            let rememberMe = localStorage.getItem('mess_logged_user');
+            if (rememberMe) {
+              localStorage.setItem('mess_logged_user', JSON.stringify(loggedInUser));
+            } else {
+              sessionStorage.setItem('mess_logged_user', JSON.stringify(loggedInUser));
+            }
+
+            myProfileModal.hide();
+            loadDataWithSpinner(globalData.selectedMonth);
+          } else {
+            alert("Error: " + res.message);
+          }
+        })
+        .withFailureHandler(err => {
+          if (myLoadingModal) myLoadingModal.hide();
+          alert("Failed: " + err.message);
+        })
+        .updateMemberProfile(loggedInUser.id, newPhone, newPhoto);
+    }
+  </script>
+</body>
+</html>
