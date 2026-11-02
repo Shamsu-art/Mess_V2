@@ -28,26 +28,29 @@
       transition: background-color 0.3s ease;
     }
 
+    /* Header Sticky & Top Fixed */
     .app-header {
       background: var(--primary-gradient);
       color: white;
-      padding: 20px 16px 36px 16px;
-      border-bottom-left-radius: 24px;
-      border-bottom-right-radius: 24px;
+      padding: 15px 55px 30px 55px;
+      border-bottom-left-radius: 20px;
+      border-bottom-right-radius: 20px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-      position: relative;
+      position: sticky;
+      top: 0;
+      z-index: 1020;
     }
 
     .theme-toggle-btn {
       position: absolute;
-      top: 20px;
-      left: 18px;
+      top: 12px;
+      left: 12px;
       background: rgba(255, 255, 255, 0.2);
       border: none;
       color: white;
       border-radius: 50%;
-      width: 38px;
-      height: 38px;
+      width: 36px;
+      height: 36px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -56,21 +59,21 @@
 
     .logout-btn {
       position: absolute;
-      top: 20px;
-      right: 18px;
-      background: rgba(220, 53, 69, 0.3);
+      top: 12px;
+      right: 12px;
+      background: rgba(220, 53, 69, 0.4);
       border: none;
       color: white;
       border-radius: 50%;
-      width: 38px;
-      height: 38px;
+      width: 36px;
+      height: 36px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
     .main-container {
-      margin-top: -24px;
+      margin-top: -18px;
       padding: 0 12px;
     }
 
@@ -99,18 +102,13 @@
       background: var(--bs-body-bg);
     }
     
-    .member-card.positive { 
-      border-color: rgba(25, 135, 84, 0.4); 
-    }
-
-    .member-card.negative { 
-      border-color: rgba(220, 53, 69, 0.4); 
-    }
+    .member-card.positive { border-color: rgba(25, 135, 84, 0.4); }
+    .member-card.negative { border-color: rgba(220, 53, 69, 0.4); }
 
     .balance-badge {
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       font-weight: 800;
-      padding: 8px 16px;
+      padding: 6px 16px;
       border-radius: 30px;
       display: inline-block;
     }
@@ -118,7 +116,7 @@
     .balance-badge.neg { background-color: rgba(220, 53, 69, 0.15); color: #dc3545; }
 
     .stat-label {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: #888;
       margin-bottom: 2px;
       text-transform: uppercase;
@@ -126,8 +124,8 @@
     }
     
     .profile-avatar {
-      width: 80px;
-      height: 80px;
+      width: 75px;
+      height: 75px;
       object-fit: cover;
       border-radius: 50%;
       border: 3px solid #0d6efd;
@@ -140,8 +138,8 @@
   <div id="loginSection" class="container d-flex align-items-center justify-content-center" style="min-height: 100vh;">
     <div class="card card-custom p-4 bg-body shadow-lg" style="width: 100%; max-width: 400px;">
       <div class="text-center mb-4">
-        <img id="loginLogo" src="" alt="Logo" class="rounded-circle mb-3 border" style="width: 80px; height: 80px; object-fit: cover; display: none;">
-        <h4 class="fw-bold text-primary" id="loginMessName">MESS LOGIN</h4>
+        <img id="loginLogo" src="" alt="Logo" class="rounded-circle mb-3 border" style="width: 75px; height: 75px; object-fit: cover; display: none;">
+        <h5 class="fw-bold text-primary text-uppercase" id="loginMessName">MESS LOGIN</h5>
         <p class="small text-muted" id="loginLocation">Please login with Mobile & DOB Year</p>
       </div>
       
@@ -174,7 +172,7 @@
 
   <!-- 📊 DASHBOARD SECTION -->
   <div id="dashboardSection" style="display: none;">
-    <!-- App Header -->
+    <!-- App Header Locked/Sticky at top -->
     <div class="app-header text-center">
       <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtn" title="Toggle Theme">
         <i class="bi bi-moon-stars-fill"></i>
@@ -183,8 +181,8 @@
         <i class="bi bi-power"></i>
       </button>
       <div id="headerBranding">
-        <h5 class="fw-bold m-0" id="headerMessName">MESS</h5>
-        <p class="small text-white-50 m-0 mt-1" id="headerLocation">Location</p>
+        <h6 class="fw-bold m-0 text-truncate" id="headerMessName" style="font-size: 1.05rem;">MESS</h6>
+        <p class="small text-white-50 m-0 mt-1" id="headerLocation" style="font-size: 0.78rem;">Location</p>
       </div>
     </div>
 
@@ -252,27 +250,34 @@
   <div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content rounded-4 border-0 shadow">
-        <div class="modal-header bg-body border-bottom">
+        <div class="modal-header bg-body border-bottom py-2">
           <h6 class="modal-title fw-bold"><i class="bi bi-person-badge text-primary me-1"></i> Member Profile</h6>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-        <div class="modal-body text-center bg-body p-4">
-          <img id="profileModalImg" src="" class="rounded-circle mb-3 border shadow" style="width: 90px; height: 90px; object-fit: cover;">
-          <h5 id="profileModalName" class="fw-bold mb-1"></h5>
+        <div class="modal-body text-center bg-body p-3">
+          <img id="profileModalImg" src="" class="rounded-circle mb-2 border shadow" style="width: 85px; height: 85px; object-fit: cover;">
+          <h6 id="profileModalName" class="fw-bold mb-3"></h6>
           
           <form id="profileEditForm" onsubmit="handleProfileUpdate(event)">
-            <div class="mb-3 text-start">
-              <label class="form-label small fw-bold">Mobile Number</label>
+            <div class="mb-2 text-start">
+              <label class="form-label small fw-bold mb-1">Mobile Number</label>
               <input type="text" id="profileEditPhone" class="form-control form-control-sm" required>
             </div>
-            <div class="mb-3 text-start">
-              <label class="form-label small fw-bold">Photo URL (Google Drive / Image Link)</label>
+            
+            <!-- Direct File Upload Option -->
+            <div class="mb-2 text-start">
+              <label class="form-label small fw-bold mb-1">Upload New Photo (Direct from Gallery)</label>
+              <input type="file" id="profileEditFile" class="form-control form-control-sm" accept="image/*" onchange="previewSelectedImage(event)">
+            </div>
+            
+            <div class="mb-2 text-start">
+              <label class="form-label small fw-bold mb-1">Photo URL (Google Drive / Web Link)</label>
               <input type="text" id="profileEditPhoto" class="form-control form-control-sm" placeholder="Paste image link">
             </div>
+
             <div class="mb-3 text-start">
-              <label class="form-label small fw-bold">DOB Year</label>
+              <label class="form-label small fw-bold mb-1">DOB Year</label>
               <input type="text" id="profileEditDob" class="form-control form-control-sm" disabled>
-              <div class="form-text" style="font-size: 0.7rem;">DOB Year cannot be changed here.</div>
             </div>
             <button type="submit" class="btn btn-sm btn-success w-100 rounded-pill fw-bold">Save Changes</button>
           </form>
@@ -341,6 +346,7 @@
     var myMemberModal = null;
     var myProfileModal = null;
     var myLoadingModal = null;
+    var uploadedBase64Image = "";
 
     window.onload = function() {
       let modalEl = document.getElementById('loadingModal');
@@ -494,14 +500,15 @@
       showLogin();
     }
 
+    // 🔒 Login Section Fully Hidden after Login
     function showLogin() {
-      document.getElementById('loginSection').style.display = 'flex';
-      document.getElementById('dashboardSection').style.display = 'none';
+      document.getElementById('loginSection').style.setProperty('display', 'flex', 'important');
+      document.getElementById('dashboardSection').style.setProperty('display', 'none', 'important');
     }
 
     function showDashboard() {
-      document.getElementById('loginSection').style.display = 'none';
-      document.getElementById('dashboardSection').style.display = 'block';
+      document.getElementById('loginSection').style.setProperty('display', 'none', 'important');
+      document.getElementById('dashboardSection').style.setProperty('display', 'block', 'important');
       renderDashboardContent();
     }
 
@@ -548,7 +555,7 @@
       renderMemberList(otherMembers);
     }
 
-    // 👤 New Centered Design for Logged-In Member Card
+    // 👤 Centered Design Logged-In Member Card
     function renderLoggedMemberCard() {
       let container = document.getElementById('loggedMemberContainer');
       let m = loggedInUser;
@@ -563,7 +570,7 @@
       let balSubText = net === 0 ? 'SETTLED' : (isPositive ? 'കിട്ടാനുണ്ട്' : 'കൊടുക്കാനുണ്ട്');
 
       let photoHtml = m.photo ? `<img src="${m.photo}" class="profile-avatar shadow-sm" alt="Photo">` : `<div class="profile-avatar d-flex align-items-center justify-content-center bg-primary text-white fw-bold fs-3 mx-auto">${m.name.charAt(0)}</div>`;
-      let cleanPhone = m.phone ? m.phone.toString().replace(/^['"]/, '').trim() : '';
+      let cleanPhoneStr = m.phone ? m.phone.toString().replace(/^['"]/, '').trim() : '';
 
       container.innerHTML = `
         <div class="card member-card ${cardClass} position-relative shadow-sm mb-4 text-center">
@@ -573,24 +580,21 @@
             </button>
           </div>
 
-          <!-- Center Profile Section -->
           <div class="mb-2 mt-1">
             ${photoHtml}
           </div>
           <h4 class="fw-bold text-body mb-1">${m.name}</h4>
-          <div class="text-muted small mb-3"><i class="bi bi-telephone-fill me-1"></i>${cleanPhone}</div>
+          <div class="text-muted small mb-3"><i class="bi bi-telephone-fill me-1"></i>${cleanPhoneStr}</div>
 
-          <!-- Net Balance Highlighted First -->
           <div class="mb-3 p-3 bg-light dark-bg-dark rounded-4">
             <div class="balance-badge ${badgeClass} mb-1">${balText}</div>
             <div style="font-size: 0.75rem;" class="text-muted fw-bold">${balSubText}</div>
           </div>
 
-          <!-- Share, Purchased, Paid Rows -->
           <div class="row g-2 text-center pt-2">
             <div class="col-12 mb-1" style="cursor: pointer;" onclick="showMemberBreakdown('${m.id}', '${m.name}')">
               <div class="p-2 bg-body-tertiary rounded-3 border">
-                <div class="stat-label text-primary"><i class="bi bi-pie-chart-fill me-1"></i>SHARE (Click for Breakdown)</div>
+                <div class="stat-label text-primary"><i class="bi bi-pie-chart-fill me-1"></i>SHARE (Click for Details)</div>
                 <div class="fs-5 fw-bold text-body">AED ${m.share.toFixed(2)}</div>
               </div>
             </div>
@@ -629,14 +633,14 @@
         let balSign = net > 0 ? '+' : (net < 0 ? '-' : '');
         let balText = balSign + 'AED ' + Math.abs(net).toFixed(2);
         let balSubText = net === 0 ? 'SETTLED' : (isPositive ? 'കിട്ടാനുണ്ട്' : 'കൊടുക്കാനുണ്ട്');
-        let cleanPhone = m.phone ? m.phone.toString().replace(/^['"]/, '').trim() : '';
+        let cleanPhoneStr = m.phone ? m.phone.toString().replace(/^['"]/, '').trim() : '';
 
         let cardHtml = `
           <div class="member-card ${cardClass} bg-body mb-3 shadow-sm" onclick="showMemberTransactions('${m.id}', '${m.name}')" style="cursor: pointer;">
             <div class="d-flex justify-content-between align-items-start mb-2">
               <div>
                 <span class="fw-bold text-body fs-6 me-1">${m.name}</span>
-                <div class="text-muted" style="font-size:0.75rem;"><i class="bi bi-telephone-fill me-1 text-secondary"></i>${cleanPhone}</div>
+                <div class="text-muted" style="font-size:0.75rem;"><i class="bi bi-telephone-fill me-1 text-secondary"></i>${cleanPhoneStr}</div>
               </div>
               <div class="text-end">
                 <div class="balance-badge ${badgeClass}" style="font-size: 0.9rem; padding: 4px 10px;">${balText}</div>
@@ -659,9 +663,8 @@
       renderMemberList(otherMembers);
     }
 
-    // Share Breakdown Popup (Mess, Water, Special)
     function showMemberBreakdown(memberId, memberName) {
-      let m = globalData.summary.find(x => x.id === memberId);
+      let m = globalData.summary.find(x => x.id.toLowerCase() === memberId.toLowerCase());
       if (!m) return;
 
       let container = document.getElementById('memberTxList');
@@ -693,7 +696,7 @@
       let payments = globalData.allPayments.filter(p => {
         let payMonth = p[2] ? String(p[2]).trim() : '';
         let mId = p[3] ? String(p[3]).trim() : '';
-        return payMonth === globalData.selectedMonth && mId.toLowerCase() === memberId.toLowerCase();
+        return payMonth === globalData.selectedMonth && (mId.toLowerCase() === memberId.toLowerCase() || mId.toLowerCase() === memberName.toLowerCase());
       });
 
       let container = document.getElementById('memberTxList');
@@ -707,10 +710,17 @@
         payments.forEach(p => {
           let date = p[1] || p[0] || '-';
           let amt = parseFloat(p[4]).toFixed(2);
-          let note = p[5] ? `(${p[5]})` : '';
-          html += `<li class="list-group-item d-flex justify-content-between align-items-center bg-transparent py-2">
-            <div><i class="bi bi-calendar-event me-1"></i>${date} <span class="text-muted">${note}</span></div>
-            <span class="fw-bold text-success">+ AED ${amt}</span>
+          let noteHtml = p[5] ? `<div class="text-muted mt-1" style="font-size:0.75rem;"><i class="bi bi-chat-left-text me-1"></i>${p[5]}</div>` : '';
+          
+          html += `<li class="list-group-item border-bottom bg-transparent py-2">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="fw-bold text-body fs-6"><i class="bi bi-calendar-event me-1 text-primary"></i>${date}</div>
+                <div class="text-muted small mt-1"><i class="bi bi-person-check-fill text-success me-1"></i>${memberName}</div>
+                ${noteHtml}
+              </div>
+              <span class="fw-bold text-success fs-6">+ AED ${amt}</span>
+            </div>
           </li>`;
         });
         html += '</ul>';
@@ -720,11 +730,14 @@
       myMemberModal.show();
     }
 
+    // 🛍️ Purchased List Fixed
     function showMemberTransactions(memberId, memberName) {
       let mIdTrim = memberId.toString().trim().toLowerCase();
+      let mNameTrim = memberName ? memberName.toString().trim().toLowerCase() : '';
+
       let memberTx = globalData.recentExpenses.filter(e => {
         let paidBy = e[4] ? e[4].toString().trim().toLowerCase() : '';
-        return paidBy.includes(mIdTrim);
+        return (paidBy === mIdTrim) || (mNameTrim && paidBy === mNameTrim);
       });
 
       let container = document.getElementById('memberTxList');
@@ -748,7 +761,7 @@
                 <div class="text-muted small">Date: ${date}</div>
               </div>
               <div class="text-end">
-                <span class="fw-bold text-danger">AED ${amount}</span>
+                <span class="fw-bold text-danger fs-6">AED ${amount}</span>
                 ${invoiceUrl ? `<br><button onclick="openInvoiceModal('${invoiceUrl}')" class="btn btn-sm btn-outline-primary py-0 px-2 rounded-pill mt-1" style="font-size:0.7rem;"><i class="bi bi-file-earmark-image"></i> Invoice</button>` : ''}
               </div>
             </div>
@@ -784,6 +797,7 @@
       myMemberModal.show();
     }
 
+    // 💳 Admin Collections Format Updated (Date first line, Name second line, Note third line, No brackets)
     function showAllPaymentsModal() {
       let container = document.getElementById('memberTxList');
       document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-wallet2 text-success me-1"></i> ALL COLLECTIONS`;
@@ -795,9 +809,26 @@
       } else {
         let html = '<ul class="list-group list-group-flush small">';
         payments.forEach(p => {
-          html += `<li class="list-group-item d-flex justify-content-between align-items-center bg-transparent py-2">
-            <div><strong>${p[3]}</strong> (${p[1] || p[0]})</div>
-            <span class="fw-bold text-success">+ AED ${Number(p[4]).toFixed(2)}</span>
+          let date = p[1] || p[0] || '-';
+          let mIdOrName = p[3] ? String(p[3]).trim() : '';
+          
+          // ID മാറ്റി പേര് കണ്ടുപിടിക്കുന്നു
+          let matched = globalData.summary.find(x => x.id.toLowerCase() === mIdOrName.toLowerCase());
+          let resolvedName = matched ? matched.name : mIdOrName;
+          
+          let amt = Number(p[4]).toFixed(2);
+          let noteStr = p[5] ? String(p[5]).trim() : '';
+          let noteHtml = noteStr ? `<div class="text-muted mt-1" style="font-size:0.75rem;"><i class="bi bi-chat-left-text me-1"></i>${noteStr}</div>` : '';
+
+          html += `<li class="list-group-item border-bottom bg-transparent py-2">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="fw-bold text-body fs-6"><i class="bi bi-calendar-event me-1 text-primary"></i>${date}</div>
+                <div class="text-muted small mt-1"><i class="bi bi-person-fill text-secondary me-1"></i>${resolvedName}</div>
+                ${noteHtml}
+              </div>
+              <span class="fw-bold text-success fs-6">+ AED ${amt}</span>
+            </div>
           </li>`;
         });
         html += '</ul>';
@@ -820,15 +851,30 @@
       document.getElementById('profileEditPhone').value = loggedInUser.phone || '';
       document.getElementById('profileEditPhoto').value = loggedInUser.photo || '';
       document.getElementById('profileEditDob').value = loggedInUser.dob || '';
+      document.getElementById('profileEditFile').value = '';
+      uploadedBase64Image = "";
 
       if (!myProfileModal) myProfileModal = new bootstrap.Modal(document.getElementById('profileModal'));
       myProfileModal.show();
     }
 
+    // Direct Image Upload Preview & Convert to Base64
+    function previewSelectedImage(event) {
+      let file = event.target.files[0];
+      if (file) {
+        let reader = new FileReader();
+        reader.onload = function(e) {
+          uploadedBase64Image = e.target.result;
+          document.getElementById('profileModalImg').src = uploadedBase64Image;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
     function handleProfileUpdate(event) {
       event.preventDefault();
       let newPhone = document.getElementById('profileEditPhone').value.trim();
-      let newPhoto = document.getElementById('profileEditPhoto').value.trim();
+      let newPhoto = uploadedBase64Image || document.getElementById('profileEditPhoto').value.trim();
 
       if (myLoadingModal) myLoadingModal.show();
 
