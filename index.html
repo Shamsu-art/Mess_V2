@@ -28,6 +28,7 @@
       transition: background-color 0.3s ease;
     }
 
+    /* Locked Sticky Header */
     .app-header {
       background: var(--primary-gradient);
       color: white;
@@ -134,38 +135,58 @@
 <body>
 
   <!-- 🔐 LOGIN SECTION -->
-  <div id="loginSection" class="container d-flex align-items-center justify-content-center" style="min-height: 100vh;">
-    <div class="card card-custom p-4 bg-body shadow-lg" style="width: 100%; max-width: 400px;">
-      <div class="text-center mb-4">
-        <img id="loginLogo" src="" alt="Logo" class="rounded-circle mb-3 border" style="width: 75px; height: 75px; object-fit: cover; display: none;">
-        <h5 class="fw-bold text-primary text-uppercase" id="loginMessName">MESS LOGIN</h5>
-        <p class="small text-muted" id="loginLocation">Please login with Mobile & DOB Year</p>
+  <div id="loginSection">
+    <!-- Locked Header on Login Page -->
+    <div class="app-header text-center">
+      <button class="theme-toggle-btn" onclick="toggleTheme()" id="loginThemeBtn" title="Toggle Theme">
+        <i class="bi bi-moon-stars-fill"></i>
+      </button>
+      <div id="loginHeaderBranding">
+        <h6 class="fw-bold m-0 text-truncate" id="loginHeaderMessName" style="font-size: 1.05rem;">MESS APP</h6>
+        <p class="small text-white-50 m-0 mt-1" id="loginHeaderLocation" style="font-size: 0.78rem;">Sharjah</p>
       </div>
-      
-      <div id="loginErrorAlert" class="alert alert-danger py-2 small d-none text-center" role="alert">
-        മൊബൈൽ നമ്പറോ ജനിച്ച വർഷമോ തെറ്റാണ്! കൃത്യമായി പരിശോധിക്കുക.
-      </div>
+    </div>
 
-      <form id="loginForm" onsubmit="handleLogin(event)">
-        <div class="mb-3">
-          <label class="form-label small fw-bold">Mobile Number</label>
-          <div class="input-group">
-            <span class="input-group-text"><i class="bi bi-phone"></i></span>
-            <input type="text" id="loginPhone" class="form-control" placeholder="ဥദാ: 501234567" required>
-          </div>
-          <div class="form-text" style="font-size: 0.7rem;">അവസാന 9 അക്കങ്ങൾ മാത്രം നൽകിയാലും മതിയാകും.</div>
+    <div class="container main-container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+      <div class="card card-custom p-4 bg-body shadow-lg w-100" style="max-width: 400px;">
+        <div class="text-center mb-4">
+          <img id="loginLogo" src="" alt="Logo" class="rounded-circle mb-2 border shadow-sm" style="width: 80px; height: 80px; object-fit: cover; display: none;">
+          <h5 class="fw-bold text-primary mt-2" id="loginCardTitle">MEMBER LOGIN</h5>
+          <p class="small text-muted">Please enter your Mobile & DOB Year</p>
         </div>
-        <div class="mb-4">
-          <label class="form-label small fw-bold">DOB Year (ജനിച്ച വർഷം)</label>
-          <div class="input-group">
-            <span class="input-group-text"><i class="bi bi-calendar-check"></i></span>
-            <input type="number" id="loginDob" class="form-control" placeholder="ဥദാ: 1990" required>
-          </div>
+        
+        <div id="loginErrorAlert" class="alert alert-danger py-2 small d-none text-center" role="alert">
+          മൊബൈൽ നമ്പറോ ജനിച്ച വർഷമോ തെറ്റാണ്! കൃത്യമായി പരിശോധിക്കുക.
         </div>
-        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold rounded-pill">
-          <i class="bi bi-box-arrow-in-right me-1"></i> LOGIN
-        </button>
-      </form>
+
+        <form id="loginForm" onsubmit="handleLogin(event)">
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Mobile Number</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-phone"></i></span>
+              <input type="text" id="loginPhone" class="form-control" placeholder="ဥദാ: 501234567" required>
+            </div>
+            <div class="form-text" style="font-size: 0.7rem;">അവസാന 9 അക്കങ്ങൾ മാത്രം നൽകിയാലും മതിയാകും.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">DOB Year (ജനിച്ച വർഷം)</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-calendar-check"></i></span>
+              <input type="number" id="loginDob" class="form-control" placeholder="ဥദാ: 1990" required>
+            </div>
+          </div>
+          
+          <!-- Remember Me Checkbox -->
+          <div class="mb-4 form-check">
+            <input type="checkbox" class="form-check-input" id="rememberMeCheck" checked>
+            <label class="form-check-label small text-muted" for="rememberMeCheck">Remember Me (എന്നെ ഓർക്കുക)</label>
+          </div>
+
+          <button type="submit" id="loginSubmitBtn" class="btn btn-primary w-100 py-2 fw-bold rounded-pill shadow-sm">
+            <i class="bi bi-box-arrow-in-right me-1"></i> LOGIN
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 
@@ -355,8 +376,10 @@
       let currentTheme = document.documentElement.getAttribute('data-bs-theme');
       let newTheme = currentTheme === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-bs-theme', newTheme);
-      let btnIcon = document.getElementById('themeBtn');
-      btnIcon.innerHTML = newTheme === 'dark' ? '<i class="bi bi-sun-fill"></i>' : '<i class="bi bi-moon-stars-fill"></i>';
+      let btnIcon = document.getElementById('loginThemeBtn');
+      let btnIcon2 = document.getElementById('themeBtn');
+      if (btnIcon) btnIcon.innerHTML = newTheme === 'dark' ? '<i class="bi bi-sun-fill"></i>' : '<i class="bi bi-moon-stars-fill"></i>';
+      if (btnIcon2) btnIcon2.innerHTML = newTheme === 'dark' ? '<i class="bi bi-sun-fill"></i>' : '<i class="bi bi-moon-stars-fill"></i>';
     }
 
     function formatMonthDisplay(mStr) {
@@ -421,8 +444,8 @@
     function applySettings(data) {
       if (data.settings) {
         document.getElementById('pageTitle').innerText = data.settings.messName;
-        document.getElementById('loginMessName').innerText = data.settings.messName;
-        document.getElementById('loginLocation').innerText = data.settings.location;
+        document.getElementById('loginHeaderMessName').innerText = data.settings.messName;
+        document.getElementById('loginHeaderLocation').innerText = data.settings.location;
         document.getElementById('headerMessName').innerText = data.settings.messName;
         document.getElementById('headerLocation').innerText = data.settings.location;
         if (data.settings.logo) {
@@ -455,18 +478,24 @@
       event.preventDefault();
       let phoneInput = cleanPhone(document.getElementById('loginPhone').value);
       let dobInput = document.getElementById('loginDob').value.trim();
+      let rememberMe = document.getElementById('rememberMeCheck').checked;
       let errorAlert = document.getElementById('loginErrorAlert');
+      let submitBtn = document.getElementById('loginSubmitBtn');
 
       errorAlert.classList.add('d-none');
+      
+      // Spinner effect on Login Button
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Logging in...`;
 
       if (!globalData || !globalData.summary) {
-        fetchDataSilent(null, () => processLoginCheck(phoneInput, dobInput));
+        fetchDataSilent(null, () => processLoginCheck(phoneInput, dobInput, rememberMe, submitBtn));
       } else {
-        processLoginCheck(phoneInput, dobInput);
+        processLoginCheck(phoneInput, dobInput, rememberMe, submitBtn);
       }
     }
 
-    function processLoginCheck(phoneInput, dobInput) {
+    function processLoginCheck(phoneInput, dobInput, rememberMe, submitBtn) {
       let errorAlert = document.getElementById('loginErrorAlert');
       let matchedUser = globalData.summary.find(m => {
         let mPhone = cleanPhone(m.phone);
@@ -476,9 +505,15 @@
 
       if (matchedUser) {
         loggedInUser = matchedUser;
-        localStorage.setItem('mess_logged_user', JSON.stringify(loggedInUser));
+        if (rememberMe) {
+          localStorage.setItem('mess_logged_user', JSON.stringify(loggedInUser));
+        } else {
+          sessionStorage.setItem('mess_logged_user', JSON.stringify(loggedInUser));
+        }
         loadDataWithSpinner(null);
       } else {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<i class="bi bi-box-arrow-in-right me-1"></i> LOGIN`;
         errorAlert.classList.remove('d-none');
       }
     }
@@ -486,12 +521,33 @@
     function handleLogout() {
       loggedInUser = null;
       localStorage.removeItem('mess_logged_user');
+      sessionStorage.removeItem('mess_logged_user');
       showLogin();
     }
 
     function showLogin() {
-      document.getElementById('loginSection').style.setProperty('display', 'flex', 'important');
+      // Check session or local storage first if needed, else show login
+      let savedUser = localStorage.getItem('mess_logged_user') || sessionStorage.getItem('mess_logged_user');
+      if (savedUser && !loggedInUser) {
+        try { loggedInUser = JSON.parse(savedUser); } catch(e){}
+      }
+      
+      if (loggedInUser && globalData && globalData.summary) {
+        let found = globalData.summary.find(m => m.id.toLowerCase() === loggedInUser.id.toLowerCase());
+        if (found) {
+          showDashboard();
+          return;
+        }
+      }
+
+      document.getElementById('loginSection').style.setProperty('display', 'block', 'important');
       document.getElementById('dashboardSection').style.setProperty('display', 'none', 'important');
+      
+      let submitBtn = document.getElementById('loginSubmitBtn');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<i class="bi bi-box-arrow-in-right me-1"></i> LOGIN`;
+      }
     }
 
     function showDashboard() {
@@ -650,7 +706,6 @@
       renderMemberList(otherMembers);
     }
 
-    // Share Breakdown Popup
     function showMemberBreakdown(memberId, memberName) {
       let m = globalData.summary.find(x => x.id.toLowerCase() === memberId.toLowerCase());
       if (!m) return;
@@ -675,7 +730,6 @@
           </div>
         </div>`;
 
-      // Involved Bills Display for Share
       let mIdTrim = memberId.toString().trim().toLowerCase();
       let mNameTrim = memberName ? memberName.toString().trim().toLowerCase() : '';
       let memberTx = globalData.recentExpenses.filter(e => {
@@ -715,7 +769,6 @@
       myMemberModal.show();
     }
 
-    // Member Paid Details (Cleaned up, no member name, just Date, Note, Amount)
     function showMemberPaymentsDetail(memberId, memberName) {
       let payments = globalData.allPayments.filter(p => {
         let payMonth = p[2] ? String(p[2]).trim() : '';
@@ -796,7 +849,6 @@
       myMemberModal.show();
     }
 
-    // Admin Total Expenses (Item, Date without brackets, Purchased by)
     function showAllExpensesModal() {
       let container = document.getElementById('memberTxList');
       document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-cart-fill text-danger me-1"></i> ALL EXPENSES`;
@@ -831,7 +883,6 @@
       myMemberModal.show();
     }
 
-    // Admin Collections Format
     function showAllPaymentsModal() {
       let container = document.getElementById('memberTxList');
       document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-wallet2 text-success me-1"></i> ALL COLLECTIONS`;
@@ -896,7 +947,6 @@
       if (file) {
         let reader = new FileReader();
         reader.onload = function(e) {
-          // Compress or directly assign
           uploadedBase64Image = e.target.result;
           document.getElementById('profileModalImg').src = uploadedBase64Image;
         };
@@ -918,7 +968,14 @@
             alert("പ്രൊഫൈൽ വിജയകരമായി അപ്ഡേറ്റ് ചെയ്തു!");
             loggedInUser.phone = newPhone;
             loggedInUser.photo = newPhoto;
-            localStorage.setItem('mess_logged_user', JSON.stringify(loggedInUser));
+            
+            let rememberMe = localStorage.getItem('mess_logged_user');
+            if (rememberMe) {
+              localStorage.setItem('mess_logged_user', JSON.stringify(loggedInUser));
+            } else {
+              sessionStorage.setItem('mess_logged_user', JSON.stringify(loggedInUser));
+            }
+
             myProfileModal.hide();
             loadDataWithSpinner(globalData.selectedMonth);
           } else {
