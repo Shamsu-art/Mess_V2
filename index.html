@@ -134,6 +134,18 @@
       padding-left: 2px !important;
       padding-right: 2px !important;
     }
+
+    /* 🎨 Improved Share Box Styling */
+    .share-box-custom {
+      background: linear-gradient(135deg, rgba(13, 110, 253, 0.08) 0%, rgba(13, 110, 253, 0.02) 100%);
+      border: 1.5px solid rgba(13, 110, 253, 0.3) !important;
+      transition: all 0.2s ease-in-out;
+    }
+    .share-box-custom:hover {
+      background: linear-gradient(135deg, rgba(13, 110, 253, 0.15) 0%, rgba(13, 110, 253, 0.05) 100%);
+      border-color: #0d6efd !important;
+      transform: translateY(-2px);
+    }
   </style>
 </head>
 <body>
@@ -392,7 +404,6 @@
       return mStr;
     }
 
-    // 📅 Date Formatter (dd-mm-yyyy)
     function formatDateDDMMYYYY(dStr) {
       if (!dStr) return '-';
       let d = new Date(dStr);
@@ -579,7 +590,6 @@
 
       renderLoggedMemberCard();
       
-      // Filter out members who have no activity (share, spent, paid, netBalance all 0) for the current month
       let activeOtherMembers = globalData.summary.filter(m => {
         if (m.id.toLowerCase() === loggedInUser.id.toLowerCase()) return false;
         let hasShare = (m.share || 0) > 0;
@@ -629,9 +639,9 @@
 
           <div class="row g-2 text-center pt-2">
             <div class="col-12 mb-1" style="cursor: pointer;" onclick="showMemberBreakdown('${m.id}', '${m.name}')">
-              <div class="p-2 bg-body-tertiary rounded-3 border">
-                <div class="stat-label text-primary"><i class="bi bi-pie-chart-fill me-1"></i>SHARE (Click for Details)</div>
-                <div class="fs-5 fw-bold text-body">AED ${m.share.toFixed(2)}</div>
+              <div class="p-3 rounded-3 shadow-sm share-box-custom">
+                <div class="stat-label text-primary fw-bold" style="font-size: 0.78rem;"><i class="bi bi-pie-chart-fill me-1"></i>SHARE</div>
+                <div class="fs-4 fw-extrabold text-primary mt-1">AED ${m.share.toFixed(2)}</div>
               </div>
             </div>
             <div class="col-6" style="cursor: pointer;" onclick="showMemberTransactions('${m.id}', '${m.name}')">
@@ -701,7 +711,6 @@
       renderMemberList(activeOtherMembers);
     }
 
-    // 🔽 Opens Full Profile Card Modal for Other Members (Like Logged-In User Card)
     function showMemberFullCard(memberId) {
       let m = globalData.summary.find(x => x.id.toLowerCase() === memberId.toLowerCase());
       if (!m) return;
@@ -719,8 +728,9 @@
       let photoHtml = m.photo ? `<img src="${m.photo}" class="profile-avatar shadow-sm" alt="Photo">` : `<div class="profile-avatar d-flex align-items-center justify-content-center bg-primary text-white fw-bold fs-3 mx-auto">${m.name.charAt(0)}</div>`;
       let cleanPhoneStr = m.phone ? m.phone.toString().replace(/^['"]/, '').trim() : '';
 
-      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-person-circle text-primary me-1"></i> Member Profile`;
-      document.getElementById('memberModalSubTitle').innerText = m.name;
+      // 🔽 Updated Title with Member's Name (e.g., Riyas - Profile)
+      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-person-circle text-primary me-1"></i> ${m.name} - Profile`;
+      document.getElementById('memberModalSubTitle').innerText = "Member Details & Account Summary";
 
       let modalContent = `
         <div class="card member-card ${cardClass} shadow-sm text-center border-0 bg-transparent p-0">
@@ -737,9 +747,9 @@
 
           <div class="row g-2 text-center pt-2">
             <div class="col-12 mb-1" style="cursor: pointer;" onclick="showMemberBreakdown('${m.id}', '${m.name}')">
-              <div class="p-2 bg-body-tertiary rounded-3 border">
-                <div class="stat-label text-primary"><i class="bi bi-pie-chart-fill me-1"></i>SHARE (Click for Details)</div>
-                <div class="fs-5 fw-bold text-body">AED ${m.share.toFixed(2)}</div>
+              <div class="p-3 rounded-3 shadow-sm share-box-custom">
+                <div class="stat-label text-primary fw-bold" style="font-size: 0.78rem;"><i class="bi bi-pie-chart-fill me-1"></i>SHARE</div>
+                <div class="fs-4 fw-extrabold text-primary mt-1">AED ${m.share.toFixed(2)}</div>
               </div>
             </div>
             <div class="col-6" style="cursor: pointer;" onclick="showMemberTransactions('${m.id}', '${m.name}')">
