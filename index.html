@@ -681,21 +681,21 @@
 
       let container = document.getElementById('memberTxList');
       let titleName = isAdminView ? `${memberName} - ` : '';
-      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-pie-chart-fill text-primary me-1"></i> ${titleName}Share Breakdown`;
+      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-pie-chart-fill text-primary me-1"></i> ${titleName}Share Detail`;
       document.getElementById('memberModalSubTitle').innerText = "Category wise share calculation";
 
       let html = `
         <div class="list-group list-group-flush mb-3">
           <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent">
-            <div><i class="bi bi-cup-hot text-primary me-2"></i>Mess Share</div>
+            <div><i class="bi bi-cup-hot text-primary me-2"></i>Mess</div>
             <span class="fw-bold text-body">AED ${m.messSpent.toFixed(2)}</span>
           </div>
           <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent">
-            <div><i class="bi bi-droplet text-info me-2"></i>Drinking Water / Room Share</div>
+            <div><i class="bi bi-droplet text-info me-2"></i>Water</div>
             <span class="fw-bold text-body">AED ${m.waterSpent.toFixed(2)}</span>
           </div>
           <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent">
-            <div><i class="bi bi-star text-warning me-2"></i>Special Share</div>
+            <div><i class="bi bi-star text-warning me-2"></i>Special</div>
             <span class="fw-bold text-body">AED ${m.specialSpent.toFixed(2)}</span>
           </div>
         </div>`;
@@ -823,7 +823,7 @@
     function showAllExpensesModal() {
       let container = document.getElementById('memberTxList');
       document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-cart-fill text-danger me-1"></i> ALL EXPENSES`;
-      document.getElementById('memberModalSubTitle').innerHTML = `Mess: ${globalData.messTotalExp.toFixed(2)} | Water/Room: ${globalData.waterTotalExp.toFixed(2)} | Special: ${globalData.specialTotalExp.toFixed(2)}`;
+      document.getElementById('memberModalSubTitle').innerHTML = `Mess: ${globalData.messTotalExp.toFixed(2)} | Water: ${globalData.waterTotalExp.toFixed(2)} | Special: ${globalData.specialTotalExp.toFixed(2)}`;
 
       let txs = globalData.recentExpenses;
       if (txs.length === 0) {
