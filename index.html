@@ -31,7 +31,7 @@
     .app-header {
       background: var(--primary-gradient);
       color: white;
-      padding: 10px 50px 22px 50px;
+      padding: 12px 50px 18px 50px;
       border-bottom-left-radius: 18px;
       border-bottom-right-radius: 18px;
       box-shadow: 0 3px 10px rgba(0,0,0,0.12);
@@ -42,7 +42,7 @@
 
     .theme-toggle-btn {
       position: absolute;
-      top: 10px;
+      top: 12px;
       left: 12px;
       background: rgba(255, 255, 255, 0.2);
       border: none;
@@ -58,7 +58,7 @@
 
     .logout-btn {
       position: absolute;
-      top: 10px;
+      top: 12px;
       right: 12px;
       background: rgba(220, 53, 69, 0.4);
       border: none;
@@ -72,7 +72,7 @@
     }
 
     .main-container {
-      margin-top: -14px;
+      margin-top: 15px;
       padding: 0 12px;
     }
 
@@ -164,7 +164,6 @@
               <span class="input-group-text"><i class="bi bi-phone"></i></span>
               <input type="text" id="loginPhone" class="form-control" placeholder="Eg: 501234567" required>
             </div>
-            <div class="form-text" style="font-size: 0.7rem;"></div>
           </div>
           <div class="mb-3">
             <label class="form-label small fw-bold">DOB Year</label>
@@ -408,7 +407,6 @@
         });
     }
 
-    // This is used ONLY when changing months (shows loading modal)
     function loadDataWithSpinner(month) {
       if (myLoadingModal) myLoadingModal.show();
       let requestUrl = API_URL;
@@ -469,7 +467,6 @@
 
       errorAlert.classList.add('d-none');
       
-      // Spinner effect on Login Button (No full screen modal)
       submitBtn.disabled = true;
       submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Login...`;
 
@@ -496,7 +493,6 @@
           sessionStorage.setItem('mess_logged_user', JSON.stringify(loggedInUser));
         }
         
-        // Directly show dashboard without loading modal
         showDashboard();
       } else {
         submitBtn.disabled = false;
@@ -608,19 +604,19 @@
           </div>
 
           <div class="row g-2 text-center pt-2">
-            <div class="col-12 mb-1" style="cursor: pointer;" onclick="showMemberBreakdown('${m.id}', '${m.name}')">
+            <div class="col-12 mb-1" style="cursor: pointer;" onclick="showMemberBreakdown('${m.id}', '${m.name}', false)">
               <div class="p-2 bg-body-tertiary rounded-3 border">
                 <div class="stat-label text-primary"><i class="bi bi-pie-chart-fill me-1"></i>SHARE (Click for Details)</div>
                 <div class="fs-5 fw-bold text-body">AED ${m.share.toFixed(2)}</div>
               </div>
             </div>
-            <div class="col-6" style="cursor: pointer;" onclick="showMemberTransactions('${m.id}', '${m.name}')">
+            <div class="col-6" style="cursor: pointer;" onclick="showMemberTransactions('${m.id}', '${m.name}', false)">
               <div class="p-2 bg-body-tertiary rounded-3 border">
                 <div class="stat-label text-secondary">PURCHASED</div>
                 <div class="fs-6 fw-bold text-body">AED ${m.spent.toFixed(2)}</div>
               </div>
             </div>
-            <div class="col-6" style="cursor: pointer;" onclick="showMemberPaymentsDetail('${m.id}', '${m.name}')">
+            <div class="col-6" style="cursor: pointer;" onclick="showMemberPaymentsDetail('${m.id}', '${m.name}', false)">
               <div class="p-2 bg-body-tertiary rounded-3 border">
                 <div class="stat-label text-success">PAID</div>
                 <div class="fs-6 fw-bold text-success">AED ${m.paid.toFixed(2)}</div>
@@ -652,7 +648,7 @@
         let cleanPhoneStr = m.phone ? m.phone.toString().replace(/^['"]/, '').trim() : '';
 
         let cardHtml = `
-          <div class="member-card ${cardClass} bg-body mb-3 shadow-sm" onclick="showMemberTransactions('${m.id}', '${m.name}')" style="cursor: pointer;">
+          <div class="member-card ${cardClass} bg-body mb-3 shadow-sm" onclick="showMemberTransactions('${m.id}', '${m.name}', true)" style="cursor: pointer;">
             <div class="d-flex justify-content-between align-items-start mb-2">
               <div>
                 <span class="fw-bold text-body fs-6 me-1">${m.name}</span>
@@ -679,12 +675,13 @@
       renderMemberList(otherMembers);
     }
 
-    function showMemberBreakdown(memberId, memberName) {
+    function showMemberBreakdown(memberId, memberName, isAdminView = false) {
       let m = globalData.summary.find(x => x.id.toLowerCase() === memberId.toLowerCase());
       if (!m) return;
 
       let container = document.getElementById('memberTxList');
-      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-pie-chart-fill text-primary me-1"></i> ${memberName} - Share Breakdown`;
+      let titleName = isAdminView ? `${memberName} - ` : '';
+      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-pie-chart-fill text-primary me-1"></i> ${titleName}Share Breakdown`;
       document.getElementById('memberModalSubTitle').innerText = "Category wise share calculation";
 
       let html = `
@@ -742,7 +739,7 @@
       myMemberModal.show();
     }
 
-    function showMemberPaymentsDetail(memberId, memberName) {
+    function showMemberPaymentsDetail(memberId, memberName, isAdminView = false) {
       let payments = globalData.allPayments.filter(p => {
         let payMonth = p[2] ? String(p[2]).trim() : '';
         let mId = p[3] ? String(p[3]).trim() : '';
@@ -779,7 +776,7 @@
       myMemberModal.show();
     }
 
-    function showMemberTransactions(memberId, memberName) {
+    function showMemberTransactions(memberId, memberName, isAdminView = false) {
       let mIdTrim = memberId.toString().trim().toLowerCase();
       let mNameTrim = memberName ? memberName.toString().trim().toLowerCase() : '';
 
@@ -789,7 +786,8 @@
       });
 
       let container = document.getElementById('memberTxList');
-      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-cart-fill text-danger me-1"></i> ${memberName} - Purchased Bills`;
+      let titleName = isAdminView ? `${memberName} - ` : '';
+      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-cart-fill text-danger me-1"></i> ${titleName}Purchased Bills`;
       document.getElementById('memberModalSubTitle').innerText = `Purchased Bills: ${memberTx.length}`;
 
       if (memberTx.length === 0) {
