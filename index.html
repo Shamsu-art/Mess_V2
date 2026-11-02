@@ -615,7 +615,7 @@
       let balText = balSign + 'AED ' + Math.abs(net).toFixed(2);
       let balSubText = net === 0 ? 'SETTLED' : (isPositive ? 'കിട്ടാനുണ്ട്' : 'കൊടുക്കാനുണ്ട്');
 
-      let photoHtml = m.photo ? `<img src="${m.photo}" class="profile-avatar shadow-sm" alt="Photo">` : `<div class="profile-avatar d-flex align-items-center justify-content-center bg-primary text-white fw-bold fs-3 mx-auto">${m.name.charAt(0)}</div>`;
+      let photoHtml = (m.photo && m.photo.trim() !== "") ? `<img src="${m.photo}" class="profile-avatar shadow-sm" alt="Photo">` : `<div class="profile-avatar d-flex align-items-center justify-content-center bg-primary text-white fw-bold fs-3 mx-auto">${m.name.charAt(0)}</div>`;
       let cleanPhoneStr = m.phone ? m.phone.toString().replace(/^['"]/, '').trim() : '';
 
       container.innerHTML = `
@@ -725,7 +725,7 @@
       let balText = balSign + 'AED ' + Math.abs(net).toFixed(2);
       let balSubText = net === 0 ? 'SETTLED' : (isPositive ? 'കിട്ടാനുണ്ട്' : 'കൊടുക്കാനുണ്ട്');
 
-      let photoHtml = m.photo ? `<img src="${m.photo}" class="profile-avatar shadow-sm" alt="Photo">` : `<div class="profile-avatar d-flex align-items-center justify-content-center bg-primary text-white fw-bold fs-3 mx-auto">${m.name.charAt(0)}</div>`;
+      let photoHtml = (m.photo && m.photo.trim() !== "") ? `<img src="${m.photo}" class="profile-avatar shadow-sm" alt="Photo">` : `<div class="profile-avatar d-flex align-items-center justify-content-center bg-primary text-white fw-bold fs-3 mx-auto">${m.name.charAt(0)}</div>`;
       let cleanPhoneStr = m.phone ? m.phone.toString().replace(/^['"]/, '').trim() : '';
 
       // 🔽 Updated Title with Member's Name (e.g., Riyas - Profile)
