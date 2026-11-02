@@ -684,21 +684,28 @@
       document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-pie-chart-fill text-primary me-1"></i> ${titleName}Share Detail`;
       document.getElementById('memberModalSubTitle').innerText = "Category wise share calculation";
 
-      let html = `
-        <div class="list-group list-group-flush mb-3">
-          <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent">
-            <div><i class="bi bi-cup-hot text-primary me-2"></i>Mess</div>
-            <span class="fw-bold text-body">AED ${m.messSpent.toFixed(2)}</span>
-          </div>
-          <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent">
-            <div><i class="bi bi-droplet text-info me-2"></i>Water</div>
-            <span class="fw-bold text-body">AED ${m.waterSpent.toFixed(2)}</span>
-          </div>
-          <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent">
-            <div><i class="bi bi-star text-warning me-2"></i>Special</div>
-            <span class="fw-bold text-body">AED ${m.specialSpent.toFixed(2)}</span>
-          </div>
+      let html = `<div class="list-group list-group-flush mb-3">`;
+      
+      // Conditionally show Mess, Water, Special only if value > 0
+      if (m.messSpent > 0) {
+        html += `<div class="list-group-item d-flex justify-content-between align-items-center bg-transparent">
+          <div><i class="bi bi-cup-hot text-primary me-2"></i>Mess</div>
+          <span class="fw-bold text-body">AED ${m.messSpent.toFixed(2)}</span>
         </div>`;
+      }
+      if (m.waterSpent > 0) {
+        html += `<div class="list-group-item d-flex justify-content-between align-items-center bg-transparent">
+          <div><i class="bi bi-droplet text-info me-2"></i>Water</div>
+          <span class="fw-bold text-body">AED ${m.waterSpent.toFixed(2)}</span>
+        </div>`;
+      }
+      if (m.specialSpent > 0) {
+        html += `<div class="list-group-item d-flex justify-content-between align-items-center bg-transparent">
+          <div><i class="bi bi-star text-warning me-2"></i>Special</div>
+          <span class="fw-bold text-body">AED ${m.specialSpent.toFixed(2)}</span>
+        </div>`;
+      }
+      html += `</div>`;
 
       let mIdTrim = memberId.toString().trim().toLowerCase();
       let mNameTrim = memberName ? memberName.toString().trim().toLowerCase() : '';
@@ -707,11 +714,16 @@
         return participants.includes(mIdTrim) || (mNameTrim && participants.includes(mNameTrim));
       });
 
-      html += `<h6 class="fw-bold text-secondary mb-2 border-top pt-2"><i class="bi bi-receipt me-1"></i> Involved Bills (${memberTx.length})</h6>`;
-      if (memberTx.length === 0) {
-        html += `<div class="text-center text-muted small py-2">ഈ മാസത്തിൽ ബില്ലുകൾ ഒന്നും ലഭ്യമല്ല.</div>`;
-      } else {
-        html += '<ul class="list-group list-group-flush small">';
+      // Involved Bills Button & Toggle Section
+      if (memberTx.length > 0) {
+        html += `
+          <div class="border-top pt-2">
+            <button class="btn btn-outline-primary w-100 fw-bold rounded-pill shadow-sm py-2" type="button" data-bs-toggle="collapse" data-bs-target="#involvedBillsCollapse" aria-expanded="false">
+              <i class="bi bi-receipt me-1"></i> Involved Bills കാണുക (${memberTx.length})
+            </button>
+            <div class="collapse mt-3" id="involvedBillsCollapse">
+              <ul class="list-group list-group-flush small">`;
+        
         memberTx.forEach(e => {
           let date = e[1] || '-';
           let item = e[3] || 'Expense';
@@ -731,7 +743,10 @@
             </div>
           </li>`;
         });
-        html += '</ul>';
+
+        html += `</ul></div></div>`;
+      } else {
+        html += `<div class="text-center text-muted small py-2 border-top pt-2">ഈ മാസത്തിൽ ബില്ലുകൾ ഒന്നും ലഭ്യമല്ല.</div>`;
       }
 
       container.innerHTML = html;
