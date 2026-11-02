@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="ml" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="pageTitle">MESS APP</title>
+  
+  <!-- Bootstrap 5 CSS & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  
+  <style>
+    :root {
+      --bg-color: #f4f6f9;
+      --card-radius: 16px;
+      --primary-gradient: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    }
+
+    [data-bs-theme="dark"] {
+      --bg-color: #121212;
+      --primary-gradient: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    }
+
+    body {
+      background-color: var(--bg-color);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding-bottom: 30px;
+      transition: background-color 0.3s ease;
+    }
+
+    .app-header {
+      background: var(--primary-gradient);
+      color: white;
+      padding: 20px 16px 36px 16px;
+      border-bottom-left-radius: 24px;
+      border-bottom-right-radius: 24px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      position: relative;
+    }
+
+    .theme-toggle-btn {
+      position: absolute;
+      top: 20px;
+      right: 18px;
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(5px);
+    }
+
+    .logout-btn {
+      position: absolute;
+      top: 20px;
+      left: 18px;
+      background: rgba(220, 53, 69, 0.3);
+      border: none;
+      color: white;
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .main-container {
+      margin-top: -24px;
+      padding: 0 12px;
+    }
+
+    .card-custom {
+      border-radius: var(--card-radius);
+      border: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .summary-box {
+      padding: 14px 10px;
+      border-radius: 12px;
+      background-color: rgba(13, 110, 253, 0.05);
+      cursor: pointer;
+      transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+    .summary-box:active { transform: scale(0.97); }
+    .summary-box:hover { background-color: rgba(13, 110, 253, 0.1); }
+
+    .member-card {
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      border: 1.5px solid transparent;
+    }
+    
+    .member-card.positive { 
+      border: 2.5px solid rgba(25, 135, 84, 0.4); 
+      background-color: rgba(25, 135, 84, 0.03) !important;
+    }
+
+    .member-card.negative { 
+      border: 2.5px solid rgba(220, 53, 69, 0.4); 
+      background-color: rgba(220, 53, 69, 0.03) !important;
+    }
+
+    .balance-badge {
+      font-size: 0.95rem;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 20px;
+    }
+    .balance-badge.pos { background-color: rgba(25, 135, 84, 0.15); color: #198754; }
+    .balance-badge.neg { background-color: rgba(220, 53, 69, 0.15); color: #dc3545; }
+
+    .stat-label {
+      font-size: 0.72rem;
+      color: #888;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    
+    .avatar-img {
+      width: 55px;
+      height: 55px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 2px solid #0d6efd;
+    }
+
+    .loader {
+      text-align: center;
+      padding: 30px;
+      font-weight: 600;
+      color: #0d6efd;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 🔐 LOGIN SECTION -->
+  <div id="loginSection" class="container d-flex align-items-center justify-content-center" style="min-height: 100vh; display: flex;">
+    <div class="card card-custom p-4 bg-body shadow-lg" style="width: 100%; max-width: 400px;">
+      <div class="text-center mb-4">
+        <img id="loginLogo" src="" alt="Logo" class="rounded-circle mb-3 border" style="width: 80px; height: 80px; object-fit: cover; display: none;">
+        <h4 class="fw-bold text-primary" id="loginMessName">MESS LOGIN</h4>
+        <p class="small text-muted" id="loginLocation">Please login with Mobile & DOB Year</p>
+      </div>
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Mobile Number</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-phone"></i></span>
+            <input type="text" id="loginPhone" class="form-control" placeholder="ဥദാ: 501234567 അല്ലെങ്കിൽ +971..." required>
+          </div>
+          <div class="form-text" style="font-size: 0.7rem;">അവസാന 9 അക്കങ്ങൾ മാത്രം നൽകിയാലും മതിയാകും.</div>
+        </div>
+        <div class="mb-4">
+          <label class="form-label small fw-bold">DOB Year (ജനിച്ച വർഷം)</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-calendar-check"></i></span>
+            <input type="number" id="loginDob" class="form-control" placeholder="ဥദാ: 1990" required>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold rounded-pill">
+          <i class="bi bi-box-arrow-in-right me-1"></i> LOGIN
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 📊 DASHBOARD SECTION (Hidden Initially) -->
+  <div id="dashboardSection" style="display: none;">
+    <!-- App Header -->
+    <div class="app-header text-center">
+      <button class="logout-btn" onclick="handleLogout()" title="Logout">
+        <i class="bi bi-power"></i>
+      </button>
+      <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtn">
+        <i class="bi bi-moon-stars-fill"></i>
+      </button>
+      <div id="headerBranding">
+        <h5 class="fw-bold m-0" id="headerMessName">MESS</h5>
+        <p class="small text-white-50 m-0 mt-1" id="headerLocation">Location</p>
+      </div>
+    </div>
+
+    <div class="container main-container">
+      
+      <!-- Month Selector & Status Badge -->
+      <div class="card card-custom p-3 mb-3 bg-body">
+        <div class="d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center gap-2">
+            <span class="fw-bold small text-secondary">
+              <i class="bi bi-calendar3 text-primary"></i>
+            </span>
+            <select id="monthSelect" class="form-select form-select-sm w-auto fw-bold text-primary border-1" onchange="onMonthChange()">
+              <option value="">Loading...</option>
+            </select>
+            <span id="monthStatusBadge" class="badge rounded-pill d-none"></span>
+          </div>
+          <button class="btn btn-sm btn-outline-secondary" onclick="window.print()" title="Print Statement">
+            <i class="bi bi-printer"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- 👤 LOGGED-IN MEMBER CARD CONTAINER -->
+      <div id="loggedMemberContainer"></div>
+
+      <!-- 👑 ADMIN TOTAL SUMMARY CARD -->
+      <div id="adminSummarySection" style="display: none;">
+        <div class="card card-custom p-3 mb-3 bg-body">
+          <h6 class="fw-bold text-secondary mb-2"><i class="bi bi-speedometer2 me-1"></i> Admin Dashboard</h6>
+          <div class="row g-2 text-center">
+            <div class="col-6">
+              <div class="summary-box" onclick="showAllExpensesModal()" title="ക്ലിക്ക് ചെയ്ത് മുഴുവൻ ചിലവുകളും കാണുക">
+                <div class="stat-label text-truncate"><i class="bi bi-cart-fill text-danger me-1"></i>TOTAL EXPENSES</div>
+                <div class="fs-6 fw-bold text-body mt-1" id="totalExpense">AED 0.00</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="summary-box" onclick="showAllPaymentsModal()" title="ക്ലിക്ക് ചെയ്ത് കളക്ഷൻ വിവരങ്ങൾ കാണുക">
+                <div class="stat-label text-truncate"><i class="bi bi-wallet2 text-success me-1"></i>TOTAL COLLECTED</div>
+                <div class="fs-6 fw-bold text-success mt-1" id="totalPayments">AED 0.00</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Members Details Toggle for Admin -->
+        <div class="mb-3">
+          <button class="btn btn-outline-primary w-100 fw-bold rounded-pill shadow-sm py-2" type="button" data-bs-toggle="collapse" data-bs-target="#otherMembersCollapse" aria-expanded="false">
+            <i class="bi bi-people-fill me-1"></i> മറ്റു അംഗങ്ങളുടെ വിവരങ്ങൾ കാണുക (<span id="memberCount">0</span>)
+          </button>
+          <div class="collapse mt-3" id="otherMembersCollapse">
+            <div class="mb-2">
+              <input type="text" id="searchInput" class="form-control form-control-sm bg-body" placeholder="അംഗങ്ങളുടെ പേര് തിരയുക..." onkeyup="filterMembers()">
+            </div>
+            <div id="memberListContainer"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 👤 PROFILE MODAL -->
+  <div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow">
+        <div class="modal-header bg-body border-bottom">
+          <h6 class="modal-title fw-bold"><i class="bi bi-person-badge text-primary me-1"></i> Member Profile</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body text-center bg-body p-4">
+          <img id="profileModalImg" src="" class="rounded-circle mb-3 border shadow" style="width: 90px; height: 90px; object-fit: cover;">
+          <h5 id="profileModalName" class="fw-bold mb-1"></h5>
+          <p id="profileModalId" class="text-muted small mb-3"></p>
+          
+          <form id="profileEditForm" onsubmit="handleProfileUpdate(event)">
+            <div class="mb-3 text-start">
+              <label class="form-label small fw-bold">Mobile Number</label>
+              <input type="text" id="profileEditPhone" class="form-control form-control-sm" required>
+            </div>
+            <div class="mb-3 text-start">
+              <label class="form-label small fw-bold">Photo URL (Google Drive / Image Link)</label>
+              <input type="text" id="profileEditPhoto" class="form-control form-control-sm" placeholder="Paste image link">
+            </div>
+            <div class="mb-3 text-start">
+              <label class="form-label small fw-bold">DOB Year</label>
+              <input type="text" id="profileEditDob" class="form-control form-control-sm" disabled>
+              <div class="form-text" style="font-size: 0.7rem;">DOB Year cannot be changed here.</div>
+            </div>
+            <button type="submit" class="btn btn-sm btn-success w-100 rounded-pill fw-bold">Save Changes</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 👤 GENERAL POPUP MODAL -->
+  <div class="modal fade" id="memberModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content rounded-4 border-0 shadow">
+        <div class="modal-header py-2 bg-body d-flex justify-content-between align-items-center border-bottom">
+          <div>
+            <h6 class="modal-title fw-bold text-body m-0" id="memberModalLabel">Details</h6>
+            <small class="text-muted" id="memberModalSubTitle" style="font-size:0.75rem;"></small>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-3 bg-body" style="max-height: 450px; overflow-y: auto;">
+          <div id="memberTxList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🖼️ INVOICE MODAL -->
+  <div class="modal fade" id="invoiceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content rounded-4 border-0 shadow">
+        <div class="modal-header py-2 bg-body d-flex justify-content-between align-items-center">
+          <h6 class="modal-title fw-bold text-body m-0">Invoice</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-0 text-center bg-dark rounded-bottom-4 position-relative" style="min-height: 480px;">
+          <div id="modalSpinner" class="position-absolute top-50 start-50 translate-middle text-white">
+            <div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...
+          </div>
+          <iframe id="invoiceIframe" src="" style="width:100%; height:480px; border:none;" onload="document.getElementById('modalSpinner').style.display='none';"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🔄 LOADING MODAL -->
+  <div class="modal fade" id="loadingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content rounded-4 border-0 shadow text-center p-4 bg-body">
+        <div class="spinner-border text-primary mx-auto mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+        <h6 class="fw-bold text-body mb-1" id="loadingModalTitle">വിവരങ്ങൾ ശേഖരിക്കുന്നു...</h6>
+        <p class="text-muted small m-0">ദയവായി കാത്തിരിക്കുക</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap 5 JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // 👇 നിങ്ങളുടെ Apps Script വെബ് ആപ്പ് ലിങ്ക് ഇവിടെ നൽകുക 👇
+    const API_URL = 'https://script.google.com/macros/s/AKfycbySy_mYHvM7eyQnsyamHm37xT_wBa6le0Yaml9e3qHc3r_PiAUOUgKbSM4FlYdpSnxm/exec';
+
+    var globalData = null;
+    var loggedInUser = null;
+    var myInvoiceModal = null;
+    var myMemberModal = null;
+    var myProfileModal = null;
+    var myLoadingModal = null;
+
+    window.onload = function() {
+      let modalEl = document.getElementById('loadingModal');
+      if (modalEl) myLoadingModal = new bootstrap.Modal(modalEl);
+      
+      // Check session
+      let savedUser = localStorage.getItem('mess_logged_user');
+      if (savedUser) {
+        try {
+          loggedInUser = JSON.parse(savedUser);
+        } catch(e) {}
+      }
+
+      loadData(null);
+    };
+
+    function toggleTheme() {
+      let currentTheme = document.documentElement.getAttribute('data-bs-theme');
+      let newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-bs-theme', newTheme);
+      let btnIcon = document.getElementById('themeBtn');
+      btnIcon.innerHTML = newTheme === 'dark' ? '<i class="bi bi-sun-fill"></i>' : '<i class="bi bi-moon-stars-fill"></i>';
+    }
+
+    function formatMonthDisplay(mStr) {
+      if (!mStr) return '';
+      let parts = mStr.toString().trim().split(/[-/]/);
+      if (parts.length === 2) {
+        let monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        let mNum, year;
+        if (parts[0].length === 4) { year = parts[0]; mNum = parseInt(parts[1], 10); } 
+        else { mNum = parseInt(parts[0], 10); year = parts[1]; }
+        if (mNum >= 1 && mNum <= 12) return monthNames[mNum - 1] + " " + year;
+      }
+      return mStr;
+    }
+
+    function loadData(month) {
+      if (myLoadingModal) myLoadingModal.show();
+      let requestUrl = API_URL;
+      if (month) requestUrl += '?month=' + encodeURIComponent(month);
+
+      fetch(requestUrl)
+        .then(res => res.json())
+        .then(data => {
+          globalData = data;
+          if (myLoadingModal) setTimeout(() => myLoadingModal.hide(), 300);
+          
+          // Setup Settings Branding
+          if (data.settings) {
+            document.getElementById('pageTitle').innerText = data.settings.messName;
+            document.getElementById('loginMessName').innerText = data.settings.messName;
+            document.getElementById('loginLocation').innerText = data.settings.location;
+            document.getElementById('headerMessName').innerText = data.settings.messName;
+            document.getElementById('headerLocation').innerText = data.settings.location;
+            if (data.settings.logo) {
+              let logoImg = document.getElementById('loginLogo');
+              logoImg.src = data.settings.logo;
+              logoImg.style.display = 'inline-block';
+            }
+          }
+
+          if (loggedInUser) {
+            // Verify if user still exists in summary
+            let found = data.summary.find(m => m.id.toLowerCase() === loggedInUser.id.toLowerCase());
+            if (found) {
+              loggedInUser = found; // update latest stats
+              showDashboard();
+            } else {
+              handleLogout();
+            }
+          } else {
+            showLogin();
+          }
+        })
+        .catch(err => {
+          if (myLoadingModal) myLoadingModal.hide();
+          alert("Error loading data: " + err.message);
+        });
+    }
+
+    function cleanPhone(p) {
+      if (!p) return '';
+      let digits = p.toString().replace(/\D/g, '');
+      return digits.slice(-9); // get last 9 digits
+    }
+
+    function handleLogin(event) {
+      event.preventDefault();
+      let phoneInput = cleanPhone(document.getElementById('loginPhone').value);
+      let dobInput = document.getElementById('loginDob').value.trim();
+
+      if (!globalData || !globalData.summary) return;
+
+      let matchedUser = globalData.summary.find(m => {
+        let mPhone = cleanPhone(m.phone);
+        let mDob = m.dob ? m.dob.toString().trim() : '';
+        return mPhone === phoneInput && mDob === dobInput;
+      });
+
+      if (matchedUser) {
+        loggedInUser = matchedUser;
+        localStorage.setItem('mess_logged_user', JSON.stringify(loggedInUser));
+        showDashboard();
+      } else {
+        alert("മൊബൈൽ നമ്പറോ ജനിച്ച വർഷമോ തെറ്റാണ്! കൃത്യമായി പരിശോധിക്കുക.");
+      }
+    }
+
+    function handleLogout() {
+      loggedInUser = null;
+      localStorage.removeItem('mess_logged_user');
+      showLogin();
+    }
+
+    function showLogin() {
+      document.getElementById('loginSection').style.display = 'flex';
+      document.getElementById('dashboardSection').style.display = 'none';
+    }
+
+    function showDashboard() {
+      document.getElementById('loginSection').style.display = 'none';
+      document.getElementById('dashboardSection').style.display = 'block';
+      renderDashboardContent();
+    }
+
+    function onMonthChange() {
+      let selectedMonth = document.getElementById('monthSelect').value;
+      if (selectedMonth) loadData(selectedMonth);
+    }
+
+    function renderDashboardContent() {
+      if (!globalData) return;
+
+      // Month selector
+      let select = document.getElementById('monthSelect');
+      select.innerHTML = '';
+      globalData.availableMonths.forEach(m => {
+        let opt = document.createElement('option');
+        opt.value = m;
+        opt.innerText = formatMonthDisplay(m);
+        if (m === globalData.selectedMonth) opt.selected = true;
+        select.appendChild(opt);
+      });
+
+      // Status Badge
+      let badge = document.getElementById('monthStatusBadge');
+      let isSettled = globalData.summary.length > 0 && globalData.summary.every(m => Math.abs(m.netBalance) < 0.005);
+      if (isSettled) {
+        badge.className = "badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1";
+        badge.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i>CLOSED';
+      } else {
+        badge.className = "badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2 py-1";
+        badge.innerHTML = '<i class="bi bi-clock-history me-1"></i>PENDING';
+      }
+      badge.classList.remove('d-none');
+
+      // Admin Summary & Section
+      let isAdmin = (loggedInUser.role && loggedInUser.role.toLowerCase() === 'admin');
+      if (isAdmin) {
+        document.getElementById('adminSummarySection').style.display = 'block';
+        document.getElementById('totalExpense').innerText = 'AED ' + globalData.totalExpenseMonth.toFixed(2);
+        document.getElementById('totalPayments').innerText = 'AED ' + globalData.totalPaymentsMonth.toFixed(2);
+      } else {
+        document.getElementById('adminSummarySection').style.display = 'none';
+      }
+
+      // Logged-in Member Card
+      renderLoggedMemberCard();
+
+      // Other members list for Admin
+      let otherMembers = globalData.summary.filter(m => m.id.toLowerCase() !== loggedInUser.id.toLowerCase());
+      renderMemberList(otherMembers);
+    }
+
+    function renderLoggedMemberCard() {
+      let container = document.getElementById('loggedMemberContainer');
+      let m = loggedInUser;
+      let net = Math.round((m.netBalance || 0) * 100) / 100;
+      if (Object.is(net, -0)) net = 0;
+
+      let isPositive = net >= 0;
+      let cardClass = net === 0 ? 'positive' : (isPositive ? 'positive' : 'negative');
+      let badgeClass = net === 0 ? 'pos' : (isPositive ? 'pos' : 'neg');
+      let balSign = net > 0 ? '+' : (net < 0 ? '-' : '');
+      let balText = balSign + 'AED ' + Math.abs(net).toFixed(2);
+      let balSubText = net === 0 ? 'SETTLED' : (isPositive ? 'കിട്ടാനുണ്ട്' : 'കൊടുക്കാനുണ്ട്');
+
+      let photoHtml = m.photo ? `<img src="${m.photo}" class="avatar-img shadow-sm" alt="Photo">` : `<div class="avatar-img d-flex align-items-center justify-content-center bg-primary text-white fw-bold fs-4">${m.name.charAt(0)}</div>`;
+      let cleanPhone = m.phone ? m.phone.toString().replace(/^['"]/, '').trim() : '';
+
+      container.innerHTML = `
+        <div class="card member-card ${cardClass} bg-body position-relative shadow-sm mb-4">
+          <div class="position-absolute top-0 end-0 m-3">
+            <button class="btn btn-sm btn-outline-secondary rounded-circle" onclick="openProfileModal()" title="Edit Profile">
+              <i class="bi bi-gear-fill"></i>
+            </button>
+          </div>
+          <div class="d-flex align-items-center gap-3 mb-3">
+            ${photoHtml}
+            <div>
+              <h5 class="fw-bold text-body m-0">${m.name} <span class="badge bg-primary fs-6 ms-1" style="font-size:0.6rem!important;">${m.role}</span></h5>
+              <div class="text-muted small"><i class="bi bi-telephone-fill me-1"></i>${cleanPhone}</div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center bg-light dark-bg-dark p-3 rounded-3 mb-3">
+            <div>
+              <div class="balance-badge ${badgeClass}">${balText}</div>
+              <div style="font-size: 0.70rem; margin-top:2px;" class="text-muted fw-bold">${balSubText}</div>
+            </div>
+            ${net === 0 ? '<span class="badge bg-success px-3 py-2 rounded-pill"><i class="bi bi-check-all me-1"></i> SETTLED</span>' : ''}
+          </div>
+
+          <div class="row g-1 text-center pt-2 border-top">
+            <div class="col-4 border-end" style="cursor: pointer;" onclick="showMemberBreakdown('${m.id}', '${m.name}')">
+              <div class="stat-label text-primary text-decoration-underline">PURCHASED</div>
+              <div class="stat-value text-body">AED ${m.spent.toFixed(2)}</div>
+            </div>
+            <div class="col-4 border-end" style="cursor: pointer;" onclick="showMemberPaymentsDetail('${m.id}', '${m.name}')">
+              <div class="stat-label text-success text-decoration-underline">PAID</div>
+              <div class="stat-value text-success">AED ${m.paid.toFixed(2)}</div>
+            </div>
+            <div class="col-4">
+              <div class="stat-label text-danger">SHARE</div>
+              <div class="stat-value text-danger">AED ${m.share.toFixed(2)}</div>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function renderMemberList(summaryList) {
+      let container = document.getElementById('memberListContainer');
+      container.innerHTML = '';
+      document.getElementById('memberCount').innerText = summaryList.length;
+
+      if (!summaryList || summaryList.length === 0) {
+        container.innerHTML = '<div class="card card-custom p-3 text-center text-muted bg-body">മറ്റു അംഗങ്ങൾ ലഭ്യമല്ല.</div>';
+        return;
+      }
+
+      summaryList.forEach(m => {
+        let net = Math.round((m.netBalance || 0) * 100) / 100;
+        if (Object.is(net, -0)) net = 0;
+        let isPositive = net >= 0;
+        let cardClass = isPositive ? 'positive' : 'negative';
+        let badgeClass = isPositive ? 'pos' : 'neg';
+        let balSign = net > 0 ? '+' : (net < 0 ? '-' : '');
+        let balText = balSign + 'AED ' + Math.abs(net).toFixed(2);
+        let balSubText = net === 0 ? 'SETTLED' : (isPositive ? 'കിട്ടാനുണ്ട്' : 'കൊടുക്കാനുണ്ട്');
+        let cleanPhone = m.phone ? m.phone.toString().replace(/^['"]/, '').trim() : '';
+
+        let cardHtml = `
+          <div class="member-card ${cardClass} bg-body mb-3 shadow-sm" onclick="showMemberTransactions('${m.id}', '${m.name}')" style="cursor: pointer;">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <span class="fw-bold text-body fs-6 me-1">${m.name}</span>
+                <div class="text-muted" style="font-size:0.75rem;"><i class="bi bi-telephone-fill me-1 text-secondary"></i>${cleanPhone}</div>
+              </div>
+              <div class="text-end">
+                <div class="balance-badge ${badgeClass}">${balText}</div>
+                <div style="font-size: 0.70rem; margin-top:2px;" class="text-muted fw-bold">${balSubText}</div>
+              </div>
+            </div>
+            <div class="row g-1 text-center mt-2 pt-2 border-top">
+              <div class="col-4 border-end"><div class="stat-label">PURCHASED</div><div class="stat-value text-body">AED ${m.spent.toFixed(2)}</div></div>
+              <div class="col-4 border-end"><div class="stat-label text-success">PAID</div><div class="stat-value text-success">AED ${m.paid.toFixed(2)}</div></div>
+              <div class="col-4"><div class="stat-label text-danger">SHARE</div><div class="stat-value text-danger">AED ${m.share.toFixed(2)}</div></div>
+            </div>
+          </div>`;
+        container.innerHTML += cardHtml;
+      });
+    }
+
+    function filterMembers() {
+      let q = document.getElementById('searchInput').value.toLowerCase();
+      let otherMembers = globalData.summary.filter(m => m.id.toLowerCase() !== loggedInUser.id.toLowerCase() && m.name.toLowerCase().includes(q));
+      renderMemberList(otherMembers);
+    }
+
+    // Modal Details (Mess, Water, Special breakdown)
+    function showMemberBreakdown(memberId, memberName) {
+      let m = globalData.summary.find(x => x.id === memberId);
+      if (!m) return;
+
+      let container = document.getElementById('memberTxList');
+      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-pie-chart-fill text-primary me-1"></i> ${memberName} - Breakdown`;
+      document.getElementById('memberModalSubTitle').innerText = "Category wise share breakdown";
+
+      let html = `
+        <div class="list-group list-group-flush">
+          <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent">
+            <div><i class="bi bi-cup-hot text-primary me-2"></i>Mess Share</div>
+            <span class="fw-bold text-body">AED ${m.messSpent.toFixed(2)}</span>
+          </div>
+          <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent">
+            <div><i class="bi bi-droplet text-info me-2"></i>Drinking Water / Room Share</div>
+            <span class="fw-bold text-body">AED ${m.waterSpent.toFixed(2)}</span>
+          </div>
+          <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent">
+            <div><i class="bi bi-star text-warning me-2"></i>Special Share</div>
+            <span class="fw-bold text-body">AED ${m.specialSpent.toFixed(2)}</span>
+          </div>
+        </div>
+        <div class="mt-3 text-center">
+          <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="showMemberTransactions('${memberId}', '${memberName}')">
+            <i class="bi bi-list-check me-1"></i> View All Involved Bills
+          </button>
+        </div>`;
+      container.innerHTML = html;
+
+      if (!myMemberModal) myMemberModal = new bootstrap.Modal(document.getElementById('memberModal'));
+      myMemberModal.show();
+    }
+
+    function showMemberPaymentsDetail(memberId, memberName) {
+      let payments = globalData.allPayments.filter(p => {
+        let payMonth = p[2] ? String(p[2]).trim() : '';
+        let mId = p[3] ? String(p[3]).trim() : '';
+        return payMonth === globalData.selectedMonth && mId.toLowerCase() === memberId.toLowerCase();
+      });
+
+      let container = document.getElementById('memberTxList');
+      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-wallet2 text-success me-1"></i> ${memberName} - Payments`;
+      document.getElementById('memberModalSubTitle').innerText = `Total Transactions: ${payments.length}`;
+
+      if (payments.length === 0) {
+        container.innerHTML = `<div class="text-center text-muted py-4">ഈ മാസത്തിൽ കളക്ഷനുകൾ ഒന്നും രേഖപ്പെടുത്തിയിട്ടില്ല.</div>`;
+      } else {
+        let html = '<ul class="list-group list-group-flush small">';
+        payments.forEach(p => {
+          let date = p[1] || p[0] || '-';
+          let amt = parseFloat(p[4]).toFixed(2);
+          let note = p[5] ? `(${p[5]})` : '';
+          html += `<li class="list-group-item d-flex justify-content-between align-items-center bg-transparent py-2">
+            <div><i class="bi bi-calendar-event me-1"></i>${date} <span class="text-muted">${note}</span></div>
+            <span class="fw-bold text-success">+ AED ${amt}</span>
+          </li>`;
+        });
+        html += '</ul>';
+        container.innerHTML = html;
+      }
+      if (!myMemberModal) myMemberModal = new bootstrap.Modal(document.getElementById('memberModal'));
+      myMemberModal.show();
+    }
+
+    function showMemberTransactions(memberId, memberName) {
+      let mIdTrim = memberId.toString().trim().toLowerCase();
+      let memberTx = globalData.recentExpenses.filter(e => {
+        let paidBy = e[4] ? e[4].toString().trim().toLowerCase() : '';
+        let participants = e[7] ? e[7].toString().toLowerCase() : '';
+        return paidBy.includes(mIdTrim) || participants.includes(mIdTrim);
+      });
+
+      let container = document.getElementById('memberTxList');
+      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-person-fill text-primary me-1"></i> ${memberName} - Bills`;
+      document.getElementById('memberModalSubTitle').innerText = `Involved Bills: ${memberTx.length}`;
+
+      if (memberTx.length === 0) {
+        container.innerHTML = `<div class="text-center text-muted py-4">ബില്ലുകൾ ഒന്നും ലഭ്യമല്ല.</div>`;
+      } else {
+        let html = '<ul class="list-group list-group-flush small">';
+        memberTx.forEach(e => {
+          let date = e[1] || '-';
+          let item = e[3] || 'Expense';
+          let paidBy = e[4] || '-';
+          let amount = Number(e[5] || 0).toFixed(2);
+          let invoiceUrl = e[8] || '';
+
+          html += `<li class="list-group-item px-0 py-2 border-bottom bg-transparent">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <div class="fw-bold text-body fs-6">${item}</div>
+                <div class="text-muted small">Purchaser: <strong>${paidBy}</strong> | Date: ${date}</div>
+              </div>
+              <div class="text-end">
+                <span class="fw-bold text-danger">AED ${amount}</span>
+                ${invoiceUrl ? `<br><button onclick="openInvoiceModal('${invoiceUrl}')" class="btn btn-sm btn-outline-primary py-0 px-2 rounded-pill mt-1" style="font-size:0.7rem;"><i class="bi bi-file-earmark-image"></i> Invoice</button>` : ''}
+              </div>
+            </div>
+          </li>`;
+        });
+        html += '</ul>';
+        container.innerHTML = html;
+      }
+      if (!myMemberModal) myMemberModal = new bootstrap.Modal(document.getElementById('memberModal'));
+      myMemberModal.show();
+    }
+
+    function showAllExpensesModal() {
+      let container = document.getElementById('memberTxList');
+      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-cart-fill text-danger me-1"></i> ALL EXPENSES`;
+      document.getElementById('memberModalSubTitle').innerHTML = `Mess: ${globalData.messTotalExp.toFixed(2)} | Water/Room: ${globalData.waterTotalExp.toFixed(2)} | Special: ${globalData.specialTotalExp.toFixed(2)}`;
+
+      let txs = globalData.recentExpenses;
+      if (txs.length === 0) {
+        container.innerHTML = `<div class="text-center text-muted py-4">ചിലവുകൾ ഒന്നും രേഖപ്പെടുത്തിയിട്ടില്ല.</div>`;
+      } else {
+        let html = '<ul class="list-group list-group-flush small">';
+        txs.forEach(e => {
+          html += `<li class="list-group-item d-flex justify-content-between align-items-center bg-transparent py-2">
+            <div><strong>${e[3]}</strong> (${e[1]})<br><small class="text-muted">By: ${e[4]}</small></div>
+            <span class="fw-bold text-danger">AED ${Number(e[5]).toFixed(2)}</span>
+          </li>`;
+        });
+        html += '</ul>';
+        container.innerHTML = html;
+      }
+      if (!myMemberModal) myMemberModal = new bootstrap.Modal(document.getElementById('memberModal'));
+      myMemberModal.show();
+    }
+
+    function showAllPaymentsModal() {
+      let container = document.getElementById('memberTxList');
+      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-wallet2 text-success me-1"></i> ALL COLLECTIONS`;
+      document.getElementById('memberModalSubTitle').innerText = `Total Collected: AED ${globalData.totalPaymentsMonth.toFixed(2)}`;
+
+      let payments = globalData.allPayments.filter(p => String(p[2]).trim() === globalData.selectedMonth);
+      if (payments.length === 0) {
+        container.innerHTML = `<div class="text-center text-muted py-4">കളക്ഷനുകൾ ഒന്നും ലഭ്യമല്ല.</div>`;
+      } else {
+        let html = '<ul class="list-group list-group-flush small">';
+        payments.forEach(p => {
+          html += `<li class="list-group-item d-flex justify-content-between align-items-center bg-transparent py-2">
+            <div><strong>${p[3]}</strong> (${p[1] || p[0]})</div>
+            <span class="fw-bold text-success">+ AED ${Number(p[4]).toFixed(2)}</span>
+          </li>`;
+        });
+        html += '</ul>';
+        container.innerHTML = html;
+      }
+      if (!myMemberModal) myMemberModal = new bootstrap.Modal(document.getElementById('memberModal'));
+      myMemberModal.show();
+    }
+
+    function openInvoiceModal(url) {
+      document.getElementById('modalSpinner').style.display = 'block';
+      document.getElementById('invoiceIframe').src = url;
+      if (!myInvoiceModal) myInvoiceModal = new bootstrap.Modal(document.getElementById('invoiceModal'));
+      myInvoiceModal.show();
+    }
+
+    function openProfileModal() {
+      document.getElementById('profileModalImg').src = loggedInUser.photo || 'https://via.placeholder.com/90';
+      document.getElementById('profileModalName').innerText = loggedInUser.name;
+      document.getElementById('profileModalId').innerText = "ID: " + loggedInUser.id;
+      document.getElementById('profileEditPhone').value = loggedInUser.phone || '';
+      document.getElementById('profileEditPhoto').value = loggedInUser.photo || '';
+      document.getElementById('profileEditDob').value = loggedInUser.dob || '';
+
+      if (!myProfileModal) myProfileModal = new bootstrap.Modal(document.getElementById('profileModal'));
+      myProfileModal.show();
+    }
+
+    function handleProfileUpdate(event) {
+      event.preventDefault();
+      let newPhone = document.getElementById('profileEditPhone').value.trim();
+      let newPhoto = document.getElementById('profileEditPhoto').value.trim();
+
+      if (myLoadingModal) myLoadingModal.show();
+
+      google.script.run
+        .withSuccessHandler(res => {
+          if (myLoadingModal) myLoadingModal.hide();
+          if (res.success) {
+            alert("പ്രൊഫൈൽ വിജയകരമായി അപ്ഡേറ്റ് ചെയ്തു!");
+            loggedInUser.phone = newPhone;
+            loggedInUser.photo = newPhoto;
+            localStorage.setItem('mess_logged_user', JSON.stringify(loggedInUser));
+            myProfileModal.hide();
+            loadData(globalData.selectedMonth);
+          } else {
+            alert("Error: " + res.message);
+          }
+        })
+        .withFailureHandler(err => {
+          if (myLoadingModal) myLoadingModal.hide();
+          alert("Failed: " + err.message);
+        })
+        .updateMemberProfile(loggedInUser.id, newPhone, newPhoto);
+    }
+  </script>
+</body>
+</html>
