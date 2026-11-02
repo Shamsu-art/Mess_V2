@@ -791,7 +791,6 @@
       myMemberModal.show();
     }
 
-    // 🔍 ഫോട്ടോ വലുതായി കാണിക്കുന്ന ഫങ്ക്ഷൻ (Zoom)
     function zoomProfileImage(imgUrl) {
       if (!imgUrl) return;
       document.getElementById('zoomedImageTag').src = imgUrl;
@@ -1046,7 +1045,6 @@
       myProfileModal.show();
     }
 
-    // 📸 ഫോട്ടോയുടെ ക്ലാരിറ്റിയും വലിപ്പവും കൂട്ടി (600x600, Quality 0.85) കൺവേർട്ട് ചെയ്യുന്ന ഫങ്ക്ഷൻ
     function previewSelectedImage(event) {
       let file = event.target.files[0];
       if (file) {
@@ -1057,7 +1055,6 @@
             let canvas = document.createElement('canvas');
             let ctx = canvas.getContext('2d');
             
-            // ഉയർന്ന ക്ലാരിറ്റിക്കായി വലിപ്പം 600x600 ആക്കി ക്രമീകരിക്കുന്നു
             let maxWidth = 600;
             let maxHeight = 600;
             let width = img.width;
@@ -1079,7 +1076,6 @@
             canvas.height = height;
             ctx.drawImage(img, 0, 0, width, height);
 
-            // ഉയർന്ന ക്വാളിറ്റിക്കായി Quality 0.85 നൽകുന്നു
             uploadedBase64Image = canvas.toDataURL('image/jpeg', 0.85);
             document.getElementById('profileModalImg').src = uploadedBase64Image;
           };
@@ -1089,7 +1085,6 @@
       }
     }
 
-    // 💾 പ്രൊഫൈൽ സേവ് ചെയ്യുന്ന ഫങ്ക്ഷൻ
     function handleProfileUpdate(event) {
       event.preventDefault();
       let newPhone = document.getElementById('profileEditPhone').value.trim();
@@ -1117,10 +1112,6 @@
         if (myLoadingModal) myLoadingModal.hide();
         document.getElementById('loadingModalTitle').innerText = "വിവരങ്ങൾ ശേഖരിക്കുന്നു...";
         
-        .then(res => {
-        if (myLoadingModal) myLoadingModal.hide();
-        document.getElementById('loadingModalTitle').innerText = "വിവരങ്ങൾ ശേഖരിക്കുന്നു...";
-        
         if (res && res.success) {
           alert("പ്രൊഫൈൽ വിജയകരമായി അപ്ഡേറ്റ് ചെയ്തു!");
           loggedInUser.phone = newPhone;
@@ -1144,6 +1135,7 @@
         document.getElementById('loadingModalTitle').innerText = "വിവരങ്ങൾ ശേഖരിക്കുന്നു...";
         alert("Failed: " + err.message);
       });
+    }
   </script>
 </body>
 </html>
