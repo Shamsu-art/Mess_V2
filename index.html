@@ -190,12 +190,15 @@
             <label class="form-label small fw-bold">DOB Year</label>
             <div class="input-group">
               <span class="input-group-text"><i class="bi bi-calendar-check"></i></span>
-              <input type="number" id="loginDob" class="form-control" placeholder="Eg: 1990" required>
+              <input type="password" id="loginDob" class="form-control" placeholder="Eg: 1990" required>
+              <button class="btn btn-outline-secondary" type="button" id="toggleDobBtn" onclick="togglePasswordVisibility()">
+                <i class="bi bi-eye-slash" id="toggleDobIcon"></i>
+              </button>
             </div>
           </div>
           
           <div class="mb-3 form-check">
-            <input type="checkbox" class="form-check-input" id="rememberMeCheck" checked>
+            <input type="checkbox" class="form-check-input" id="rememberMeCheck">
             <label class="form-check-label small text-muted" for="rememberMeCheck">Remember Me</label>
           </div>
 
@@ -391,7 +394,9 @@
       let zoomModalEl = document.getElementById('imageZoomModal');
       if (zoomModalEl) myImageZoomModal = new bootstrap.Modal(zoomModalEl);
 
-      let savedUser = localStorage.getItem('mess_logged_user') || sessionStorage.getItem('mess_logged_user');
+      // ഓട്ടോ ലോഗിൻ ഒഴിവാക്കാൻ ഇവിടെ സെഷൻ/ലോക്കൽ സ്റ്റോറേജ് പരിശോധന മാറ്റിയിരിക്കുന്നു.
+      // എന്നാൽ യൂസർ ലോഗിൻ ചെയ്ത് 'Remember Me' ടിക്ക് ചെയ്തിട്ടുണ്ടെങ്കിൽ മാത്രം ആ സെഷൻ നിലനിൽക്കും.
+      let savedUser = localStorage.getItem('mess_logged_user');
       if (savedUser) {
         try {
           loggedInUser = JSON.parse(savedUser);
@@ -409,6 +414,21 @@
       let btnIcon2 = document.getElementById('themeBtn');
       if (btnIcon) btnIcon.innerHTML = newTheme === 'dark' ? '<i class="bi bi-sun-fill"></i>' : '<i class="bi bi-moon-stars-fill"></i>';
       if (btnIcon2) btnIcon2.innerHTML = newTheme === 'dark' ? '<i class="bi bi-sun-fill"></i>' : '<i class="bi bi-moon-stars-fill"></i>';
+    }
+
+    // DOB Year പാസ്‌വേഡ് Show/Hide ചെയ്യാനുള്ള ഫങ്ഷൻ
+    function togglePasswordVisibility() {
+      let dobInput = document.getElementById('loginDob');
+      let toggleIcon = document.getElementById('toggleDobIcon');
+      if (dobInput.type === "password") {
+        dobInput.type = "text";
+        toggleIcon.classList.remove("bi-eye-slash");
+        toggleIcon.classList.add("bi-eye");
+      } else {
+        dobInput.type = "password";
+        toggleIcon.classList.remove("bi-eye");
+        toggleIcon.classList.add("bi-eye-slash");
+      }
     }
 
     function formatMonthDisplay(mStr) {
@@ -532,10 +552,12 @@
 
       if (matchedUser) {
         loggedInUser = matchedUser;
+        
+        // Remember Me ടിക്ക് ചെയ്താൽ മാത്രം ലോക്കൽ സ്റ്റോറേജിൽ സേവ് ചെയ്യും
         if (rememberMe) {
           localStorage.setItem('mess_logged_user', JSON.stringify(loggedInUser));
         } else {
-          sessionStorage.setItem('mess_logged_user', JSON.stringify(loggedInUser));
+          localStorage.removeItem('mess_logged_user');
         }
         
         showDashboard();
@@ -589,15 +611,9 @@
       });
 
       let badge = document.getElementById('monthStatusBadge');
-      
-      // 1. നിലവിലെ സിസ്റ്റം ഡേറ്റ് അനുസരിച്ചുള്ള നടപ്പുമാസം (Current Month) കണ്ടെത്തുന്നു (ഉദാ: "11-2026")
       let today = new Date();
       let currentMonthStr = ("0" + (today.getMonth() + 1)).slice(-2) + "-" + today.getFullYear();
-      
-      // 2. നിലവിൽ സെലക്റ്റ് ചെയ്തിരിക്കുന്നത് നടപ്പുമാസം ആണോ എന്ന് പരിശോധിക്കുന്നു
       let isCurrentMonth = (globalData.selectedMonth === currentMonthStr);
-
-      // 3. നടപ്പുമാസം ആണെങ്കിൽ ഒരിക്കലും Closed കാട്ടരുത്. കഴിഞ്ഞ മാസങ്ങൾ ആണെങ്കിൽ മാത്രം ബാലൻസ് നോക്കി Closed ആക്കാം.
       let isSettled = !isCurrentMonth && globalData.summary.length > 0 && globalData.summary.every(m => Math.abs(m.netBalance) < 0.005);
 
       if (isSettled) {
@@ -1055,48 +1071,46 @@
       myProfileModal.show();
     }
 
-    // 📸 ഉയർന്ന ക്ലാരിറ്റിയും അനുയോജ്യമായ വലിപ്പവും നൽകുന്ന ഫോട്ടോ പ്രീവ്യൂ ഫങ്ക്ഷൻ
-function previewSelectedImage(event) {
-  let file = event.target.files[0];
-  if (file) {
-    let reader = new FileReader();
-    reader.onload = function(e) {
-      let img = new Image();
-      img.onload = function() {
-        let canvas = document.createElement('canvas');
-        let ctx = canvas.getContext('2d');
-        
-        // ഫോട്ടോയുടെ ക്ലാരിറ്റിയും വലിപ്പവും 400x400 ആക്കി നിശ്ചയിക്കുന്നു (Apps Script ലിമിറ്റ് കടക്കാതിരിക്കാൻ)
-        let maxWidth = 400;
-        let maxHeight = 400;
-        let width = img.width;
-        let height = img.height;
+    function previewSelectedImage(event) {
+      let file = event.target.files[0];
+      if (file) {
+        let reader = new FileReader();
+        reader.onload = function(e) {
+          let img = new Image();
+          img.onload = function() {
+            let canvas = document.createElement('canvas');
+            let ctx = canvas.getContext('2d');
+            
+            let maxWidth = 400;
+            let maxHeight = 400;
+            let width = img.width;
+            let height = img.height;
 
-        if (width > height) {
-          if (width > maxWidth) {
-            height *= maxWidth / width;
-            width = maxWidth;
-          }
-        } else {
-          if (height > maxHeight) {
-            width *= maxHeight / height;
-            height = maxHeight;
-          }
-        }
+            if (width > height) {
+              if (width > maxWidth) {
+                height *= maxWidth / width;
+                width = maxWidth;
+              }
+            } else {
+              if (height > maxHeight) {
+                width *= maxHeight / height;
+                height = maxHeight;
+              }
+            }
 
-        canvas.width = width;
-        canvas.height = height;
-        ctx.drawImage(img, 0, 0, width, height);
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
 
-        // Quality 0.75 നൽകുന്നതിലൂടെ നല്ല ക്ലാരിറ്റിയും കുറഞ്ഞ ഫയൽ സൈസും ലഭിക്കും
-        uploadedBase64Image = canvas.toDataURL('image/jpeg', 0.75);
-        document.getElementById('profileModalImg').src = uploadedBase64Image;
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  }
-}
+            uploadedBase64Image = canvas.toDataURL('image/jpeg', 0.75);
+            document.getElementById('profileModalImg').src = uploadedBase64Image;
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
     function handleProfileUpdate(event) {
       event.preventDefault();
       let newPhone = document.getElementById('profileEditPhone').value.trim();
@@ -1132,8 +1146,6 @@ function previewSelectedImage(event) {
           let rememberMe = localStorage.getItem('mess_logged_user');
           if (rememberMe) {
             localStorage.setItem('mess_logged_user', JSON.stringify(loggedInUser));
-          } else {
-            sessionStorage.setItem('mess_logged_user', JSON.stringify(loggedInUser));
           }
 
           if (myProfileModal) myProfileModal.hide();
