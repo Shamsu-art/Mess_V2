@@ -171,7 +171,7 @@
         <div class="text-center mb-3">
           <img src="https://lh3.googleusercontent.com/d/1g73xnv3yS-A02F6Ako1gk_MvI0pU3RzI" alt="Logo" class="rounded-circle mb-2 border shadow-sm" style="width: 72px; height: 72px; object-fit: cover;">
           <h5 class="fw-bold text-primary mt-1" style="font-size: 1.15rem;">MEMBER LOGIN</h5>
-          <p class="small text-muted mb-2" style="font-size: 0.8rem;">Please enter your Mobile & DOB Year</p>
+          <p class="small text-muted mb-2" style="font-size: 0.8rem;">Please enter your Mobile & Birth Of Year</p>
         </div>
         
         <div id="loginErrorAlert" class="alert alert-danger py-2 small d-none text-center" role="alert">
@@ -303,7 +303,7 @@
               <input type="file" id="profileEditFile" class="form-control form-control-sm" accept="image/*" onchange="previewSelectedImage(event)">
             </div>
             <div class="mb-3 text-start">
-              <label class="form-label small fw-bold mb-1">DOB Year</label>
+              <label class="form-label small fw-bold mb-1">Birth Of Year</label>
               <input type="text" id="profileEditDob" class="form-control form-control-sm" disabled>
             </div>
             <button type="submit" class="btn btn-sm btn-success w-100 rounded-pill fw-bold">Save Changes</button>
@@ -428,7 +428,7 @@
       if (btnIcon2) btnIcon2.innerHTML = newTheme === 'dark' ? '<i class="bi bi-sun-fill"></i>' : '<i class="bi bi-moon-stars-fill"></i>';
     }
 
-    // DOB Year പാസ്‌വേഡ് Show/Hide ചെയ്യാനുള്ള ഫങ്ഷൻ
+    // Birth Of Year പാസ്‌വേഡ് Show/Hide ചെയ്യാനുള്ള ഫങ്ഷൻ
     function togglePasswordVisibility() {
       let dobInput = document.getElementById('loginDob');
       let toggleIcon = document.getElementById('toggleDobIcon');
