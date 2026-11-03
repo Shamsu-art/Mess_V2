@@ -31,7 +31,7 @@
     .app-header {
       background: var(--primary-gradient);
       color: white;
-      padding: 12px 50px 18px 50px;
+      padding: 12px 50px 14px 50px;
       border-bottom-left-radius: 18px;
       border-bottom-right-radius: 18px;
       box-shadow: 0 3px 10px rgba(0,0,0,0.12);
@@ -162,7 +162,8 @@
       </button>
       <div>
         <h6 class="fw-bold m-0 text-truncate" style="font-size: 0.98rem;">BIN HUMAIDAN ROOM 110</h6>
-        <p class="small text-white-50 m-0 mt-0" style="font-size: 0.72rem;">AL QUSAIS, DUBAI</p>
+        <p class="small text-white-50 m-0" style="font-size: 0.70rem;">AL QUSAIS, DUBAI</p>
+        <p class="small text-white-50 m-0" style="font-size: 0.65rem; opacity: 0.8;">Real-Time Statements & Monthly Report</p>
       </div>
     </div>
 
@@ -221,7 +222,8 @@
       </button>
       <div>
         <h6 class="fw-bold m-0 text-truncate" style="font-size: 0.98rem;">BIN HUMAIDAN ROOM 110</h6>
-        <p class="small text-white-50 m-0 mt-0" style="font-size: 0.72rem;">AL QUSAIS DUBAI</p>
+        <p class="small text-white-50 m-0" style="font-size: 0.70rem;">AL QUSAIS DUBAI</p>
+        <p class="small text-white-50 m-0" style="font-size: 0.65rem; opacity: 0.8;">Real-Time Statements & Monthly Report</p>
       </div>
     </div>
 
@@ -351,11 +353,11 @@
           <h6 class="modal-title fw-bold text-body m-0">Invoice</h6>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-        <div class="modal-body p-0 text-center bg-dark rounded-bottom-4 position-relative" style="min-height: 480px;">
+        <div class="modal-body p-0 text-center bg-dark rounded-bottom-4 position-relative" style="min-height: 400px;">
           <div id="modalSpinner" class="position-absolute top-50 start-50 translate-middle text-white">
             <div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...
           </div>
-          <iframe id="invoiceIframe" src="" style="width:100%; height:480px; border:none;" onload="document.getElementById('modalSpinner').style.display='none';"></iframe>
+          <iframe id="invoiceIframe" src="" style="width:100%; height:400px; border:none; transform: scale(1); transform-origin: top center;" onload="document.getElementById('modalSpinner').style.display='none';"></iframe>
         </div>
       </div>
     </div>
@@ -406,7 +408,6 @@
       let zoomModalEl = document.getElementById('imageZoomModal');
       if (zoomModalEl) myImageZoomModal = new bootstrap.Modal(zoomModalEl);
 
-      // ഓട്ടോ ലോഗിൻ ഒഴിവാക്കി. Remember me ടിക്ക് ചെയ്തവർക്ക് മാത്രം ബ്രൗസറിൽ നിലനിൽക്കും.
       loggedInUser = null;
       let savedUser = localStorage.getItem('mess_logged_user');
       if (savedUser) {
@@ -428,7 +429,6 @@
       if (btnIcon2) btnIcon2.innerHTML = newTheme === 'dark' ? '<i class="bi bi-sun-fill"></i>' : '<i class="bi bi-moon-stars-fill"></i>';
     }
 
-    // Birth Of Year പാസ്‌വേഡ് Show/Hide ചെയ്യാനുള്ള ഫങ്ഷൻ
     function togglePasswordVisibility() {
       let dobInput = document.getElementById('loginDob');
       let toggleIcon = document.getElementById('toggleDobIcon');
@@ -443,7 +443,6 @@
       }
     }
 
-    // Custom Toast Notification ഫങ്ഷൻ
     function showToast(message, isSuccess = true) {
       let toastEl = document.getElementById('liveToast');
       let toastBody = document.getElementById('toastMessage');
@@ -679,19 +678,32 @@
       let m = loggedInUser;
       let net = Math.round((m.netBalance || 0) * 100) / 100;
       if (Object.is(net, -0)) net = 0;
-
-      let isPositive = net >= 0;
-      let cardClass = net === 0 ? 'positive' : (isPositive ? 'positive' : 'negative');
-      let badgeClass = net === 0 ? 'pos' : (isPositive ? 'pos' : 'neg');
-      let balSign = net > 0 ? '+' : (net < 0 ? '-' : '');
-      let balText = balSign + 'AED ' + Math.abs(net).toFixed(2);
-      let balSubText = net === 0 ? 'SETTLED' : (isPositive ? 'കിട്ടാനുണ്ട്' : 'കൊടുക്കാനുണ്ട്');
+      let shareVal = m.share || 0;
 
       let photoHtml = (m.photo && m.photo.trim() !== "") ? `<img src="${m.photo}" class="profile-avatar shadow-sm" alt="Photo" onclick="zoomProfileImage('${m.photo}')" title="Click to view full image">` : `<div class="profile-avatar d-flex align-items-center justify-content-center bg-primary text-white fw-bold fs-3 mx-auto">${m.name.charAt(0)}</div>`;
       let cleanPhoneStr = m.phone ? m.phone.toString().replace(/^['"]/, '').trim() : '';
 
+      let balanceSectionHtml = '';
+      if (shareVal > 0) {
+        let isPositive = net >= 0;
+        let cardClass = net === 0 ? 'positive' : (isPositive ? 'positive' : 'negative');
+        let badgeClass = net === 0 ? 'pos' : (isPositive ? 'pos' : 'neg');
+        let balSign = net > 0 ? '+' : (net < 0 ? '-' : '');
+        let balText = balSign + 'AED ' + Math.abs(net).toFixed(2);
+        let balSubText = net === 0 ? 'SETTLED' : (isPositive ? 'കിട്ടാനുണ്ട്' : 'കൊടുക്കാനുണ്ട്');
+
+        container.className = `card member-card ${cardClass} position-relative shadow-sm mb-4 text-center`;
+        balanceSectionHtml = `
+          <div class="mb-3 p-3 bg-body-secondary rounded-4">
+            <div class="balance-badge ${badgeClass} mb-1">${balText}</div>
+            <div style="font-size: 0.75rem;" class="text-muted fw-bold">${balSubText}</div>
+          </div>`;
+      } else {
+        balanceSectionHtml = '';
+      }
+
       container.innerHTML = `
-        <div class="card member-card ${cardClass} position-relative shadow-sm mb-4 text-center">
+        <div class="card member-card position-relative shadow-sm mb-4 text-center">
           <div class="position-absolute top-0 end-0 m-3">
             <button class="btn btn-sm btn-outline-secondary rounded-circle" onclick="openProfileModal()" title="Edit Profile">
               <i class="bi bi-gear-fill"></i>
@@ -704,10 +716,7 @@
           <h4 class="fw-bold text-body mb-1">${m.name}</h4>
           <div class="text-muted small mb-3"><i class="bi bi-telephone-fill me-1"></i>${cleanPhoneStr}</div>
 
-          <div class="mb-3 p-3 bg-body-secondary rounded-4">
-            <div class="balance-badge ${badgeClass} mb-1">${balText}</div>
-            <div style="font-size: 0.75rem;" class="text-muted fw-bold">${balSubText}</div>
-          </div>
+          ${balanceSectionHtml}
 
           <div class="row g-2 text-center pt-2">
             <div class="col-12 mb-1" style="cursor: pointer;" onclick="showMemberBreakdown('${m.id}', '${m.name}')">
@@ -745,6 +754,8 @@
       summaryList.forEach(m => {
         let net = Math.round((m.netBalance || 0) * 100) / 100;
         if (Object.is(net, -0)) net = 0;
+        let shareVal = m.share || 0;
+        
         let isPositive = net >= 0;
         let cardClass = net === 0 ? 'positive' : (isPositive ? 'positive' : 'negative');
         let badgeClass = net === 0 ? 'pos' : (isPositive ? 'pos' : 'neg');
@@ -753,6 +764,12 @@
         let balSubText = net === 0 ? 'Settled' : (isPositive ? 'കിട്ടാനുണ്ട്' : 'കൊടുക്കാനുണ്ട്');
         let cleanPhoneStr = m.phone ? m.phone.toString().replace(/^['"]/, '').trim() : '';
 
+        let badgeHtml = (shareVal > 0) ? `
+          <div class="text-end">
+            <div class="balance-badge ${badgeClass}" style="font-size: 0.95rem; padding: 4px 12px;">${balText}</div>
+            <div style="font-size: 0.70rem; margin-top:2px;" class="text-muted fw-bold">${balSubText}</div>
+          </div>` : '';
+
         let cardHtml = `
           <div class="card member-card ${cardClass} bg-body mb-3 shadow-sm" onclick="showMemberFullCard('${m.id}')" style="cursor: pointer;">
             <div class="d-flex justify-content-between align-items-center">
@@ -760,10 +777,7 @@
                 <h5 class="fw-bold text-body mb-1">${m.name}</h5>
                 <div class="text-muted small"><i class="bi bi-telephone-fill me-1 text-secondary"></i>${cleanPhoneStr}</div>
               </div>
-              <div class="text-end">
-                <div class="balance-badge ${badgeClass}" style="font-size: 0.95rem; padding: 4px 12px;">${balText}</div>
-                <div style="font-size: 0.70rem; margin-top:2px;" class="text-muted fw-bold">${balSubText}</div>
-              </div>
+              ${badgeHtml}
             </div>
           </div>`;
         container.innerHTML += cardHtml;
@@ -789,6 +803,7 @@
 
       let net = Math.round((m.netBalance || 0) * 100) / 100;
       if (Object.is(net, -0)) net = 0;
+      let shareVal = m.share || 0;
 
       let isPositive = net >= 0;
       let cardClass = net === 0 ? 'positive' : (isPositive ? 'positive' : 'negative');
@@ -803,6 +818,12 @@
       document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-person-circle text-primary me-1"></i> ${m.name} - Profile`;
       document.getElementById('memberModalSubTitle').innerText = "Member Details & Account Summary";
 
+      let balanceSectionHtml = (shareVal > 0) ? `
+        <div class="mb-3 p-3 bg-body-secondary rounded-4">
+          <div class="balance-badge ${badgeClass} mb-1">${balText}</div>
+          <div style="font-size: 0.75rem;" class="text-muted fw-bold">${balSubText}</div>
+        </div>` : '';
+
       let modalContent = `
         <div class="card member-card ${cardClass} shadow-sm text-center border-0 bg-transparent p-0">
           <div class="mb-2 mt-1">
@@ -811,10 +832,7 @@
           <h4 class="fw-bold text-body mb-1">${m.name}</h4>
           <div class="text-muted small mb-3"><i class="bi bi-telephone-fill me-1"></i>${cleanPhoneStr}</div>
 
-          <div class="mb-3 p-3 bg-body-secondary rounded-4">
-            <div class="balance-badge ${badgeClass} mb-1">${balText}</div>
-            <div style="font-size: 0.75rem;" class="text-muted fw-bold">${balSubText}</div>
-          </div>
+          ${balanceSectionHtml}
 
           <div class="row g-2 text-center pt-2">
             <div class="col-12 mb-1" style="cursor: pointer;" onclick="showMemberBreakdown('${m.id}', '${m.name}')">
