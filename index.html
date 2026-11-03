@@ -394,8 +394,8 @@
       let zoomModalEl = document.getElementById('imageZoomModal');
       if (zoomModalEl) myImageZoomModal = new bootstrap.Modal(zoomModalEl);
 
-      // ഓട്ടോ ലോഗിൻ ഒഴിവാക്കാൻ ഇവിടെ സെഷൻ/ലോക്കൽ സ്റ്റോറേജ് പരിശോധന മാറ്റിയിരിക്കുന്നു.
-      // എന്നാൽ യൂസർ ലോഗിൻ ചെയ്ത് 'Remember Me' ടിക്ക് ചെയ്തിട്ടുണ്ടെങ്കിൽ മാത്രം ആ സെഷൻ നിലനിൽക്കും.
+      // ഓട്ടോ ലോഗിൻ പൂർണ്ണമായും ഒഴിവാക്കി. Remember me ടിക്ക് ചെയ്ത് ലോഗിൻ ചെയ്തവർക്ക് മാത്രം നിലനിൽക്കും.
+      loggedInUser = null;
       let savedUser = localStorage.getItem('mess_logged_user');
       if (savedUser) {
         try {
@@ -553,7 +553,7 @@
       if (matchedUser) {
         loggedInUser = matchedUser;
         
-        // Remember Me ടിക്ക് ചെയ്താൽ മാത്രം ലോക്കൽ സ്റ്റോറേജിൽ സേവ് ചെയ്യും
+        // Remember Me ടിക്ക് ചെയ്താൽ മാത്രം ബ്രൗസറിൽ സേവ് ചെയ്യും, ഇല്ലെങ്കിൽ താൽക്കാലികമായി മാത്രം നിലനിൽക്കും
         if (rememberMe) {
           localStorage.setItem('mess_logged_user', JSON.stringify(loggedInUser));
         } else {
@@ -571,7 +571,6 @@
     function handleLogout() {
       loggedInUser = null;
       localStorage.removeItem('mess_logged_user');
-      sessionStorage.removeItem('mess_logged_user');
       showLogin();
     }
 
@@ -612,26 +611,18 @@
 
       let badge = document.getElementById('monthStatusBadge');
       
-      // 1. നിലവിലെ സിസ്റ്റം ഡേറ്റ് അനുസരിച്ചുള്ള നടപ്പുമാസം കണ്ടെത്തുന്നു (ഉദാ: "11-2026")
       let today = new Date();
       let currentMonthStr = ("0" + (today.getMonth() + 1)).slice(-2) + "-" + today.getFullYear();
-      
-      // 2. നിലവിൽ സെലക്റ്റ് ചെയ്തിരിക്കുന്നത് നടപ്പുമാസം ആണോ എന്ന് പരിശോധിക്കുന്നു
       let isCurrentMonth = (globalData.selectedMonth === currentMonthStr);
-
-      // 3. കഴിഞ്ഞ മാസങ്ങളിലെ സെറ്റിൽമെന്റ് പരിശോധിക്കുന്നു
       let isSettled = !isCurrentMonth && globalData.summary.length > 0 && globalData.summary.every(m => Math.abs(m.netBalance) < 0.005);
 
       if (isCurrentMonth) {
-        // നടപ്പ് മാസം ആണെങ്കിൽ എപ്പോഴും ACTIVE എന്ന് കാണിക്കും
         badge.className = "badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1";
         badge.innerHTML = '<i class="bi bi-activity me-1"></i>ACTIVE';
       } else if (isSettled) {
-        // കഴിഞ്ഞ മാസം പൂർണ്ണമായി സെറ്റിൽ ആയിട്ടുണ്ടെങ്കിൽ CLOSED
         badge.className = "badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1";
         badge.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i>CLOSED';
       } else {
-        // കഴിഞ്ഞ മാസങ്ങളിൽ ബാക്കി നിൽക്കുന്നുണ്ടെങ്കിൽ PENDING
         badge.className = "badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2 py-1";
         badge.innerHTML = '<i class="bi bi-clock-history me-1"></i>PENDING';
       }
@@ -690,7 +681,7 @@
           <h4 class="fw-bold text-body mb-1">${m.name}</h4>
           <div class="text-muted small mb-3"><i class="bi bi-telephone-fill me-1"></i>${cleanPhoneStr}</div>
 
-          <div class="mb-3 p-3 bg-light dark-bg-dark rounded-4">
+          <div class="mb-3 p-3 bg-body-secondary rounded-4">
             <div class="balance-badge ${badgeClass} mb-1">${balText}</div>
             <div style="font-size: 0.75rem;" class="text-muted fw-bold">${balSubText}</div>
           </div>
@@ -797,7 +788,7 @@
           <h4 class="fw-bold text-body mb-1">${m.name}</h4>
           <div class="text-muted small mb-3"><i class="bi bi-telephone-fill me-1"></i>${cleanPhoneStr}</div>
 
-          <div class="mb-3 p-3 bg-light dark-bg-dark rounded-4">
+          <div class="mb-3 p-3 bg-body-secondary rounded-4">
             <div class="balance-badge ${badgeClass} mb-1">${balText}</div>
             <div style="font-size: 0.75rem;" class="text-muted fw-bold">${balSubText}</div>
           </div>
