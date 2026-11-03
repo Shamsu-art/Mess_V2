@@ -611,15 +611,27 @@
       });
 
       let badge = document.getElementById('monthStatusBadge');
+      
+      // 1. നിലവിലെ സിസ്റ്റം ഡേറ്റ് അനുസരിച്ചുള്ള നടപ്പുമാസം കണ്ടെത്തുന്നു (ഉദാ: "11-2026")
       let today = new Date();
       let currentMonthStr = ("0" + (today.getMonth() + 1)).slice(-2) + "-" + today.getFullYear();
+      
+      // 2. നിലവിൽ സെലക്റ്റ് ചെയ്തിരിക്കുന്നത് നടപ്പുമാസം ആണോ എന്ന് പരിശോധിക്കുന്നു
       let isCurrentMonth = (globalData.selectedMonth === currentMonthStr);
+
+      // 3. കഴിഞ്ഞ മാസങ്ങളിലെ സെറ്റിൽമെന്റ് പരിശോധിക്കുന്നു
       let isSettled = !isCurrentMonth && globalData.summary.length > 0 && globalData.summary.every(m => Math.abs(m.netBalance) < 0.005);
 
-      if (isSettled) {
+      if (isCurrentMonth) {
+        // നടപ്പ് മാസം ആണെങ്കിൽ എപ്പോഴും ACTIVE എന്ന് കാണിക്കും
+        badge.className = "badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1";
+        badge.innerHTML = '<i class="bi bi-activity me-1"></i>ACTIVE';
+      } else if (isSettled) {
+        // കഴിഞ്ഞ മാസം പൂർണ്ണമായി സെറ്റിൽ ആയിട്ടുണ്ടെങ്കിൽ CLOSED
         badge.className = "badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1";
         badge.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i>CLOSED';
       } else {
+        // കഴിഞ്ഞ മാസങ്ങളിൽ ബാക്കി നിൽക്കുന്നുണ്ടെങ്കിൽ PENDING
         badge.className = "badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2 py-1";
         badge.innerHTML = '<i class="bi bi-clock-history me-1"></i>PENDING';
       }
