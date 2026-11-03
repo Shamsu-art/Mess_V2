@@ -345,7 +345,7 @@
     </div>
   </div>
 
-  <!-- 🖼️ INVOICE MODAL (Zoom ഒഴിവാക്കി നോർമൽ സൈസിൽ ഫിറ്റ് ചെയ്തു കാണിക്കാൻ) -->
+  <!-- 🖼️ INVOICE MODAL -->
   <div class="modal fade" id="invoiceModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-md">
       <div class="modal-content rounded-4 border-0 shadow">
@@ -1039,6 +1039,7 @@
           let item = e[3] || 'Expense';
           let purchaser = e[4] || '-';
           let amt = Number(e[5]).toFixed(2);
+          let invoiceUrl = e[8] || '';
 
           html += `<li class="list-group-item border-bottom bg-transparent py-2 narrow-list-item">
             <div class="d-flex justify-content-between align-items-center">
@@ -1047,7 +1048,10 @@
                 <div class="text-muted mb-1" style="font-size:0.75rem;"><i class="bi bi-calendar-event me-1 text-primary"></i>${formattedDate}</div>
                 <div class="text-muted" style="font-size:0.75rem;"><i class="bi bi-person-fill me-1 text-secondary"></i><strong>${purchaser}</strong></div>
               </div>
-              <span class="fw-bold text-danger fs-6">AED ${amt}</span>
+              <div class="text-end">
+                <span class="fw-bold text-danger fs-6">AED ${amt}</span>
+                ${invoiceUrl ? `<br><button onclick="openInvoiceModal('${invoiceUrl}')" class="btn btn-sm btn-outline-primary py-0 px-2 rounded-pill mt-1" style="font-size:0.7rem;"><i class="bi bi-file-earmark-image"></i> Invoice</button>` : ''}
+              </div>
             </div>
           </li>`;
         });
