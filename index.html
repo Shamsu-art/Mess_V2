@@ -117,10 +117,10 @@
     .member-card.positive { border-color: rgba(25, 135, 84, 0.4); }
     .member-card.negative { border-color: rgba(220, 53, 69, 0.4); }
     
-    /* Status based member card styling */
-    .member-card.status-active { border-color: rgba(13, 110, 253, 0.5); }
-    .member-card.status-closed { border-color: rgba(25, 135, 84, 0.5); }
-    .member-card.status-pending { border-color: rgba(255, 193, 7, 0.6); }
+    /* Status based member card border colors */
+    .member-card.status-active { border-color: rgba(13, 110, 253, 0.6); }
+    .member-card.status-closed { border-color: rgba(25, 135, 84, 0.6); }
+    .member-card.status-pending { border-color: rgba(255, 193, 7, 0.8); }
 
     .balance-badge {
       font-size: 1.15rem;
@@ -245,7 +245,7 @@
       </div>
     </div>
 
-    <!-- 🔒 STICKY YEAR & MONTH SELECTOR BAR (Without Print button, with Symbol-only Badge) -->
+    <!-- 🔒 STICKY YEAR & MONTH SELECTOR BAR -->
     <div class="container sticky-filter-container">
       <div class="card card-custom p-2 px-3 shadow-sm bg-body">
         <div class="d-flex align-items-center justify-content-between gap-2">
@@ -253,17 +253,17 @@
           <div class="d-flex align-items-center gap-2 w-100">
             <span class="text-primary fs-5"><i class="bi bi-calendar-event"></i></span>
             
-            <!-- Year Dropdown (Full view guaranteed) -->
+            <!-- Year Dropdown -->
             <select id="yearSelect" class="form-select form-select-sm fw-bold text-primary border-primary bg-body shadow-none" style="width: 95px;" onchange="onYearChange()">
               <option value="">Year</option>
             </select>
 
-            <!-- Month Dropdown (Full view guaranteed) -->
+            <!-- Month Dropdown -->
             <select id="monthSelect" class="form-select form-select-sm fw-bold text-primary border-primary bg-body shadow-none flex-grow-1" onchange="onMonthChange()">
               <option value="">Month</option>
             </select>
 
-            <!-- Symbol-Only Status Badge (Saves space) -->
+            <!-- Status Badge -->
             <span id="monthStatusBadge" class="badge rounded-pill d-none px-2 py-2 fs-6" title=""></span>
           </div>
 
@@ -725,7 +725,7 @@
     }
 
     function renderDashboardContent() {
-      if (!globalData) return;
+      if (!globalData || !loggedInUser) return;
 
       setupYearMonthDropdowns();
 
@@ -733,7 +733,20 @@
       let today = new Date();
       let currentMonthStr = ("0" + (today.getMonth() + 1)).slice(-2) + "-" + today.getFullYear();
       let isCurrentMonth = (globalData.selectedMonth === currentMonthStr);
-      let isSettled = !isCurrentMonth && globalData.summary.length > 0 && globalData.summary.every(m => Math.abs(m.netBalance) < 0.005);
+
+      let isAdmin = (loggedInUser.role && loggedInUser.role.toLowerCase() === 'admin');
+
+      // 🧠 Status Determination Logic (Member vs Admin)
+      let isSettled = false;
+      if (isAdmin) {
+        // Admin: Closed only if EVERYONE'S netBalance is 0
+        isSettled = !isCurrentMonth && globalData.summary.length > 0 && globalData.summary.every(m => Math.abs(m.netBalance || 0) < 0.005);
+      } else {
+        // Member: Closed only if THEIR OWN netBalance is 0
+        let myRecord = globalData.summary.find(m => m.id.toLowerCase() === loggedInUser.id.toLowerCase());
+        let myNet = myRecord ? Math.abs(myRecord.netBalance || 0) : Math.abs(loggedInUser.netBalance || 0);
+        isSettled = !isCurrentMonth && myNet < 0.005;
+      }
 
       if (isCurrentMonth) {
         currentMonthStatus = 'active';
@@ -753,7 +766,6 @@
       }
       badge.classList.remove('d-none');
 
-      let isAdmin = (loggedInUser.role && loggedInUser.role.toLowerCase() === 'admin');
       if (isAdmin) {
         document.getElementById('adminSummarySection').style.display = 'block';
         document.getElementById('totalExpense').innerText = 'AED ' + globalData.totalExpenseMonth.toFixed(2);
