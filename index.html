@@ -585,11 +585,39 @@
 
       let requestUrl = API_URL + '?t=' + new Date().getTime();
 
+      // ✨ ഒറ്റ ക്ലിക്കിൽ ഡാറ്റ എടുത്തു ലോഗിൻ ചെക്ക് ചെയ്യുന്ന രീതി
       fetch(requestUrl)
         .then(res => res.json())
         .then(data => {
           globalData = data;
-          processLoginCheck(phoneInput, dobInput, rememberMe, submitBtn);
+          
+          let matchedUser = globalData.summary.find(m => {
+            let mPhone = cleanPhone(m.phone);
+            let mDob = m.dob ? m.dob.toString().trim() : '';
+            return mPhone === phoneInput && mDob === dobInput;
+          });
+
+          if (matchedUser) {
+            loggedInUser = matchedUser;
+            if (rememberMe) {
+              localStorage.setItem('mess_logged_user', JSON.stringify(loggedInUser));
+            } else {
+              localStorage.removeItem('mess_logged_user');
+            }
+            
+            let targetSmartMonth = findSmartDefaultMonth(loggedInUser);
+            if (targetSmartMonth && targetSmartMonth !== globalData.selectedMonth) {
+              loadDataWithSpinner(targetSmartMonth);
+            } else {
+              submitBtn.disabled = false;
+              submitBtn.innerHTML = `<i class="bi bi-box-arrow-in-right me-1"></i> LOGIN`;
+              showDashboard();
+            }
+          } else {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<i class="bi bi-box-arrow-in-right me-1"></i> LOGIN`;
+            errorAlert.classList.remove('d-none');
+          }
         })
         .catch(err => {
           submitBtn.disabled = false;
@@ -1226,13 +1254,14 @@
           let matched = globalData.summary.find(x => x.id.toLowerCase() === mIdOrName.toLowerCase());
           let resolvedName = matched ? matched.name : mIdOrName;
           
-          // ✨ ഇവിടെ തുകയുടെ പ്ലസ് ചിഹ്നം ഒഴിവാക്കി ശരിയായ ഫോർമാറ്റിലേക്ക് മാറ്റുന്നു
-          let rawAmt = Number(p[4] || 0);
-          let amtVal = Math.round(rawAmt * 100) / 100;
+          // ✨ തുകയിലെ പ്ലസ് ചിഹ്നം അല്ലെങ്കിൽ സ്ട്രിങ് പ്രശ്നം ഒഴിവാക്കാൻ ഇവിടെ മാറ്റം വരുത്തിയിരിക്കുന്നു
+          let rawValStr = String(p[4] !== undefined && p[4] !== null ? p[4] : '0').replace(/[^0-9.-]+/g, "");
+          let amtVal = parseFloat(rawValStr) || 0;
+          amtVal = Math.round(amtVal * 100) / 100;
           if (Object.is(amtVal, -0)) amtVal = 0;
 
           let amtText = '';
-          let amtClass = 'text-success'; // സാധാരണ കളർ
+          let amtClass = 'text-success';
 
           if (amtVal === 0) {
             amtText = 'AED 0.00';
