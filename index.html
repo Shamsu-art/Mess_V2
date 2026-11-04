@@ -1133,7 +1133,25 @@
         let html = '<ul class="list-group list-group-flush small">';
         payments.forEach(p => {
           let formattedDate = formatDateDDMMYYYY(p[1] || p[0]);
-          let amt = parseFloat(p[4]).toFixed(2);
+          
+          // ✨ ഇവിടെയും പ്ലസ് ചിഹ്നം ഒഴിവാക്കി ശരിയായ ഫോർമാറ്റിലേക്ക് മാറ്റുന്നു
+          let rawValStr = String(p[4] !== undefined && p[4] !== null ? p[4] : '0').replace(/[^0-9.-]+/g, "");
+          let amtVal = parseFloat(rawValStr) || 0;
+          amtVal = Math.round(amtVal * 100) / 100;
+          if (Object.is(amtVal, -0)) amtVal = 0;
+
+          let amtText = '';
+          let amtClass = 'text-success';
+
+          if (amtVal === 0) {
+            amtText = 'AED 0.00';
+          } else if (amtVal > 0) {
+            amtText = 'AED ' + amtVal.toFixed(2);
+          } else {
+            amtText = '-AED ' + Math.abs(amtVal).toFixed(2);
+            amtClass = 'text-danger'; // നെഗറ്റീവ് ആണെങ്കിൽ RED കളർ
+          }
+
           let noteStr = p[5] ? String(p[5]).trim() : '';
           let noteHtml = noteStr ? `<div class="text-muted mt-1" style="font-size:0.75rem;"><i class="bi bi-chat-left-text me-1"></i>${noteStr}</div>` : '';
           
@@ -1143,7 +1161,7 @@
                 <div class="fw-bold text-body fs-6"><i class="bi bi-calendar-event me-1 text-primary"></i>${formattedDate}</div>
                 ${noteHtml}
               </div>
-              <span class="fw-bold text-success fs-6">+ AED ${amt}</span>
+              <span class="fw-bold ${amtClass} fs-6">${amtText}</span>
             </div>
           </li>`;
         });
