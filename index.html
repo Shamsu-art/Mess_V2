@@ -585,7 +585,6 @@
 
       let requestUrl = API_URL + '?t=' + new Date().getTime();
 
-      // ✨ ഒറ്റ ക്ലിക്കിൽ ഡാറ്റ എടുത്തു ലോഗിൻ ചെക്ക് ചെയ്യുന്ന രീതി
       fetch(requestUrl)
         .then(res => res.json())
         .then(data => {
@@ -839,7 +838,6 @@
         let isPositive = net >= 0;
         let badgeClass = net === 0 ? 'pos' : (isPositive ? 'pos' : 'neg');
         
-        // ✨ പ്ലസ് ഒഴിവാക്കി ശരിയായ ഫോർമാറ്റിലേക്ക് മാറ്റുന്നു (- ആണെങ്കിൽ -AED എന്ന് കാണിക്കും)
         let balText = '';
         if (net === 0) {
           balText = 'AED 0.00';
@@ -916,7 +914,6 @@
         let cardClass = net === 0 ? 'positive' : (isPositive ? 'positive' : 'negative');
         let badgeClass = net === 0 ? 'pos' : (isPositive ? 'pos' : 'neg');
         
-        // ✨ മറ്റ്‌ അംഗങ്ങളുടെ ലിസ്റ്റിലും പ്ലസ് ഒഴിവാക്കി ശരിയായ ഫോർമാറ്റിലേക്ക് മാറ്റുന്നു
         let balText = '';
         if (net === 0) {
           balText = 'AED 0.00';
@@ -1218,6 +1215,43 @@
       myMemberModal.show();
     }
 
+    function showAllExpensesModal() {
+      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-cart-fill text-danger me-1"></i> ALL EXPENSES`;
+      document.getElementById('memberModalSubTitle').innerHTML = `Mess: ${globalData.messTotalExp.toFixed(2)} | Water: ${globalData.waterTotalExp.toFixed(2)} | Special: ${globalData.specialTotalExp.toFixed(2)}`;
+
+      let txs = globalData.recentExpenses;
+      if (txs.length === 0) {
+        document.getElementById('memberModalContent').innerHTML = `<div class="text-center text-muted py-4">ചിലവുകൾ ഒന്നും രേഖപ്പെടുത്തിയിട്ടില്ല.</div>`;
+      } else {
+        let html = '<ul class="list-group list-group-flush small">';
+        txs.forEach(e => {
+          let formattedDate = formatDateDDMMYYYY(e[1]);
+          let item = e[3] || 'Expense';
+          let purchaser = e[4] || '-';
+          let amt = Number(e[5]).toFixed(2);
+          let invoiceUrl = e[8] || '';
+
+          html += `<li class="list-group-item border-bottom bg-transparent py-2 narrow-list-item">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="fw-bold text-body fs-6 mb-1">${item}</div>
+                <div class="text-muted mb-1" style="font-size:0.75rem;"><i class="bi bi-calendar-event me-1 text-primary"></i>${formattedDate}</div>
+                <div class="text-muted" style="font-size:0.75rem;"><i class="bi bi-person-fill me-1 text-secondary"></i><strong>${purchaser}</strong></div>
+              </div>
+              <div class="text-end">
+                <span class="fw-bold text-danger fs-6">AED ${amt}</span>
+                ${invoiceUrl ? `<br><button onclick="openInvoiceModal('${invoiceUrl}')" class="btn btn-sm btn-outline-primary py-0 px-2 rounded-pill mt-1" style="font-size:0.7rem;"><i class="bi bi-file-earmark-image"></i> Invoice</button>` : ''}
+              </div>
+            </div>
+          </li>`;
+        });
+        html += '</ul>';
+        document.getElementById('memberModalContent').innerHTML = html;
+      }
+      if (!myMemberModal) myMemberModal = new bootstrap.Modal(document.getElementById('memberModal'));
+      myMemberModal.show();
+    }
+
     function showAllPaymentsModal() {
       document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-wallet2 text-success me-1"></i> ALL COLLECTIONS`;
       document.getElementById('memberModalSubTitle').innerText = `Total Collected: AED ${globalData.totalPaymentsMonth.toFixed(2)}`;
@@ -1259,61 +1293,6 @@
               <div>
                 <div class="fw-bold text-body mb-1" style="font-size: 0.95rem;"><i class="bi bi-person-fill me-1 text-secondary"></i>${resolvedName}</div>
                 <div class="text-muted mb-1" style="font-size: 0.75rem;"><i class="bi bi-calendar-event me-1 text-primary"></i>${formattedDate}</div>
-                ${noteHtml}
-              </div>
-              <span class="fw-bold ${amtClass} fs-6">${amtText}</span>
-            </div>
-          </li>`;
-        });
-        html += '</ul>';
-        document.getElementById('memberModalContent').innerHTML = html;
-      }
-      if (!myMemberModal) myMemberModal = new bootstrap.Modal(document.getElementById('memberModal'));
-      myMemberModal.show();
-    }
-
-    function showAllPaymentsModal() {
-      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-wallet2 text-success me-1"></i> ALL COLLECTIONS`;
-      document.getElementById('memberModalSubTitle').innerText = `Total Collected: AED ${globalData.totalPaymentsMonth.toFixed(2)}`;
-
-      let payments = globalData.allPayments.filter(p => String(p[2]).trim() === globalData.selectedMonth);
-      if (payments.length === 0) {
-        document.getElementById('memberModalContent').innerHTML = `<div class="text-center text-muted py-4">Payments ഒന്നും രേഖപ്പെടുത്തിയിട്ടില്ല.</div>`;
-      } else {
-        let html = '<ul class="list-group list-group-flush small">';
-        payments.forEach(p => {
-          let formattedDate = formatDateDDMMYYYY(p[1] || p[0]);
-          let mIdOrName = p[3] ? String(p[3]).trim() : '';
-          
-          let matched = globalData.summary.find(x => x.id.toLowerCase() === mIdOrName.toLowerCase());
-          let resolvedName = matched ? matched.name : mIdOrName;
-          
-          // ✨ തുകയിലെ പ്ലസ് ചിഹ്നം അല്ലെങ്കിൽ സ്ട്രിങ് പ്രശ്നം ഒഴിവാക്കാൻ ഇവിടെ മാറ്റം വരുത്തിയിരിക്കുന്നു
-          let rawValStr = String(p[4] !== undefined && p[4] !== null ? p[4] : '0').replace(/[^0-9.-]+/g, "");
-          let amtVal = parseFloat(rawValStr) || 0;
-          amtVal = Math.round(amtVal * 100) / 100;
-          if (Object.is(amtVal, -0)) amtVal = 0;
-
-          let amtText = '';
-          let amtClass = 'text-success';
-
-          if (amtVal === 0) {
-            amtText = 'AED 0.00';
-          } else if (amtVal > 0) {
-            amtText = 'AED ' + amtVal.toFixed(2);
-          } else {
-            amtText = '-AED ' + Math.abs(amtVal).toFixed(2);
-            amtClass = 'text-danger'; // നെഗറ്റീവ് ആണെങ്കിൽ RED കളർ
-          }
-
-          let noteStr = p[5] ? String(p[5]).trim() : '';
-          let noteHtml = noteStr ? `<div class="text-muted mt-1" style="font-size:0.75rem;"><i class="bi bi-chat-left-text me-1"></i>${noteStr}</div>` : '';
-
-          html += `<li class="list-group-item border-bottom bg-transparent py-2 narrow-list-item">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <div class="fw-bold text-body fs-6"><i class="bi bi-calendar-event me-1 text-primary"></i>${formattedDate}</div>
-                <div class="text-muted small mt-1"><i class="bi bi-person-fill me-1 text-secondary"></i><strong>${resolvedName}</strong></div>
                 ${noteHtml}
               </div>
               <span class="fw-bold ${amtClass} fs-6">${amtText}</span>
