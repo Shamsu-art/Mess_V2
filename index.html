@@ -28,7 +28,7 @@
       transition: background-color 0.3s ease;
     }
 
-    /* 🔒 STICKY APP HEADER (Locks on scroll) */
+    /* 🔒 STICKY APP HEADER */
     .app-header {
       background: var(--primary-gradient);
       color: white;
@@ -41,10 +41,10 @@
       z-index: 1030;
     }
 
-    /* 🔒 STICKY FILTER BAR (Locks right below header so it won't scroll away) */
+    /* 🔒 STICKY FILTER BAR */
     .sticky-filter-container {
       position: sticky;
-      top: 65px; /* Adjust based on header height */
+      top: 65px;
       z-index: 1020;
       background-color: var(--bg-color);
       padding-top: 8px;
@@ -111,10 +111,16 @@
       box-shadow: 0 4px 15px rgba(0,0,0,0.05);
       border: 1.5px solid transparent;
       background: var(--bs-body-bg);
+      transition: all 0.3s ease;
     }
     
     .member-card.positive { border-color: rgba(25, 135, 84, 0.4); }
     .member-card.negative { border-color: rgba(220, 53, 69, 0.4); }
+    
+    /* Status based member card styling */
+    .member-card.status-active { border-color: rgba(13, 110, 253, 0.5); }
+    .member-card.status-closed { border-color: rgba(25, 135, 84, 0.5); }
+    .member-card.status-pending { border-color: rgba(255, 193, 7, 0.6); }
 
     .balance-badge {
       font-size: 1.15rem;
@@ -239,33 +245,27 @@
       </div>
     </div>
 
-    <!-- 🔒 STICKY YEAR & MONTH SELECTOR BAR (Locked on Scroll) -->
+    <!-- 🔒 STICKY YEAR & MONTH SELECTOR BAR (Without Print button, with Symbol-only Badge) -->
     <div class="container sticky-filter-container">
       <div class="card card-custom p-2 px-3 shadow-sm bg-body">
         <div class="d-flex align-items-center justify-content-between gap-2">
           
-          <!-- Professional Year & Month Selection Group -->
-          <div class="d-flex align-items-center gap-2 flex-grow-1">
+          <div class="d-flex align-items-center gap-2 w-100">
             <span class="text-primary fs-5"><i class="bi bi-calendar-event"></i></span>
             
-            <!-- Year Dropdown -->
-            <select id="yearSelect" class="form-select form-select-sm fw-bold text-primary border-primary bg-body shadow-none" style="max-width: 100px;" onchange="onYearChange()">
+            <!-- Year Dropdown (Full view guaranteed) -->
+            <select id="yearSelect" class="form-select form-select-sm fw-bold text-primary border-primary bg-body shadow-none" style="width: 95px;" onchange="onYearChange()">
               <option value="">Year</option>
             </select>
 
-            <!-- Month Dropdown -->
+            <!-- Month Dropdown (Full view guaranteed) -->
             <select id="monthSelect" class="form-select form-select-sm fw-bold text-primary border-primary bg-body shadow-none flex-grow-1" onchange="onMonthChange()">
               <option value="">Month</option>
             </select>
 
-            <!-- Status Badge -->
-            <span id="monthStatusBadge" class="badge rounded-pill d-none px-2 py-1"></span>
+            <!-- Symbol-Only Status Badge (Saves space) -->
+            <span id="monthStatusBadge" class="badge rounded-pill d-none px-2 py-2 fs-6" title=""></span>
           </div>
-
-          <!-- Print Button -->
-          <button class="btn btn-sm btn-outline-secondary rounded-pill px-2" onclick="window.print()" title="Print Statement">
-            <i class="bi bi-printer"></i>
-          </button>
 
         </div>
       </div>
@@ -426,6 +426,7 @@
     var myLoadingModal = null;
     var myImageZoomModal = null;
     var uploadedBase64Image = "";
+    var currentMonthStatus = 'active'; // active, closed, pending
 
     const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
@@ -735,14 +736,20 @@
       let isSettled = !isCurrentMonth && globalData.summary.length > 0 && globalData.summary.every(m => Math.abs(m.netBalance) < 0.005);
 
       if (isCurrentMonth) {
-        badge.className = "badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1";
-        badge.innerHTML = '<i class="bi bi-activity me-1"></i>ACTIVE';
+        currentMonthStatus = 'active';
+        badge.className = "badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill";
+        badge.innerHTML = '<i class="bi bi-activity"></i>';
+        badge.title = "ACTIVE";
       } else if (isSettled) {
-        badge.className = "badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1";
-        badge.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i>CLOSED';
+        currentMonthStatus = 'closed';
+        badge.className = "badge bg-success-subtle text-success border border-success-subtle rounded-pill";
+        badge.innerHTML = '<i class="bi bi-check-circle-fill"></i>';
+        badge.title = "CLOSED";
       } else {
-        badge.className = "badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2 py-1";
-        badge.innerHTML = '<i class="bi bi-clock-history me-1"></i>PENDING';
+        currentMonthStatus = 'pending';
+        badge.className = "badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill";
+        badge.innerHTML = '<i class="bi bi-clock-history"></i>';
+        badge.title = "PENDING";
       }
       badge.classList.remove('d-none');
 
@@ -780,58 +787,56 @@
       let cleanPhoneStr = m.phone ? m.phone.toString().replace(/^['"]/, '').trim() : '';
 
       let balanceSectionHtml = '';
+      let statusCardClass = `status-${currentMonthStatus}`;
+
       if (shareVal > 0) {
         let isPositive = net >= 0;
-        let cardClass = net === 0 ? 'positive' : (isPositive ? 'positive' : 'negative');
         let badgeClass = net === 0 ? 'pos' : (isPositive ? 'pos' : 'neg');
         let balSign = net > 0 ? '+' : (net < 0 ? '-' : '');
         let balText = balSign + 'AED ' + Math.abs(net).toFixed(2);
         let balSubText = net === 0 ? 'SETTLED' : (isPositive ? 'കിട്ടാനുണ്ട്' : 'കൊടുക്കാനുണ്ട്');
 
-        container.className = `card member-card ${cardClass} position-relative shadow-sm mb-4 text-center`;
         balanceSectionHtml = `
           <div class="mb-3 p-3 bg-body-secondary rounded-4">
             <div class="balance-badge ${badgeClass} mb-1">${balText}</div>
             <div style="font-size: 0.75rem;" class="text-muted fw-bold">${balSubText}</div>
           </div>`;
-      } else {
-        balanceSectionHtml = '';
       }
 
+      container.className = `card member-card ${statusCardClass} position-relative shadow-sm mb-4 text-center`;
+
       container.innerHTML = `
-        <div class="card member-card position-relative shadow-sm mb-4 text-center">
-          <div class="position-absolute top-0 end-0 m-3">
-            <button class="btn btn-sm btn-outline-secondary rounded-circle" onclick="openProfileModal()" title="Edit Profile">
-              <i class="bi bi-gear-fill"></i>
-            </button>
-          </div>
+        <div class="position-absolute top-0 end-0 m-3">
+          <button class="btn btn-sm btn-outline-secondary rounded-circle" onclick="openProfileModal()" title="Edit Profile">
+            <i class="bi bi-gear-fill"></i>
+          </button>
+        </div>
 
-          <div class="mb-2 mt-1">
-            ${photoHtml}
-          </div>
-          <h4 class="fw-bold text-body mb-1">${m.name}</h4>
-          <div class="text-muted small mb-3"><i class="bi bi-telephone-fill me-1"></i>${cleanPhoneStr}</div>
+        <div class="mb-2 mt-1">
+          ${photoHtml}
+        </div>
+        <h4 class="fw-bold text-body mb-1">${m.name}</h4>
+        <div class="text-muted small mb-3"><i class="bi bi-telephone-fill me-1"></i>${cleanPhoneStr}</div>
 
-          ${balanceSectionHtml}
+        ${balanceSectionHtml}
 
-          <div class="row g-2 text-center pt-2">
-            <div class="col-12 mb-1" style="cursor: pointer;" onclick="showMemberBreakdown('${m.id}', '${m.name}')">
-              <div class="p-3 rounded-3 shadow-sm share-box-custom">
-                <div class="stat-label text-primary fw-bold" style="font-size: 0.78rem;"><i class="bi bi-pie-chart-fill me-1"></i>SHARE</div>
-                <div class="fs-4 fw-extrabold text-primary mt-1">AED ${m.share.toFixed(2)}</div>
-              </div>
+        <div class="row g-2 text-center pt-2">
+          <div class="col-12 mb-1" style="cursor: pointer;" onclick="showMemberBreakdown('${m.id}', '${m.name}')">
+            <div class="p-3 rounded-3 shadow-sm share-box-custom">
+              <div class="stat-label text-primary fw-bold" style="font-size: 0.78rem;"><i class="bi bi-pie-chart-fill me-1"></i>SHARE</div>
+              <div class="fs-4 fw-extrabold text-primary mt-1">AED ${m.share.toFixed(2)}</div>
             </div>
-            <div class="col-6" style="cursor: pointer;" onclick="showMemberTransactions('${m.id}', '${m.name}')">
-              <div class="p-2 bg-body-tertiary rounded-3 border">
-                <div class="stat-label text-secondary">PURCHASED</div>
-                <div class="fs-6 fw-bold text-body">AED ${m.spent.toFixed(2)}</div>
-              </div>
+          </div>
+          <div class="col-6" style="cursor: pointer;" onclick="showMemberTransactions('${m.id}', '${m.name}')">
+            <div class="p-2 bg-body-tertiary rounded-3 border">
+              <div class="stat-label text-secondary">PURCHASED</div>
+              <div class="fs-6 fw-bold text-body">AED ${m.spent.toFixed(2)}</div>
             </div>
-            <div class="col-6" style="cursor: pointer;" onclick="showMemberPaymentsDetail('${m.id}', '${m.name}')">
-              <div class="p-2 bg-body-tertiary rounded-3 border">
-                <div class="stat-label text-success">PAID</div>
-                <div class="fs-6 fw-bold text-success">AED ${m.paid.toFixed(2)}</div>
-              </div>
+          </div>
+          <div class="col-6" style="cursor: pointer;" onclick="showMemberPaymentsDetail('${m.id}', '${m.name}')">
+            <div class="p-2 bg-body-tertiary rounded-3 border">
+              <div class="stat-label text-success">PAID</div>
+              <div class="fs-6 fw-bold text-success">AED ${m.paid.toFixed(2)}</div>
             </div>
           </div>
         </div>`;
