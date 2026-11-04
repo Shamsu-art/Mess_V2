@@ -570,7 +570,7 @@
       return digits.slice(-9);
     }
 
-    function handleLogin(event) {
+        function handleLogin(event) {
       event.preventDefault();
       let phoneInput = cleanPhone(document.getElementById('loginPhone').value);
       let dobInput = document.getElementById('loginDob').value.trim();
@@ -580,13 +580,22 @@
 
       errorAlert.classList.add('d-none');
       submitBtn.disabled = true;
-      submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Login...`;
+      submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Fetching Live Data...`;
 
-      if (!globalData || !globalData.summary) {
-        fetchDataSilent(null, () => processLoginCheck(phoneInput, dobInput, rememberMe, submitBtn));
-      } else {
-        processLoginCheck(phoneInput, dobInput, rememberMe, submitBtn);
-      }
+      // 🔄 LOGIN ചെയ്യുമ്പോൾ എപ്പോഴും പുതിയ ഡാറ്റ GOOGLE SHEET-ൽ നിന്ന് റീഡ് ചെയ്യുന്നു
+      let requestUrl = API_URL + '?t=' + new Date().getTime(); // Cache ഒഴിവാക്കാൻ Cache-buster ചേർക്കുന്നു
+
+      fetch(requestUrl)
+        .then(res => res.json())
+        .then(data => {
+          globalData = data; // ഏറ്റവും പുതിയ ഡാറ്റ അപ്ഡേറ്റ് ചെയ്തു
+          processLoginCheck(phoneInput, dobInput, rememberMe, submitBtn);
+        })
+        .catch(err => {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = `<i class="bi bi-box-arrow-in-right me-1"></i> LOGIN`;
+          alert("ലോഗിൻ ചെയ്യുന്നതിൽ തടസ്സം നേരിട്ടു: " + err.message);
+        });
     }
 
     function processLoginCheck(phoneInput, dobInput, rememberMe, submitBtn) {
@@ -619,6 +628,7 @@
         errorAlert.classList.remove('d-none');
       }
     }
+
 
     function findSmartDefaultMonth(user) {
       if (!globalData || !globalData.availableMonths) return null;
