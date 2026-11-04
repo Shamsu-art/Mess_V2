@@ -28,6 +28,7 @@
       transition: background-color 0.3s ease;
     }
 
+    /* 🔒 STICKY APP HEADER (Locks on scroll) */
     .app-header {
       background: var(--primary-gradient);
       color: white;
@@ -37,7 +38,18 @@
       box-shadow: 0 3px 10px rgba(0,0,0,0.12);
       position: sticky;
       top: 0;
+      z-index: 1030;
+    }
+
+    /* 🔒 STICKY FILTER BAR (Locks right below header so it won't scroll away) */
+    .sticky-filter-container {
+      position: sticky;
+      top: 65px; /* Adjust based on header height */
       z-index: 1020;
+      background-color: var(--bg-color);
+      padding-top: 8px;
+      padding-bottom: 4px;
+      transition: background-color 0.3s ease;
     }
 
     .theme-toggle-btn {
@@ -72,7 +84,7 @@
     }
 
     .main-container {
-      margin-top: 15px;
+      margin-top: 5px;
       padding: 0 12px;
     }
 
@@ -122,7 +134,6 @@
       font-weight: 700;
     }
     
-    /* 🖼️ ഫോട്ടോയുടെ വലിപ്പം ഇവിടെ 95px ആയി കൂട്ടിയിരിക്കുന്നു */
     .profile-avatar {
       width: 95px;
       height: 95px;
@@ -228,25 +239,39 @@
       </div>
     </div>
 
-    <div class="container main-container">
-      
-      <div class="card card-custom p-3 mb-3 bg-body">
-        <div class="d-flex align-items-center justify-content-between">
-          <div class="d-flex align-items-center gap-2">
-            <span class="fw-bold small text-secondary">
-              <i class="bi bi-calendar3 text-primary"></i>
-            </span>
-            <select id="monthSelect" class="form-select form-select-sm w-auto fw-bold text-primary border-1" onchange="onMonthChange()">
-              <option value="">Loading...</option>
+    <!-- 🔒 STICKY YEAR & MONTH SELECTOR BAR (Locked on Scroll) -->
+    <div class="container sticky-filter-container">
+      <div class="card card-custom p-2 px-3 shadow-sm bg-body">
+        <div class="d-flex align-items-center justify-content-between gap-2">
+          
+          <!-- Professional Year & Month Selection Group -->
+          <div class="d-flex align-items-center gap-2 flex-grow-1">
+            <span class="text-primary fs-5"><i class="bi bi-calendar-event"></i></span>
+            
+            <!-- Year Dropdown -->
+            <select id="yearSelect" class="form-select form-select-sm fw-bold text-primary border-primary bg-body shadow-none" style="max-width: 100px;" onchange="onYearChange()">
+              <option value="">Year</option>
             </select>
-            <span id="monthStatusBadge" class="badge rounded-pill d-none"></span>
+
+            <!-- Month Dropdown -->
+            <select id="monthSelect" class="form-select form-select-sm fw-bold text-primary border-primary bg-body shadow-none flex-grow-1" onchange="onMonthChange()">
+              <option value="">Month</option>
+            </select>
+
+            <!-- Status Badge -->
+            <span id="monthStatusBadge" class="badge rounded-pill d-none px-2 py-1"></span>
           </div>
-          <button class="btn btn-sm btn-outline-secondary" onclick="window.print()" title="Print Statement">
+
+          <!-- Print Button -->
+          <button class="btn btn-sm btn-outline-secondary rounded-pill px-2" onclick="window.print()" title="Print Statement">
             <i class="bi bi-printer"></i>
           </button>
+
         </div>
       </div>
+    </div>
 
+    <div class="container main-container">
       <div id="loggedMemberContainer"></div>
 
       <div id="adminSummarySection" style="display: none;">
@@ -328,7 +353,7 @@
     </div>
   </div>
 
-  <!-- 👤 GENERAL POPUP MODAL (Member Details Modal) -->
+  <!-- 👤 GENERAL POPUP MODAL -->
   <div class="modal fade" id="memberModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content rounded-4 border-0 shadow">
@@ -402,6 +427,8 @@
     var myImageZoomModal = null;
     var uploadedBase64Image = "";
 
+    const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
     window.onload = function() {
       let modalEl = document.getElementById('loadingModal');
       if (modalEl) myLoadingModal = new bootstrap.Modal(modalEl);
@@ -448,24 +475,9 @@
       let toastEl = document.getElementById('liveToast');
       let toastBody = document.getElementById('toastMessage');
       toastBody.innerText = message;
-      
       toastEl.className = `toast align-items-center text-white ${isSuccess ? 'bg-success' : 'bg-danger'} border-0 shadow-lg rounded-4`;
-      
       let toast = new bootstrap.Toast(toastEl, { delay: 3000 });
       toast.show();
-    }
-
-    function formatMonthDisplay(mStr) {
-      if (!mStr) return '';
-      let parts = mStr.toString().trim().split(/[-/]/);
-      if (parts.length === 2) {
-        let monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-        let mNum, year;
-        if (parts[0].length === 4) { year = parts[0]; mNum = parseInt(parts[1], 10); } 
-        else { mNum = parseInt(parts[0], 10); year = parts[1]; }
-        if (mNum >= 1 && mNum <= 12) return monthNames[mNum - 1] + " " + year;
-      }
-      return mStr;
     }
 
     function formatDateDDMMYYYY(dStr) {
@@ -480,9 +492,20 @@
       return dStr;
     }
 
-    function fetchDataSilent(month, callback) {
+    function parseMonthYearStr(mStr) {
+      if (!mStr) return { monthNum: 1, yearNum: 2026, monthName: 'January' };
+      let parts = mStr.toString().trim().split(/[-/]/);
+      let mNum = 1, year = 2026;
+      if (parts.length === 2) {
+        if (parts[0].length === 4) { year = parseInt(parts[0], 10); mNum = parseInt(parts[1], 10); } 
+        else { mNum = parseInt(parts[0], 10); year = parseInt(parts[1], 10); }
+      }
+      return { monthNum: mNum, yearNum: year, monthName: MONTH_NAMES[mNum - 1] || '' };
+    }
+
+    function fetchDataSilent(targetMonth, callback) {
       let requestUrl = API_URL;
-      if (month) requestUrl += '?month=' + encodeURIComponent(month);
+      if (targetMonth) requestUrl += '?month=' + encodeURIComponent(targetMonth);
 
       fetch(requestUrl)
         .then(res => res.json())
@@ -555,7 +578,6 @@
       let submitBtn = document.getElementById('loginSubmitBtn');
 
       errorAlert.classList.add('d-none');
-      
       submitBtn.disabled = true;
       submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Login...`;
 
@@ -576,19 +598,48 @@
 
       if (matchedUser) {
         loggedInUser = matchedUser;
-        
         if (rememberMe) {
           localStorage.setItem('mess_logged_user', JSON.stringify(loggedInUser));
         } else {
           localStorage.removeItem('mess_logged_user');
         }
         
-        showDashboard();
+        let targetSmartMonth = findSmartDefaultMonth(loggedInUser);
+        if (targetSmartMonth && targetSmartMonth !== globalData.selectedMonth) {
+          loadDataWithSpinner(targetSmartMonth);
+        } else {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = `<i class="bi bi-box-arrow-in-right me-1"></i> LOGIN`;
+          showDashboard();
+        }
       } else {
         submitBtn.disabled = false;
         submitBtn.innerHTML = `<i class="bi bi-box-arrow-in-right me-1"></i> LOGIN`;
         errorAlert.classList.remove('d-none');
       }
+    }
+
+    function findSmartDefaultMonth(user) {
+      if (!globalData || !globalData.availableMonths) return null;
+      let isAdmin = (user.role && user.role.toLowerCase() === 'admin');
+      
+      if (globalData.monthSummaries && Object.keys(globalData.monthSummaries).length > 0) {
+        for (let mCode of globalData.availableMonths) {
+          let monthSummary = globalData.monthSummaries[mCode];
+          if (monthSummary && Array.isArray(monthSummary)) {
+            if (isAdmin) {
+              let hasPending = monthSummary.some(m => Math.abs(m.netBalance || 0) > 0.005);
+              if (hasPending) return mCode;
+            } else {
+              let myRec = monthSummary.find(m => m.id.toLowerCase() === user.id.toLowerCase());
+              if (myRec && Math.abs(myRec.netBalance || 0) > 0.005) {
+                return mCode;
+              }
+            }
+          }
+        }
+      }
+      return globalData.selectedMonth;
     }
 
     function handleLogout() {
@@ -600,7 +651,6 @@
     function showLogin() {
       document.getElementById('loginSection').style.setProperty('display', 'block', 'important');
       document.getElementById('dashboardSection').style.setProperty('display', 'none', 'important');
-      
       let submitBtn = document.getElementById('loginSubmitBtn');
       if (submitBtn) {
         submitBtn.disabled = false;
@@ -614,26 +664,71 @@
       renderDashboardContent();
     }
 
+    function setupYearMonthDropdowns() {
+      let yearSelect = document.getElementById('yearSelect');
+      let monthSelect = document.getElementById('monthSelect');
+      
+      if (!globalData || !globalData.availableMonths) return;
+
+      let yearMap = {};
+      globalData.availableMonths.forEach(mCode => {
+        let parsed = parseMonthYearStr(mCode);
+        if (!yearMap[parsed.yearNum]) yearMap[parsed.yearNum] = [];
+        yearMap[parsed.yearNum].push({ code: mCode, monthNum: parsed.monthNum, name: parsed.monthName });
+      });
+
+      let currentSelectedParsed = parseMonthYearStr(globalData.selectedMonth);
+
+      yearSelect.innerHTML = '';
+      let years = Object.keys(yearMap).sort((a,b) => b - a);
+      years.forEach(y => {
+        let opt = document.createElement('option');
+        opt.value = y;
+        opt.innerText = y;
+        if (parseInt(y, 10) === currentSelectedParsed.yearNum) opt.selected = true;
+        yearSelect.appendChild(opt);
+      });
+
+      populateMonthsForSelectedYear();
+    }
+
+    function populateMonthsForSelectedYear() {
+      let selectedYear = document.getElementById('yearSelect').value;
+      let monthSelect = document.getElementById('monthSelect');
+      monthSelect.innerHTML = '';
+
+      let availableInYear = globalData.availableMonths.filter(mCode => {
+        return parseMonthYearStr(mCode).yearNum.toString() === selectedYear.toString();
+      });
+
+      availableInYear.forEach(mCode => {
+        let parsed = parseMonthYearStr(mCode);
+        let opt = document.createElement('option');
+        opt.value = mCode;
+        opt.innerText = parsed.monthName;
+        if (mCode === globalData.selectedMonth) opt.selected = true;
+        monthSelect.appendChild(opt);
+      });
+    }
+
+    function onYearChange() {
+      populateMonthsForSelectedYear();
+      onMonthChange();
+    }
+
     function onMonthChange() {
       let selectedMonth = document.getElementById('monthSelect').value;
-      if (selectedMonth) loadDataWithSpinner(selectedMonth);
+      if (selectedMonth && selectedMonth !== globalData.selectedMonth) {
+        loadDataWithSpinner(selectedMonth);
+      }
     }
 
     function renderDashboardContent() {
       if (!globalData) return;
 
-      let select = document.getElementById('monthSelect');
-      select.innerHTML = '';
-      globalData.availableMonths.forEach(m => {
-        let opt = document.createElement('option');
-        opt.value = m;
-        opt.innerText = formatMonthDisplay(m);
-        if (m === globalData.selectedMonth) opt.selected = true;
-        select.appendChild(opt);
-      });
+      setupYearMonthDropdowns();
 
       let badge = document.getElementById('monthStatusBadge');
-      
       let today = new Date();
       let currentMonthStr = ("0" + (today.getMonth() + 1)).slice(-2) + "-" + today.getFullYear();
       let isCurrentMonth = (globalData.selectedMonth === currentMonthStr);
@@ -985,6 +1080,7 @@
     function showMemberTransactions(memberId, memberName) {
       let mIdTrim = memberId.toString().trim().toLowerCase();
       let mNameTrim = memberName ? memberName.toString().trim().toLowerCase() : '';
+      let isSelf = loggedInUser && (loggedInUser.id.toLowerCase() === mIdTrim || (loggedInUser.name && loggedInUser.name.toLowerCase() === mNameTrim));
 
       let memberTx = globalData.recentExpenses.filter(e => {
         let paidBy = e[4] ? e[4].toString().trim().toLowerCase() : '';
@@ -1005,12 +1101,14 @@
           let purchaserName = e[4] || 'Unknown';
           let invoiceUrl = e[8] || '';
 
+          let purchaserHtml = isSelf ? '' : `<div class="text-muted" style="font-size:0.75rem;"><i class="bi bi-person-fill me-1 text-secondary"></i><strong>${purchaserName}</strong></div>`;
+
           html += `<li class="list-group-item px-1 py-2 border-bottom bg-transparent narrow-list-item">
             <div class="d-flex justify-content-between align-items-start">
               <div>
                 <div class="fw-bold text-body fs-6 mb-1">${item}</div>
                 <div class="text-muted mb-1" style="font-size:0.75rem;"><i class="bi bi-calendar-event me-1 text-primary"></i>${formattedDate}</div>
-                <div class="text-muted" style="font-size:0.75rem;"><i class="bi bi-person-fill me-1 text-secondary"></i><strong>${purchaserName}</strong></div>
+                ${purchaserHtml}
               </div>
               <div class="text-end">
                 <span class="fw-bold text-danger fs-6">AED ${amount}</span>
