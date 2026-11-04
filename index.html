@@ -583,7 +583,6 @@
       submitBtn.disabled = true;
       submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Fetching Live Data...`;
 
-      // Cache ഒഴിവാക്കി പുതിയ ഡാറ്റ എപ്പോഴും ലോഗിനിൽ ലോഡ് ചെയ്യുന്നു
       let requestUrl = API_URL + '?t=' + new Date().getTime();
 
       fetch(requestUrl)
@@ -746,7 +745,6 @@
 
       let isAdmin = (loggedInUser.role && loggedInUser.role.toLowerCase() === 'admin');
 
-      // 🧠 Individual Status Logic
       let isSettled = false;
       if (isAdmin) {
         isSettled = !isCurrentMonth && globalData.summary.length > 0 && globalData.summary.every(m => Math.abs(m.netBalance || 0) < 0.005);
@@ -812,8 +810,17 @@
       if (shareVal > 0) {
         let isPositive = net >= 0;
         let badgeClass = net === 0 ? 'pos' : (isPositive ? 'pos' : 'neg');
-        let balSign = net > 0 ? '+' : (net < 0 ? '-' : '');
-        let balText = balSign + 'AED ' + Math.abs(net).toFixed(2);
+        
+        // ✨ പ്ലസ് ഒഴിവാക്കി ശരിയായ ഫോർമാറ്റിലേക്ക് മാറ്റുന്നു (+ ഒഴിവാക്കി, മൈനസ് ആണെങ്കിൽ -AED എന്ന് കാണിക്കും)
+        let balText = '';
+        if (net === 0) {
+          balText = 'AED 0.00';
+        } else if (net > 0) {
+          balText = 'AED ' + net.toFixed(2);
+        } else {
+          balText = '-AED ' + Math.abs(net).toFixed(2);
+        }
+
         let balSubText = net === 0 ? 'SETTLED' : (isPositive ? 'കിട്ടാനുണ്ട്' : 'കൊടുക്കാനുണ്ട്');
 
         balanceSectionHtml = `
@@ -880,8 +887,17 @@
         let isPositive = net >= 0;
         let cardClass = net === 0 ? 'positive' : (isPositive ? 'positive' : 'negative');
         let badgeClass = net === 0 ? 'pos' : (isPositive ? 'pos' : 'neg');
-        let balSign = net > 0 ? '+' : (net < 0 ? '-' : '');
-        let balText = balSign + 'AED ' + Math.abs(net).toFixed(2);
+        
+        // ✨ മറ്റ്‌ അംഗങ്ങളുടെ ലിസ്റ്റിലും പ്ലസ് ഒഴിവാക്കി ശരിയായ ഫോർമാറ്റിലേക്ക് മാറ്റുന്നു
+        let balText = '';
+        if (net === 0) {
+          balText = 'AED 0.00';
+        } else if (net > 0) {
+          balText = 'AED ' + net.toFixed(2);
+        } else {
+          balText = '-AED ' + Math.abs(net).toFixed(2);
+        }
+
         let balSubText = net === 0 ? 'Settled' : (isPositive ? 'കിട്ടാനുണ്ട്' : 'കൊടുക്കാനുണ്ട്');
         let cleanPhoneStr = m.phone ? m.phone.toString().replace(/^['"]/, '').trim() : '';
 
@@ -929,8 +945,16 @@
       let isPositive = net >= 0;
       let cardClass = net === 0 ? 'positive' : (isPositive ? 'positive' : 'negative');
       let badgeClass = net === 0 ? 'pos' : (isPositive ? 'pos' : 'neg');
-      let balSign = net > 0 ? '+' : (net < 0 ? '-' : '');
-      let balText = balSign + 'AED ' + Math.abs(net).toFixed(2);
+      
+      let balText = '';
+      if (net === 0) {
+        balText = 'AED 0.00';
+      } else if (net > 0) {
+        balText = 'AED ' + net.toFixed(2);
+      } else {
+        balText = '-AED ' + Math.abs(net).toFixed(2);
+      }
+
       let balSubText = net === 0 ? 'SETTLED' : (isPositive ? 'കിട്ടാനുണ്ട്' : 'കൊടുക്കാനുണ്ട്');
 
       let photoHtml = (m.photo && m.photo.trim() !== "") ? `<img src="${m.photo}" class="profile-avatar shadow-sm" alt="Photo" onclick="zoomProfileImage('${m.photo}')" title="Click to view full image">` : `<div class="profile-avatar d-flex align-items-center justify-content-center bg-primary text-white fw-bold fs-3 mx-auto">${m.name.charAt(0)}</div>`;
