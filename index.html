@@ -505,8 +505,8 @@
     }
 
     function fetchDataSilent(targetMonth, callback) {
-      let requestUrl = API_URL;
-      if (targetMonth) requestUrl += '?month=' + encodeURIComponent(targetMonth);
+      let requestUrl = API_URL + '?t=' + new Date().getTime();
+      if (targetMonth) requestUrl += '&month=' + encodeURIComponent(targetMonth);
 
       fetch(requestUrl)
         .then(res => res.json())
@@ -522,8 +522,8 @@
 
     function loadDataWithSpinner(month) {
       if (myLoadingModal) myLoadingModal.show();
-      let requestUrl = API_URL;
-      if (month) requestUrl += '?month=' + encodeURIComponent(month);
+      let requestUrl = API_URL + '?t=' + new Date().getTime();
+      if (month) requestUrl += '&month=' + encodeURIComponent(month);
 
       fetch(requestUrl)
         .then(res => res.json())
@@ -570,7 +570,8 @@
       return digits.slice(-9);
     }
 
-        function handleLogin(event) {
+    /* 🔄 LIVE DATA FETCH ON LOGIN BUTTON CLICK */
+    function handleLogin(event) {
       event.preventDefault();
       let phoneInput = cleanPhone(document.getElementById('loginPhone').value);
       let dobInput = document.getElementById('loginDob').value.trim();
@@ -582,13 +583,13 @@
       submitBtn.disabled = true;
       submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Fetching Live Data...`;
 
-      // 🔄 LOGIN ചെയ്യുമ്പോൾ എപ്പോഴും പുതിയ ഡാറ്റ GOOGLE SHEET-ൽ നിന്ന് റീഡ് ചെയ്യുന്നു
-      let requestUrl = API_URL + '?t=' + new Date().getTime(); // Cache ഒഴിവാക്കാൻ Cache-buster ചേർക്കുന്നു
+      // Cache ഒഴിവാക്കി പുതിയ ഡാറ്റ എപ്പോഴും ലോഗിനിൽ ലോഡ് ചെയ്യുന്നു
+      let requestUrl = API_URL + '?t=' + new Date().getTime();
 
       fetch(requestUrl)
         .then(res => res.json())
         .then(data => {
-          globalData = data; // ഏറ്റവും പുതിയ ഡാറ്റ അപ്ഡേറ്റ് ചെയ്തു
+          globalData = data;
           processLoginCheck(phoneInput, dobInput, rememberMe, submitBtn);
         })
         .catch(err => {
@@ -628,7 +629,6 @@
         errorAlert.classList.remove('d-none');
       }
     }
-
 
     function findSmartDefaultMonth(user) {
       if (!globalData || !globalData.availableMonths) return null;
@@ -746,13 +746,11 @@
 
       let isAdmin = (loggedInUser.role && loggedInUser.role.toLowerCase() === 'admin');
 
-      // 🧠 Status Determination Logic (Member vs Admin)
+      // 🧠 Individual Status Logic
       let isSettled = false;
       if (isAdmin) {
-        // Admin: Closed only if EVERYONE'S netBalance is 0
         isSettled = !isCurrentMonth && globalData.summary.length > 0 && globalData.summary.every(m => Math.abs(m.netBalance || 0) < 0.005);
       } else {
-        // Member: Closed only if THEIR OWN netBalance is 0
         let myRecord = globalData.summary.find(m => m.id.toLowerCase() === loggedInUser.id.toLowerCase());
         let myNet = myRecord ? Math.abs(myRecord.netBalance || 0) : Math.abs(loggedInUser.netBalance || 0);
         isSettled = !isCurrentMonth && myNet < 0.005;
