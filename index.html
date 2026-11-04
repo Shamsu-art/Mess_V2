@@ -1134,7 +1134,7 @@
         payments.forEach(p => {
           let formattedDate = formatDateDDMMYYYY(p[1] || p[0]);
           
-          // ✨ ഇവിടെയും പ്ലസ് ചിഹ്നം ഒഴിവാക്കി ശരിയായ ഫോർമാറ്റിലേക്ക് മാറ്റുന്നു
+          // ✨ ഇവിടെ പ്ലസ് ചിഹ്നം പൂർണ്ണമായി ഒഴിവാക്കി തുക മാത്രം കാണിക്കുന്ന കോഡ്
           let rawValStr = String(p[4] !== undefined && p[4] !== null ? p[4] : '0').replace(/[^0-9.-]+/g, "");
           let amtVal = parseFloat(rawValStr) || 0;
           amtVal = Math.round(amtVal * 100) / 100;
