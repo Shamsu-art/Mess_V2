@@ -622,16 +622,16 @@
                 .then(res => res.json())
                 .then(monthData => {
                   globalData = monthData;
+                  resetLoginBtn(); // 👈 ബട്ടൺ ഉടൻ നോർമൽ ആകുന്നു
                   showDashboard();
-                  resetLoginBtn();
                 })
                 .catch(err => {
-                  showDashboard();
                   resetLoginBtn();
+                  showDashboard();
                 });
             } else {
+              resetLoginBtn(); // 👈 ബട്ടൺ ഉടൻ നോർമൽ ആകുന്നു
               showDashboard();
-              resetLoginBtn();
             }
           } else {
             resetLoginBtn();
