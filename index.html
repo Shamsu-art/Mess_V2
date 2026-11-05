@@ -622,16 +622,18 @@
                 .then(res => res.json())
                 .then(monthData => {
                   globalData = monthData;
-                  resetLoginBtn(); // 👈 ബട്ടൺ ഉടൻ നോർമൽ ആകുന്നു
                   showDashboard();
+                  // ഡാഷ്‌ബോർഡ് വന്നതിന് ശേഷം മാത്രം ബട്ടൺ റീസെറ്റ് ചെയ്യുന്നു (Background-ൽ)
+                  setTimeout(() => { resetLoginBtn(); }, 300);
                 })
                 .catch(err => {
-                  resetLoginBtn();
                   showDashboard();
+                  setTimeout(() => { resetLoginBtn(); }, 300);
                 });
             } else {
-              resetLoginBtn(); // 👈 ബട്ടൺ ഉടൻ നോർമൽ ആകുന്നു
               showDashboard();
+              // ഡാഷ്‌ബോർഡ് വന്നതിന് ശേഷം മാത്രം ബട്ടൺ റീസെറ്റ് ചെയ്യുന്നു (Background-ൽ)
+              setTimeout(() => { resetLoginBtn(); }, 300);
             }
           } else {
             resetLoginBtn();
@@ -643,7 +645,7 @@
           alert("ലോഗിൻ ചെയ്യുന്നതിൽ തടസ്സം നേരിട്ടു: " + err.message);
         });
     }
-
+    
     function resetLoginBtn() {
       let submitBtn = document.getElementById('loginSubmitBtn');
       if (submitBtn) {
