@@ -294,7 +294,7 @@
         </div>
 
         <div class="mb-3">
-          <button id="otherMembersToggleBtn" class="btn btn-outline-primary w-100 fw-bold rounded-pill shadow-sm py-2" type="button" data-bs-toggle="collapse" data-bs-target="#otherMembersCollapse" aria-expanded="false" onclick="toggleOtherMembersBtnText()">
+          <button id="otherMembersToggleBtn" class="btn btn-outline-primary w-100 fw-bold rounded-pill shadow-sm py-2" type="button" data-bs-toggle="collapse" data-bs-target="#otherMembersCollapse" aria-expanded="false">
             <i class="bi bi-people-fill me-1"></i> <span id="otherMembersBtnText">View Other Members</span> (<span id="memberCount">0</span>)
           </button>
           <div class="collapse mt-3" id="otherMembersCollapse">
@@ -426,7 +426,7 @@
     var myLoadingModal = null;
     var myImageZoomModal = null;
     var uploadedBase64Image = "";
-    var currentMonthStatus = 'active'; // active, closed, pending
+    var currentMonthStatus = 'active';
 
     const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
@@ -436,6 +436,17 @@
       
       let zoomModalEl = document.getElementById('imageZoomModal');
       if (zoomModalEl) myImageZoomModal = new bootstrap.Modal(zoomModalEl);
+
+      // ✨ Other Members Collapse Event Listener setup
+      let otherCollapseEl = document.getElementById('otherMembersCollapse');
+      if (otherCollapseEl) {
+        otherCollapseEl.addEventListener('show.bs.collapse', function () {
+          document.getElementById('otherMembersBtnText').innerText = 'Hide Other Members';
+        });
+        otherCollapseEl.addEventListener('hide.bs.collapse', function () {
+          document.getElementById('otherMembersBtnText').innerText = 'View Other Members';
+        });
+      }
 
       loggedInUser = null;
       let savedUser = localStorage.getItem('mess_logged_user');
@@ -470,19 +481,6 @@
         toggleIcon.classList.remove("bi-eye");
         toggleIcon.classList.add("bi-eye-slash");
       }
-    }
-
-    function toggleOtherMembersBtnText() {
-      let collapseEl = document.getElementById('otherMembersCollapse');
-      let btnTextSpan = document.getElementById('otherMembersBtnText');
-      // ഇത് തുറന്നിരിക്കുകയാണെങ്കിൽ ക്ലിക്ക് ചെയ്യുമ്പോൾ അടയും, അപ്പോൾ 'View' എന്ന് കാണിക്കണം
-      setTimeout(() => {
-        if (collapseEl.classList.contains('show')) {
-          btnTextSpan.innerText = 'Hide Other Members';
-        } else {
-          btnTextSpan.innerText = 'View Other Members';
-        }
-      }, 150);
     }
 
     function showToast(message, isSuccess = true) {
@@ -624,66 +622,33 @@
                 .then(res => res.json())
                 .then(monthData => {
                   globalData = monthData;
-                  // ഡാഷ്‌ബോർഡ് ഓപ്പൺ ആക്കിയതിന് ശേഷം മാത്രം ബട്ടൺ റീസെറ്റ് ചെയ്യുന്നു
                   showDashboard();
-                  setTimeout(() => {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = `<i class="bi bi-box-arrow-in-right me-1"></i> LOGIN`;
-                  }, 500);
+                  resetLoginBtn();
                 })
                 .catch(err => {
                   showDashboard();
-                  submitBtn.disabled = false;
-                  submitBtn.innerHTML = `<i class="bi bi-box-arrow-in-right me-1"></i> LOGIN`;
+                  resetLoginBtn();
                 });
             } else {
-              // ഡാഷ്‌ബോർഡ് ഓപ്പൺ ആക്കിയതിന് ശേഷം മാത്രം ബട്ടൺ റീസെറ്റ് ചെയ്യുന്നു
               showDashboard();
-              setTimeout(() => {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = `<i class="bi bi-box-arrow-in-right me-1"></i> LOGIN`;
-              }, 500);
+              resetLoginBtn();
             }
           } else {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = `<i class="bi bi-box-arrow-in-right me-1"></i> LOGIN`;
+            resetLoginBtn();
             errorAlert.classList.remove('d-none');
           }
         })
         .catch(err => {
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = `<i class="bi bi-box-arrow-in-right me-1"></i> LOGIN`;
+          resetLoginBtn();
           alert("ലോഗിൻ ചെയ്യുന്നതിൽ തടസ്സം നേരിട്ടു: " + err.message);
         });
     }
-    function processLoginCheck(phoneInput, dobInput, rememberMe, submitBtn) {
-      let errorAlert = document.getElementById('loginErrorAlert');
-      let matchedUser = globalData.summary.find(m => {
-        let mPhone = cleanPhone(m.phone);
-        let mDob = m.dob ? m.dob.toString().trim() : '';
-        return mPhone === phoneInput && mDob === dobInput;
-      });
 
-      if (matchedUser) {
-        loggedInUser = matchedUser;
-        if (rememberMe) {
-          localStorage.setItem('mess_logged_user', JSON.stringify(loggedInUser));
-        } else {
-          localStorage.removeItem('mess_logged_user');
-        }
-        
-        let targetSmartMonth = findSmartDefaultMonth(loggedInUser);
-        if (targetSmartMonth && targetSmartMonth !== globalData.selectedMonth) {
-          loadDataWithSpinner(targetSmartMonth);
-        } else {
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = `<i class="bi bi-box-arrow-in-right me-1"></i> LOGIN`;
-          showDashboard();
-        }
-      } else {
+    function resetLoginBtn() {
+      let submitBtn = document.getElementById('loginSubmitBtn');
+      if (submitBtn) {
         submitBtn.disabled = false;
         submitBtn.innerHTML = `<i class="bi bi-box-arrow-in-right me-1"></i> LOGIN`;
-        errorAlert.classList.remove('d-none');
       }
     }
 
@@ -719,11 +684,7 @@
     function showLogin() {
       document.getElementById('loginSection').style.setProperty('display', 'block', 'important');
       document.getElementById('dashboardSection').style.setProperty('display', 'none', 'important');
-      let submitBtn = document.getElementById('loginSubmitBtn');
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = `<i class="bi bi-box-arrow-in-right me-1"></i> LOGIN`;
-      }
+      resetLoginBtn();
     }
 
     function showDashboard() {
@@ -1142,7 +1103,6 @@
 
       document.getElementById('memberModalContent').innerHTML = html;
       
-      // ✨ Collapse തുറക്കുമ്പോഴും അടയ്ക്കുമ്പോഴും ബട്ടൺ ടെക്സ്റ്റ് മാറാൻ വേണ്ടി
       let collapseEl = document.getElementById('involvedBillsCollapse');
       if (collapseEl) {
         collapseEl.addEventListener('show.bs.collapse', function () {
@@ -1187,7 +1147,6 @@
           } else if (amtVal > 0) {
             amtText = 'AED ' + amtVal.toFixed(2);
           } else {
-            // ✨ ഇവിടെയും Refund ലേബൽ നൽകുന്നു
             amtText = 'Refund: AED ' + Math.abs(amtVal).toFixed(2);
             amtClass = 'text-danger';
           }
@@ -1325,7 +1284,6 @@
           } else if (amtVal > 0) {
             amtText = 'AED ' + amtVal.toFixed(2);
           } else {
-            // ✨ നെഗറ്റീവ് തുകയ്ക്ക് Refund ലേബൽ നൽകുന്നു
             amtText = 'Refund: AED ' + Math.abs(amtVal).toFixed(2);
             amtClass = 'text-danger';
           }
