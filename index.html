@@ -594,8 +594,6 @@
 
       errorAlert.classList.add('d-none');
       submitBtn.disabled = true;
-      
-      // ✨ ഇവിടെ "Fetching Live Data..." എന്നതിന് പകരം "Logging in..." എന്ന് മാറ്റുന്നു
       submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Logging in...`;
 
       let requestUrl = API_URL + '?t=' + new Date().getTime();
@@ -621,27 +619,30 @@
             
             let targetSmartMonth = findSmartDefaultMonth(loggedInUser);
             if (targetSmartMonth && targetSmartMonth !== globalData.selectedMonth) {
-              // വേറൊരു മാസമാണ് ലോഡ് ചെയ്യേണ്ടതെങ്കിൽ ആ ഡാറ്റ കൂടി എടുത്തിട്ട് പേജ് ഓപ്പൺ ചെയ്യും
               let targetUrl = API_URL + '?t=' + new Date().getTime() + '&month=' + encodeURIComponent(targetSmartMonth);
               fetch(targetUrl)
                 .then(res => res.json())
                 .then(monthData => {
                   globalData = monthData;
-                  // ഡാറ്റ പൂർണ്ണമായി ലോഡ് ആയ ശേഷം മാത്രം ബട്ടൺ സാധാരണ നിലയിലാക്കി ഡാഷ്‌ബോർഡ് കാണിക്കുന്നു
-                  submitBtn.disabled = false;
-                  submitBtn.innerHTML = `<i class="bi bi-box-arrow-in-right me-1"></i> LOGIN`;
+                  // ഡാഷ്‌ബോർഡ് ഓപ്പൺ ആക്കിയതിന് ശേഷം മാത്രം ബട്ടൺ റീസെറ്റ് ചെയ്യുന്നു
                   showDashboard();
+                  setTimeout(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = `<i class="bi bi-box-arrow-in-right me-1"></i> LOGIN`;
+                  }, 500);
                 })
                 .catch(err => {
+                  showDashboard();
                   submitBtn.disabled = false;
                   submitBtn.innerHTML = `<i class="bi bi-box-arrow-in-right me-1"></i> LOGIN`;
-                  showDashboard();
                 });
             } else {
-              // കറന്റ് മാസം ആണെങ്കിൽ ഡാഷ്‌ബോർഡ് ഓപ്പൺ ചെയ്യുന്നു
-              submitBtn.disabled = false;
-              submitBtn.innerHTML = `<i class="bi bi-box-arrow-in-right me-1"></i> LOGIN`;
+              // ഡാഷ്‌ബോർഡ് ഓപ്പൺ ആക്കിയതിന് ശേഷം മാത്രം ബട്ടൺ റീസെറ്റ് ചെയ്യുന്നു
               showDashboard();
+              setTimeout(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<i class="bi bi-box-arrow-in-right me-1"></i> LOGIN`;
+              }, 500);
             }
           } else {
             submitBtn.disabled = false;
@@ -655,7 +656,6 @@
           alert("ലോഗിൻ ചെയ്യുന്നതിൽ തടസ്സം നേരിട്ടു: " + err.message);
         });
     }
-
     function processLoginCheck(phoneInput, dobInput, rememberMe, submitBtn) {
       let errorAlert = document.getElementById('loginErrorAlert');
       let matchedUser = globalData.summary.find(m => {
