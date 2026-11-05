@@ -294,8 +294,8 @@
         </div>
 
         <div class="mb-3">
-          <button class="btn btn-outline-primary w-100 fw-bold rounded-pill shadow-sm py-2" type="button" data-bs-toggle="collapse" data-bs-target="#otherMembersCollapse" aria-expanded="false">
-            <i class="bi bi-people-fill me-1"></i> മറ്റു അംഗങ്ങളുടെ വിവരങ്ങൾ കാണുക (<span id="memberCount">0</span>)
+          <button id="otherMembersToggleBtn" class="btn btn-outline-primary w-100 fw-bold rounded-pill shadow-sm py-2" type="button" data-bs-toggle="collapse" data-bs-target="#otherMembersCollapse" aria-expanded="false" onclick="toggleOtherMembersBtnText()">
+            <i class="bi bi-people-fill me-1"></i> <span id="otherMembersBtnText">View Other Members</span> (<span id="memberCount">0</span>)
           </button>
           <div class="collapse mt-3" id="otherMembersCollapse">
             <div class="mb-2">
@@ -472,6 +472,19 @@
       }
     }
 
+    function toggleOtherMembersBtnText() {
+      let collapseEl = document.getElementById('otherMembersCollapse');
+      let btnTextSpan = document.getElementById('otherMembersBtnText');
+      // ഇത് തുറന്നിരിക്കുകയാണെങ്കിൽ ക്ലിക്ക് ചെയ്യുമ്പോൾ അടയും, അപ്പോൾ 'View' എന്ന് കാണിക്കണം
+      setTimeout(() => {
+        if (collapseEl.classList.contains('show')) {
+          btnTextSpan.innerText = 'Hide Other Members';
+        } else {
+          btnTextSpan.innerText = 'View Other Members';
+        }
+      }, 150);
+    }
+
     function showToast(message, isSuccess = true) {
       let toastEl = document.getElementById('liveToast');
       let toastBody = document.getElementById('toastMessage');
@@ -581,7 +594,9 @@
 
       errorAlert.classList.add('d-none');
       submitBtn.disabled = true;
-      submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Fetching Live Data...`;
+      
+      // ✨ ഇവിടെ "Fetching Live Data..." എന്നതിന് പകരം "Logging in..." എന്ന് മാറ്റുന്നു
+      submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Logging in...`;
 
       let requestUrl = API_URL + '?t=' + new Date().getTime();
 
@@ -606,8 +621,24 @@
             
             let targetSmartMonth = findSmartDefaultMonth(loggedInUser);
             if (targetSmartMonth && targetSmartMonth !== globalData.selectedMonth) {
-              loadDataWithSpinner(targetSmartMonth);
+              // വേറൊരു മാസമാണ് ലോഡ് ചെയ്യേണ്ടതെങ്കിൽ ആ ഡാറ്റ കൂടി എടുത്തിട്ട് പേജ് ഓപ്പൺ ചെയ്യും
+              let targetUrl = API_URL + '?t=' + new Date().getTime() + '&month=' + encodeURIComponent(targetSmartMonth);
+              fetch(targetUrl)
+                .then(res => res.json())
+                .then(monthData => {
+                  globalData = monthData;
+                  // ഡാറ്റ പൂർണ്ണമായി ലോഡ് ആയ ശേഷം മാത്രം ബട്ടൺ സാധാരണ നിലയിലാക്കി ഡാഷ്‌ബോർഡ് കാണിക്കുന്നു
+                  submitBtn.disabled = false;
+                  submitBtn.innerHTML = `<i class="bi bi-box-arrow-in-right me-1"></i> LOGIN`;
+                  showDashboard();
+                })
+                .catch(err => {
+                  submitBtn.disabled = false;
+                  submitBtn.innerHTML = `<i class="bi bi-box-arrow-in-right me-1"></i> LOGIN`;
+                  showDashboard();
+                });
             } else {
+              // കറന്റ് മാസം ആണെങ്കിൽ ഡാഷ്‌ബോർഡ് ഓപ്പൺ ചെയ്യുന്നു
               submitBtn.disabled = false;
               submitBtn.innerHTML = `<i class="bi bi-box-arrow-in-right me-1"></i> LOGIN`;
               showDashboard();
@@ -888,8 +919,8 @@
           </div>
           <div class="col-6" style="cursor: pointer;" onclick="showMemberPaymentsDetail('${m.id}', '${m.name}')">
             <div class="p-2 bg-body-tertiary rounded-3 border">
-              <div class="stat-label text-success">PAID</div>
-              <div class="fs-6 fw-bold text-success">AED ${m.paid.toFixed(2)}</div>
+              <div class="stat-label ${m.paid < 0 ? 'text-danger' : 'text-success'}">${m.paid < 0 ? 'REFUND' : 'PAID'}</div>
+              <div class="fs-6 fw-bold ${m.paid < 0 ? 'text-danger' : 'text-success'}">AED ${Math.abs(m.paid || 0).toFixed(2)}</div>
             </div>
           </div>
         </div>`;
@@ -1019,8 +1050,8 @@
             </div>
             <div class="col-6" style="cursor: pointer;" onclick="showMemberPaymentsDetail('${m.id}', '${m.name}')">
               <div class="p-2 bg-body-tertiary rounded-3 border">
-                <div class="stat-label text-success">PAID</div>
-                <div class="fs-6 fw-bold text-success">AED ${m.paid.toFixed(2)}</div>
+                <div class="stat-label ${m.paid < 0 ? 'text-danger' : 'text-success'}">${m.paid < 0 ? 'REFUND' : 'PAID'}</div>
+                <div class="fs-6 fw-bold ${m.paid < 0 ? 'text-danger' : 'text-success'}">AED ${Math.abs(m.paid || 0).toFixed(2)}</div>
               </div>
             </div>
           </div>
@@ -1076,8 +1107,8 @@
       if (memberTx.length > 0) {
         html += `
           <div class="border-top pt-2">
-            <button class="btn btn-outline-primary w-100 fw-bold rounded-pill shadow-sm py-2" type="button" data-bs-toggle="collapse" data-bs-target="#involvedBillsCollapse" aria-expanded="false">
-              <i class="bi bi-receipt me-1"></i> View Invoices (${memberTx.length})
+            <button id="toggleInvoicesBtn" class="btn btn-outline-primary w-100 fw-bold rounded-pill shadow-sm py-2" type="button" data-bs-toggle="collapse" data-bs-target="#involvedBillsCollapse" aria-expanded="false">
+              <i class="bi bi-receipt me-1"></i> <span id="invoiceBtnText">Show Invoices</span> (${memberTx.length})
             </button>
             <div class="collapse mt-3" id="involvedBillsCollapse">
               <ul class="list-group list-group-flush small">`;
@@ -1110,6 +1141,18 @@
       }
 
       document.getElementById('memberModalContent').innerHTML = html;
+      
+      // ✨ Collapse തുറക്കുമ്പോഴും അടയ്ക്കുമ്പോഴും ബട്ടൺ ടെക്സ്റ്റ് മാറാൻ വേണ്ടി
+      let collapseEl = document.getElementById('involvedBillsCollapse');
+      if (collapseEl) {
+        collapseEl.addEventListener('show.bs.collapse', function () {
+          document.getElementById('invoiceBtnText').innerText = 'Hide Invoices';
+        });
+        collapseEl.addEventListener('hide.bs.collapse', function () {
+          document.getElementById('invoiceBtnText').innerText = 'Show Invoices';
+        });
+      }
+
       if (!myMemberModal) myMemberModal = new bootstrap.Modal(document.getElementById('memberModal'));
       myMemberModal.show();
     }
@@ -1144,7 +1187,8 @@
           } else if (amtVal > 0) {
             amtText = 'AED ' + amtVal.toFixed(2);
           } else {
-            amtText = '-AED ' + Math.abs(amtVal).toFixed(2);
+            // ✨ ഇവിടെയും Refund ലേബൽ നൽകുന്നു
+            amtText = 'Refund: AED ' + Math.abs(amtVal).toFixed(2);
             amtClass = 'text-danger';
           }
 
@@ -1281,7 +1325,8 @@
           } else if (amtVal > 0) {
             amtText = 'AED ' + amtVal.toFixed(2);
           } else {
-            amtText = '-AED ' + Math.abs(amtVal).toFixed(2);
+            // ✨ നെഗറ്റീവ് തുകയ്ക്ക് Refund ലേബൽ നൽകുന്നു
+            amtText = 'Refund: AED ' + Math.abs(amtVal).toFixed(2);
             amtClass = 'text-danger';
           }
 
