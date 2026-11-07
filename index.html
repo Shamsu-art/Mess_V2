@@ -654,34 +654,47 @@
       }
     }
 
-    function findSmartDefaultMonth(user) {
+    
+function findSmartDefaultMonth(user) {
   if (!globalData || !globalData.availableMonths) return null;
   let isAdmin = (user.role && user.role.toLowerCase() === 'admin');
   
-  // ഏറ്റവും പുതിയ മാസം മുതൽ പിന്നോട്ട് പരിശോധിക്കുന്നു
-  for (let mCode of globalData.availableMonths) {
-    // ആ മാസത്തെ ഡാറ്റ ലഭ്യമാണോ എന്ന് നോക്കുക
-    let monthSummary = globalData.monthSummaries ? globalData.monthSummaries[mCode] : null;
-    
-    if (monthSummary && Array.isArray(monthSummary)) {
-      if (isAdmin) {
-        // അഡ്മിൻ ആണെങ്കിൽ: ഏതെങ്കിലും ഒരു മെമ്പറുടെ ബാലൻസ് ബാക്കി ഉണ്ടെങ്കിൽ ആ മാസം കാണിക്കും
-        let hasPending = monthSummary.some(m => Math.abs(m.netBalance || 0) > 0.005);
-        if (hasPending) return mCode;
-      } else {
-        // സാധാരണ മെമ്പർ ആണെങ്കിൽ: ലോഗിൻ ചെയ്ത ആ മെമ്പറുടെ മാത്രം ബാലൻസ് നോക്കും
-        let myRec = monthSummary.find(m => m.id.toLowerCase() === user.id.toLowerCase());
-        
-        // ആ മെമ്പറെ ആ മാസത്തിൽ കണ്ടെത്തുകയും, അദ്ദേഹത്തിന് കൊടുക്കാനോ കിട്ടാനോ തുക (netBalance) ഉണ്ടെങ്കിൽ മാത്രം ആ മാസം സെലക്ട് ചെയ്യും
-        if (myRec && Math.abs(myRec.netBalance || 0) > 0.005) {
-          return mCode;
+  let today = new Date();
+  let currentMonthStr = ("0" + (today.getMonth() + 1)).slice(-2) + "-" + today.getFullYear();
+
+  // 1. ആദ്യം ലഭ്യമായ എല്ലാ മാസങ്ങളും (പുതിയ മാസം മുതൽ പഴയ മാസം വരെ) പരിശോധിക്കുക
+  if (globalData.monthSummaries && Object.keys(globalData.monthSummaries).length > 0) {
+    for (let mCode of globalData.availableMonths) {
+      // കറന്റ് മാസം ഒഴits നിർത്തി, കഴിഞ്ഞ മാസങ്ങളിൽ പെൻഡിങ് ഉണ്ടോ എന്ന് നോക്കുന്നു
+      // (അല്ലെങ്കിൽ കറന്റ് മാസത്തിന് മുമ്പുള്ള മാസങ്ങൾ മാത്രം പരിശോധിക്കാൻ)
+      let monthSummary = globalData.monthSummaries[mCode];
+      
+      if (monthSummary && Array.isArray(monthSummary)) {
+        if (isAdmin) {
+          // അഡ്മിൻ ആണെങ്കിൽ: ഏതെങ്കിലും ഒരു മെമ്പറുടെ ബാലൻസ് ബാക്കി ഉണ്ടെങ്കിൽ ആ മാസം കാണിക്കും
+          let hasPending = monthSummary.some(m => Math.abs(m.netBalance || 0) > 0.005);
+          if (hasPending) return mCode;
+        } else {
+          // സാധാരണ മെമ്പർ ആണെങ്കിൽ: ആ മെമ്പറുടെ മാത്രം ബാലൻസ് നോക്കും
+          let myRec = monthSummary.find(m => m.id.toLowerCase() === user.id.toLowerCase());
+          
+          // ആ മെമ്പറുടെ കഴിഞ്ഞ മാസങ്ങളിൽ എവിടെയെങ്കിലും തുക ബാക്കി (Pending) ഉണ്ടെങ്കിൽ ആ മാസം കാണിക്കും
+          if (myRec && Math.abs(myRec.netBalance || 0) > 0.005) {
+            return mCode;
+          }
         }
       }
     }
   }
-  // ബാക്കി എല്ലാ മാസവും ക്ലിയർ ആണെങ്കിൽ കറന്റ് മാസം റിട്ടേൺ ചെയ്യും
-  return globalData.selectedMonth;
+
+  // 2. പെൻഡിങ് ഉള്ള പഴയ മാസങ്ങൾ ഒന്നും ഇല്ലെങ്കിൽ മാത്രം നേരെ Active (Current) മാസം കാണിക്കും
+  if (globalData.availableMonths.includes(currentMonthStr)) {
+    return currentMonthStr;
+  }
+  
+  return globalData.availableMonths[0] || globalData.selectedMonth;
 }
+
 
 
     function handleLogout() {
