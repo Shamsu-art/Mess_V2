@@ -662,23 +662,20 @@ function findSmartDefaultMonth(user) {
   let today = new Date();
   let currentMonthStr = ("0" + (today.getMonth() + 1)).slice(-2) + "-" + today.getFullYear();
 
-  // 1. ആദ്യം ലഭ്യമായ എല്ലാ മാസങ്ങളും (പുതിയ മാസം മുതൽ പഴയ മാസം വരെ) പരിശോധിക്കുക
+  // ലഭ്യമായ എല്ലാ മാസങ്ങളും (ഏറ്റവും പുതിയത് മുതൽ പഴയത് വരെ) പരിശോധിക്കുന്നു
   if (globalData.monthSummaries && Object.keys(globalData.monthSummaries).length > 0) {
     for (let mCode of globalData.availableMonths) {
-      // കറന്റ് മാസം ഒഴits നിർത്തി, കഴിഞ്ഞ മാസങ്ങളിൽ പെൻഡിങ് ഉണ്ടോ എന്ന് നോക്കുന്നു
-      // (അല്ലെങ്കിൽ കറന്റ് മാസത്തിന് മുമ്പുള്ള മാസങ്ങൾ മാത്രം പരിശോധിക്കാൻ)
       let monthSummary = globalData.monthSummaries[mCode];
       
       if (monthSummary && Array.isArray(monthSummary)) {
         if (isAdmin) {
-          // അഡ്മിൻ ആണെങ്കിൽ: ഏതെങ്കിലും ഒരു മെമ്പറുടെ ബാലൻസ് ബാക്കി ഉണ്ടെങ്കിൽ ആ മാസം കാണിക്കും
+          // 👨‍💼 അഡ്മിൻ ആണെങ്കിൽ: ഏതെങ്കിലും ഒരു മെമ്പറുടെ ബാലൻസ് ബാക്കി ഉണ്ടോ എന്ന് നോക്കും
           let hasPending = monthSummary.some(m => Math.abs(m.netBalance || 0) > 0.005);
           if (hasPending) return mCode;
         } else {
-          // സാധാരണ മെമ്പർ ആണെങ്കിൽ: ആ മെമ്പറുടെ മാത്രം ബാലൻസ് നോക്കും
+          // 👤 സാധാരണ മെമ്പർ ആണെങ്കിൽ: ആ മെമ്പറുടെ മാത്രം ബാലൻസ് നോക്കും
           let myRec = monthSummary.find(m => m.id.toLowerCase() === user.id.toLowerCase());
           
-          // ആ മെമ്പറുടെ കഴിഞ്ഞ മാസങ്ങളിൽ എവിടെയെങ്കിലും തുക ബാക്കി (Pending) ഉണ്ടെങ്കിൽ ആ മാസം കാണിക്കും
           if (myRec && Math.abs(myRec.netBalance || 0) > 0.005) {
             return mCode;
           }
@@ -687,13 +684,14 @@ function findSmartDefaultMonth(user) {
     }
   }
 
-  // 2. പെൻഡിങ് ഉള്ള പഴയ മാസങ്ങൾ ഒന്നും ഇല്ലെങ്കിൽ മാത്രം നേരെ Active (Current) മാസം കാണിക്കും
+  // പെൻഡിങ് ഉള്ള പഴയ മാസങ്ങൾ ഒന്നും ഇല്ലെങ്കിൽ മാത്രം നേരെ Current Month കാണിക്കും
   if (globalData.availableMonths.includes(currentMonthStr)) {
     return currentMonthStr;
   }
   
   return globalData.availableMonths[0] || globalData.selectedMonth;
 }
+
 
 
 
