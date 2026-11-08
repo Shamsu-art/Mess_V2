@@ -628,12 +628,21 @@
           let targetSmartMonth = findSmartDefaultMonth(loggedInUser);
 
           if (targetSmartMonth) {
-            let targetUrl = API_URL + '?t=' + new Date().getTime() + '&month=' + encodeURIComponent(targetSmartMonth);
+            let targetUrl = API_URL +
+              '?t=' + new Date().getTime() +
+              '&month=' + encodeURIComponent(targetSmartMonth);
 
             fetch(targetUrl)
               .then(res => res.json())
               .then(monthData => {
                 globalData = monthData;
+                
+                // ✨ പുതിയ മാസത്തെ summary-ൽ നിന്ന് loggedInUser അപ്ഡേറ്റ് ചെയ്യുക
+                let found = monthData.summary.find(m => m.id.toLowerCase() === loggedInUser.id.toLowerCase());
+                if (found) {
+                  loggedInUser = found;
+                }
+
                 showDashboard();
                 resetLoginBtn();
               })
@@ -643,6 +652,11 @@
               });
 
           } else {
+            // Default month ഇല്ലെങ്കിൽ കറന്റ് മാസത്തെ summary-ൽ നിന്ന് അപ്ഡേറ്റ് ചെയ്യുക
+            let found = globalData.summary.find(m => m.id.toLowerCase() === loggedInUser.id.toLowerCase());
+            if (found) {
+              loggedInUser = found;
+            }
             showDashboard();
             resetLoginBtn();
           }
