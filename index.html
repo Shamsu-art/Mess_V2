@@ -168,6 +168,21 @@
       border-color: #0d6efd !important;
       transform: translateY(-2px);
     }
+
+    /* Soft Placeholder Styling */
+    ::placeholder {
+      color: #adb5bd !important;
+      opacity: 0.6 !important;
+      font-size: 0.85rem;
+    }
+    :-ms-input-placeholder {
+      color: #adb5bd !important;
+      opacity: 0.6 !important;
+    }
+    ::-ms-input-placeholder {
+      color: #adb5bd !important;
+      opacity: 0.6 !important;
+    }
   </style>
 </head>
 <body>
@@ -180,19 +195,17 @@
       </button>
       <div>
         <h6 class="fw-bold m-0 text-truncate" style="font-size: 0.98rem;">BIN HUMAIDAN ROOM 110</h6>
-        <p class="small text-white-50 m-0" style="font-size: 0.70rem;">AL QUSAIS, DUBAI</p>
+        <p class="small text-white-50 m-0" style="font-size: 0.70rem;">AL QUSAIS - DUBAI</p>
         <p class="small text-white-50 m-0" style="font-size: 0.65rem; opacity: 0.8;">Real-Time Statements & Monthly Report</p>
       </div>
     </div>
 
     <div class="container main-container d-flex justify-content-center align-items-center" style="min-height: 78vh;">
       <div class="card card-custom p-4 bg-body shadow-lg w-100" style="max-width: 400px;">
-        <div class="text-center mb-3">
-          <img src="https://lh3.googleusercontent.com/d/1xS4_2a81YHXvBDSPSnJJ_WE8s7-0cuuc" alt="Logo" class="rounded-circle mb-2 border shadow-sm" style="width: 160px; height: 160px; object-fit: cover;">
-          <h5 class="fw-bold text-primary mt-1" style="font-size: 1.15rem;">MEMBER LOGIN</h5>
-          <p class="small text-muted mb-2" style="font-size: 0.8rem;">Please enter your Mobile & Birth Of Year</p>
+        <div class="text-center mb-2">
+          <img src="https://lh3.googleusercontent.com/d/1xS4_2a81YHXvBDSPSnJJ_WE8s7-0cuuc" alt="Logo" class="rounded-circle mb-1 border shadow-sm" style="width: 170px; height: 170px; object-fit: cover;">
+          <h5 class="fw-bold text-primary mt-2" style="font-size: 1.15rem;">MEMBER LOGIN</h5>
         </div>
-
         
         <div id="loginErrorAlert" class="alert alert-danger py-2 small d-none text-center" role="alert">
           മൊബൈൽ നമ്പറോ ജനിച്ച വർഷമോ തെറ്റാണ്! കൃത്യമായി പരിശോധിക്കുക.
@@ -203,14 +216,14 @@
             <label class="form-label small fw-bold">Mobile Number</label>
             <div class="input-group">
               <span class="input-group-text"><i class="bi bi-phone"></i></span>
-              <input type="text" id="loginPhone" class="form-control" placeholder="Eg: 501234567" required>
+              <input type="text" id="loginPhone" class="form-control" placeholder="Ex: 501234567" required>
             </div>
           </div>
           <div class="mb-3">
             <label class="form-label small fw-bold">Birth Of Year</label>
             <div class="input-group">
               <span class="input-group-text"><i class="bi bi-calendar-check"></i></span>
-              <input type="password" id="loginDob" class="form-control" placeholder="Eg: 1990" required>
+              <input type="password" id="loginDob" class="form-control" placeholder="Ex: 1990" required>
               <button class="btn btn-outline-secondary" type="button" id="toggleDobBtn" onclick="togglePasswordVisibility()">
                 <i class="bi bi-eye-slash" id="toggleDobIcon"></i>
               </button>
@@ -451,16 +464,16 @@
       }
 
       let savedLogin = localStorage.getItem('mess_saved_login');
-if (savedLogin) {
-  try {
-    let saved = JSON.parse(savedLogin);
-    document.getElementById('loginPhone').value = saved.phone || '';
-    document.getElementById('loginDob').value = ''; // DOB എപ്പോഴും Hide ആക്കി വെയ്ക്കുന്നു
-    document.getElementById('rememberMeCheck').checked = true;
-  } catch(e) {
-    localStorage.removeItem('mess_saved_login');
-  }
-}
+      if (savedLogin) {
+        try {
+          let saved = JSON.parse(savedLogin);
+          document.getElementById('loginPhone').value = saved.phone || '';
+          document.getElementById('loginDob').value = '';
+          document.getElementById('rememberMeCheck').checked = true;
+        } catch(e) {
+          localStorage.removeItem('mess_saved_login');
+        }
+      }
 
       loggedInUser = null;
       showLogin();
@@ -617,12 +630,12 @@ if (savedLogin) {
           loggedInUser = matchedUser;
 
           if (rememberMe) {
-  localStorage.setItem('mess_saved_login', JSON.stringify({
-    phone: document.getElementById('loginPhone').value.trim()
-  }));
-} else {
-  localStorage.removeItem('mess_saved_login');
-}
+            localStorage.setItem('mess_saved_login', JSON.stringify({
+              phone: document.getElementById('loginPhone').value.trim()
+            }));
+          } else {
+            localStorage.removeItem('mess_saved_login');
+          }
 
           let targetSmartMonth = findSmartDefaultMonth(loggedInUser);
 
@@ -636,7 +649,6 @@ if (savedLogin) {
               .then(monthData => {
                 globalData = monthData;
                 
-                // ✨ പുതിയ മാസത്തെ summary-ൽ നിന്ന് loggedInUser അപ്ഡേറ്റ് ചെയ്യുക
                 let found = monthData.summary.find(m => m.id.toLowerCase() === loggedInUser.id.toLowerCase());
                 if (found) {
                   loggedInUser = found;
@@ -651,7 +663,6 @@ if (savedLogin) {
               });
 
           } else {
-            // Default month ഇല്ലെങ്കിൽ കറന്റ് മാസത്തെ summary-ൽ നിന്ന് അപ്ഡേറ്റ് ചെയ്യുക
             let found = globalData.summary.find(m => m.id.toLowerCase() === loggedInUser.id.toLowerCase());
             if (found) {
               loggedInUser = found;
@@ -827,11 +838,10 @@ if (savedLogin) {
       }
       badge.classList.remove('d-none');
 
-     if (isAdmin) {
+      if (isAdmin) {
         document.getElementById('adminSummarySection').style.display = 'block';
         document.getElementById('totalExpense').innerText = 'AED ' + globalData.totalExpenseMonth.toFixed(2);
         
-        // ✨ ഇവിടെ മാറ്റം വരുത്തുക: മാസം Closed (settled) ആണെങ്കിൽ 0.00 എന്ന് കാണിക്കുക
         if (currentMonthStatus === 'closed') {
           document.getElementById('totalPayments').innerText = 'AED 0.00';
         } else {
@@ -1445,13 +1455,13 @@ if (savedLogin) {
           if (newPhoto) loggedInUser.photo = newPhoto;
           
           let savedLogin = localStorage.getItem('mess_saved_login');
-if (savedLogin) {
-  try {
-    localStorage.setItem('mess_saved_login', JSON.stringify({
-      phone: newPhone
-    }));
-  } catch(e) {}
-}
+          if (savedLogin) {
+            try {
+              localStorage.setItem('mess_saved_login', JSON.stringify({
+                phone: newPhone
+              }));
+            } catch(e) {}
+          }
 
           if (myProfileModal) myProfileModal.hide();
           loadDataWithSpinner(globalData.selectedMonth);
