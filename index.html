@@ -450,17 +450,16 @@
       }
 
       let savedLogin = localStorage.getItem('mess_saved_login');
-
-      if (savedLogin) {
-        try {
-          let saved = JSON.parse(savedLogin);
-          document.getElementById('loginPhone').value = saved.phone || '';
-          document.getElementById('loginDob').value = saved.dob || '';
-          document.getElementById('rememberMeCheck').checked = true;
-        } catch(e) {
-          localStorage.removeItem('mess_saved_login');
-        }
-      }
+if (savedLogin) {
+  try {
+    let saved = JSON.parse(savedLogin);
+    document.getElementById('loginPhone').value = saved.phone || '';
+    document.getElementById('loginDob').value = ''; // DOB എപ്പോഴും Hide ആക്കി വെയ്ക്കുന്നു
+    document.getElementById('rememberMeCheck').checked = true;
+  } catch(e) {
+    localStorage.removeItem('mess_saved_login');
+  }
+}
 
       loggedInUser = null;
       showLogin();
@@ -617,13 +616,12 @@
           loggedInUser = matchedUser;
 
           if (rememberMe) {
-            localStorage.setItem('mess_saved_login', JSON.stringify({
-              phone: document.getElementById('loginPhone').value.trim(),
-              dob: dobInput
-            }));
-          } else {
-            localStorage.removeItem('mess_saved_login');
-          }
+  localStorage.setItem('mess_saved_login', JSON.stringify({
+    phone: document.getElementById('loginPhone').value.trim()
+  }));
+} else {
+  localStorage.removeItem('mess_saved_login');
+}
 
           let targetSmartMonth = findSmartDefaultMonth(loggedInUser);
 
@@ -828,10 +826,16 @@
       }
       badge.classList.remove('d-none');
 
-      if (isAdmin) {
+     if (isAdmin) {
         document.getElementById('adminSummarySection').style.display = 'block';
         document.getElementById('totalExpense').innerText = 'AED ' + globalData.totalExpenseMonth.toFixed(2);
-        document.getElementById('totalPayments').innerText = 'AED ' + globalData.totalPaymentsMonth.toFixed(2);
+        
+        // ✨ ഇവിടെ മാറ്റം വരുത്തുക: മാസം Closed (settled) ആണെങ്കിൽ 0.00 എന്ന് കാണിക്കുക
+        if (currentMonthStatus === 'closed') {
+          document.getElementById('totalPayments').innerText = 'AED 0.00';
+        } else {
+          document.getElementById('totalPayments').innerText = 'AED ' + globalData.totalPaymentsMonth.toFixed(2);
+        }
       } else {
         document.getElementById('adminSummarySection').style.display = 'none';
       }
@@ -1440,13 +1444,13 @@
           if (newPhoto) loggedInUser.photo = newPhoto;
           
           let savedLogin = localStorage.getItem('mess_saved_login');
-          if (savedLogin) {
-            try {
-              let saved = JSON.parse(savedLogin);
-              saved.phone = newPhone;
-              localStorage.setItem('mess_saved_login', JSON.stringify(saved));
-            } catch(e) {}
-          }
+if (savedLogin) {
+  try {
+    localStorage.setItem('mess_saved_login', JSON.stringify({
+      phone: newPhone
+    }));
+  } catch(e) {}
+}
 
           if (myProfileModal) myProfileModal.hide();
           loadDataWithSpinner(globalData.selectedMonth);
