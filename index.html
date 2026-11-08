@@ -431,45 +431,41 @@
     const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
     window.onload = function() {
-  let modalEl = document.getElementById('loadingModal');
-  if (modalEl) myLoadingModal = new bootstrap.Modal(modalEl);
+      let modalEl = document.getElementById('loadingModal');
+      if (modalEl) myLoadingModal = new bootstrap.Modal(modalEl);
 
-  let zoomModalEl = document.getElementById('imageZoomModal');
-  if (zoomModalEl) myImageZoomModal = new bootstrap.Modal(zoomModalEl);
+      let zoomModalEl = document.getElementById('imageZoomModal');
+      if (zoomModalEl) myImageZoomModal = new bootstrap.Modal(zoomModalEl);
 
-  let otherCollapseEl = document.getElementById('otherMembersCollapse');
+      let otherCollapseEl = document.getElementById('otherMembersCollapse');
 
-  if (otherCollapseEl) {
-    otherCollapseEl.addEventListener('show.bs.collapse', function() {
-      document.getElementById('otherMembersBtnText').innerText = 'Hide Other Members';
-    });
+      if (otherCollapseEl) {
+        otherCollapseEl.addEventListener('show.bs.collapse', function() {
+          document.getElementById('otherMembersBtnText').innerText = 'Hide Other Members';
+        });
 
-    otherCollapseEl.addEventListener('hide.bs.collapse', function() {
-      document.getElementById('otherMembersBtnText').innerText = 'View Other Members';
-    });
-  }
+        otherCollapseEl.addEventListener('hide.bs.collapse', function() {
+          document.getElementById('otherMembersBtnText').innerText = 'View Other Members';
+        });
+      }
 
-  // Remember Me: വിവരങ്ങൾ Form-ൽ മാത്രം Fill ചെയ്യുക.
-  // സ്വയം Login ചെയ്യരുത്.
-  let savedLogin = localStorage.getItem('mess_saved_login');
+      let savedLogin = localStorage.getItem('mess_saved_login');
 
-  if (savedLogin) {
-    try {
-      let saved = JSON.parse(savedLogin);
+      if (savedLogin) {
+        try {
+          let saved = JSON.parse(savedLogin);
+          document.getElementById('loginPhone').value = saved.phone || '';
+          document.getElementById('loginDob').value = saved.dob || '';
+          document.getElementById('rememberMeCheck').checked = true;
+        } catch(e) {
+          localStorage.removeItem('mess_saved_login');
+        }
+      }
 
-      document.getElementById('loginPhone').value = saved.phone || '';
-      document.getElementById('loginDob').value = saved.dob || '';
-      document.getElementById('rememberMeCheck').checked = true;
-
-    } catch(e) {
-      localStorage.removeItem('mess_saved_login');
-    }
-  }
-
-  loggedInUser = null;
-  showLogin();
-  fetchDataSilent();
-};
+      loggedInUser = null;
+      showLogin();
+      fetchDataSilent();
+    };
 
     function toggleTheme() {
       let currentTheme = document.documentElement.getAttribute('data-bs-theme');
@@ -574,11 +570,10 @@
     }
 
     function applySettings(data) {
-  // Page Load സമയത്ത് Dashboard സ്വയം തുറക്കരുത്.
-  if (!loggedInUser) {
-    showLogin();
-  }
-}
+      if (!loggedInUser) {
+        showLogin();
+      }
+    }
 
     function cleanPhone(p) {
       if (!p) return '';
@@ -586,91 +581,78 @@
       return digits.slice(-9);
     }
 
-    /* 🔄 LIVE DATA FETCH ON LOGIN BUTTON CLICK */
-    
-function handleLogin(event) {
-  event.preventDefault();
+    function handleLogin(event) {
+      event.preventDefault();
 
-  let phoneInput = cleanPhone(
-    document.getElementById('loginPhone').value
-  );
+      let phoneInput = cleanPhone(document.getElementById('loginPhone').value);
+      let dobInput = document.getElementById('loginDob').value.trim();
+      let rememberMe = document.getElementById('rememberMeCheck').checked;
 
-  let dobInput = document.getElementById('loginDob').value.trim();
+      let errorAlert = document.getElementById('loginErrorAlert');
+      let submitBtn = document.getElementById('loginSubmitBtn');
 
-  let rememberMe = document.getElementById('rememberMeCheck').checked;
+      errorAlert.classList.add('d-none');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Logging in...`;
 
-  let errorAlert = document.getElementById('loginErrorAlert');
-  let submitBtn = document.getElementById('loginSubmitBtn');
+      let requestUrl = API_URL + '?t=' + new Date().getTime();
 
-  errorAlert.classList.add('d-none');
+      fetch(requestUrl)
+        .then(res => res.json())
+        .then(data => {
+          globalData = data;
 
-  submitBtn.disabled = true;
-  submitBtn.innerHTML =
-    `<span class="spinner-border spinner-border-sm me-2"></span> Logging in...`;
-
-  let requestUrl = API_URL + '?t=' + new Date().getTime();
-
-  fetch(requestUrl)
-    .then(res => res.json())
-    .then(data => {
-      globalData = data;
-
-      let matchedUser = globalData.summary.find(m => {
-        let mPhone = cleanPhone(m.phone);
-        let mDob = m.dob ? m.dob.toString().trim() : '';
-
-        return mPhone === phoneInput && mDob === dobInput;
-      });
-
-      if (!matchedUser) {
-        resetLoginBtn();
-        errorAlert.classList.remove('d-none');
-        return;
-      }
-
-      loggedInUser = matchedUser;
-
-      // Remember Me: Credentials മാത്രം Save ചെയ്യുക.
-      if (rememberMe) {
-        localStorage.setItem('mess_saved_login', JSON.stringify({
-          phone: document.getElementById('loginPhone').value.trim(),
-          dob: dobInput
-        }));
-      } else {
-        localStorage.removeItem('mess_saved_login');
-      }
-
-      let targetSmartMonth = findSmartDefaultMonth(loggedInUser);
-
-      if (targetSmartMonth) {
-        let targetUrl = API_URL +
-          '?t=' + new Date().getTime() +
-          '&month=' + encodeURIComponent(targetSmartMonth);
-
-        fetch(targetUrl)
-          .then(res => res.json())
-          .then(monthData => {
-            globalData = monthData;
-            showDashboard();
-            resetLoginBtn();
-          })
-          .catch(err => {
-            resetLoginBtn();
-            alert("Month loading error: " + err.message);
+          let matchedUser = globalData.summary.find(m => {
+            let mPhone = cleanPhone(m.phone);
+            let mDob = m.dob ? m.dob.toString().trim() : '';
+            return mPhone === phoneInput && mDob === dobInput;
           });
 
-      } else {
-        showDashboard();
-        resetLoginBtn();
-      }
-    })
-    .catch(err => {
-      resetLoginBtn();
-      alert("ലോഗിൻ ചെയ്യുന്നതിൽ തടസ്സം നേരിട്ടു: " + err.message);
-    });
-}
+          if (!matchedUser) {
+            resetLoginBtn();
+            errorAlert.classList.remove('d-none');
+            return;
+          }
 
-    
+          loggedInUser = matchedUser;
+
+          if (rememberMe) {
+            localStorage.setItem('mess_saved_login', JSON.stringify({
+              phone: document.getElementById('loginPhone').value.trim(),
+              dob: dobInput
+            }));
+          } else {
+            localStorage.removeItem('mess_saved_login');
+          }
+
+          let targetSmartMonth = findSmartDefaultMonth(loggedInUser);
+
+          if (targetSmartMonth) {
+            let targetUrl = API_URL + '?t=' + new Date().getTime() + '&month=' + encodeURIComponent(targetSmartMonth);
+
+            fetch(targetUrl)
+              .then(res => res.json())
+              .then(monthData => {
+                globalData = monthData;
+                showDashboard();
+                resetLoginBtn();
+              })
+              .catch(err => {
+                resetLoginBtn();
+                alert("Month loading error: " + err.message);
+              });
+
+          } else {
+            showDashboard();
+            resetLoginBtn();
+          }
+        })
+        .catch(err => {
+          resetLoginBtn();
+          alert("ലോഗിൻ ചെയ്യുന്നതിൽ തടസ്സം നേരിട്ടു: " + err.message);
+        });
+    }
+
     function resetLoginBtn() {
       let submitBtn = document.getElementById('loginSubmitBtn');
       if (submitBtn) {
@@ -679,78 +661,48 @@ function handleLogin(event) {
       }
     }
 
-    
-function findSmartDefaultMonth(user) {
+    function findSmartDefaultMonth(user) {
+      if (!globalData || !globalData.availableMonths) {
+        return globalData ? globalData.selectedMonth : null;
+      }
 
-  if (!globalData || !globalData.availableMonths) {
-    return globalData ? globalData.selectedMonth : null;
-  }
+      let isAdmin = user.role && user.role.toLowerCase() === 'admin';
+      let today = new Date();
+      let currentMonthStr = ("0" + (today.getMonth() + 1)).slice(-2) + "-" + today.getFullYear();
 
-  let isAdmin =
-    user.role && user.role.toLowerCase() === 'admin';
+      let chronologicalMonths = [...globalData.availableMonths].reverse();
 
-  let today = new Date();
+      for (let mCode of chronologicalMonths) {
+        if (mCode === currentMonthStr) continue;
 
-  let currentMonthStr =
-    ("0" + (today.getMonth() + 1)).slice(-2) +
-    "-" + today.getFullYear();
+        let monthSummary = globalData.monthSummaries ? globalData.monthSummaries[mCode] : null;
+        if (!Array.isArray(monthSummary)) continue;
 
-  // ഏറ്റവും പഴയ മാസം മുതൽ പുതിയ മാസം വരെ പരിശോധിക്കുക.
-  // Current Month ഒഴിവാക്കുക.
-  let chronologicalMonths = [...globalData.availableMonths].reverse();
+        let hasPending = false;
 
-  for (let mCode of chronologicalMonths) {
+        if (isAdmin) {
+          hasPending = monthSummary.some(m => Math.abs(Number(m.netBalance || 0)) > 0.005);
+        } else {
+          let myRecord = monthSummary.find(m => m.id.toLowerCase() === user.id.toLowerCase());
+          hasPending = myRecord && Math.abs(Number(myRecord.netBalance || 0)) > 0.005;
+        }
 
-    if (mCode === currentMonthStr) continue;
+        if (hasPending) {
+          return mCode;
+        }
+      }
 
-    let monthSummary = globalData.monthSummaries
-      ? globalData.monthSummaries[mCode]
-      : null;
+      if (globalData.availableMonths.includes(currentMonthStr)) {
+        return currentMonthStr;
+      }
 
-    if (!Array.isArray(monthSummary)) continue;
-
-    let hasPending = false;
-
-    if (isAdmin) {
-
-      // Admin: ഏതെങ്കിലും അംഗത്തിന് Balance ബാക്കിയുണ്ടോ?
-      hasPending = monthSummary.some(m =>
-        Math.abs(Number(m.netBalance || 0)) > 0.005
-      );
-
-    } else {
-
-      // Member: സ്വന്തം Balance മാത്രം പരിശോധിക്കുക.
-      let myRecord = monthSummary.find(m =>
-        m.id.toLowerCase() === user.id.toLowerCase()
-      );
-
-      hasPending = myRecord &&
-        Math.abs(Number(myRecord.netBalance || 0)) > 0.005;
+      return globalData.availableMonths[0] || globalData.selectedMonth;
     }
-
-    if (hasPending) {
-      return mCode;
-    }
-  }
-
-  // പഴയ മാസങ്ങളിൽ Pending ഇല്ലെങ്കിൽ Current Month.
-  if (globalData.availableMonths.includes(currentMonthStr)) {
-    return currentMonthStr;
-  }
-
-  return globalData.availableMonths[0] || globalData.selectedMonth;
-}
-
-
 
     function handleLogout() {
-  loggedInUser = null;
-
-  // Remember Me വിവരങ്ങൾ നിലനിർത്തുക.
-  // അടുത്ത തവണ Login Form-ൽ മാത്രം കാണിക്കും.
-  showLogin();
-}
+      loggedInUser = null;
+      showLogin();
+    }
 
     function showLogin() {
       document.getElementById('loginSection').style.setProperty('display', 'block', 'important');
@@ -1204,7 +1156,6 @@ function findSmartDefaultMonth(user) {
         let html = '<ul class="list-group list-group-flush small">';
         payments.forEach(p => {
           let formattedDate = formatDateDDMMYYYY(p[1] || p[0]);
-          
           let rawValStr = String(p[4] !== undefined && p[4] !== null ? p[4] : '0').replace(/[^0-9.-]+/g, "");
           let amtVal = parseFloat(rawValStr) || 0;
           amtVal = Math.round(amtVal * 100) / 100;
@@ -1475,19 +1426,13 @@ function findSmartDefaultMonth(user) {
           if (newPhoto) loggedInUser.photo = newPhoto;
           
           let savedLogin = localStorage.getItem('mess_saved_login');
-
-if (savedLogin) {
-  try {
-    let saved = JSON.parse(savedLogin);
-
-    saved.phone = newPhone;
-
-    localStorage.setItem(
-      'mess_saved_login',
-      JSON.stringify(saved)
-    );
-  } catch(e) {}
-}
+          if (savedLogin) {
+            try {
+              let saved = JSON.parse(savedLogin);
+              saved.phone = newPhone;
+              localStorage.setItem('mess_saved_login', JSON.stringify(saved));
+            } catch(e) {}
+          }
 
           if (myProfileModal) myProfileModal.hide();
           loadDataWithSpinner(globalData.selectedMonth);
