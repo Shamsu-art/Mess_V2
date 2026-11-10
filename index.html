@@ -406,16 +406,25 @@
     </div>
   </div>
 
-  <!-- 🔄 LOADING / WELCOME MODAL -->
+  <!-- 🔄 LOADING MODAL (Login Welcome & General Spinner) -->
   <div class="modal fade" id="loadingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-sm">
       <div class="modal-content rounded-4 border-0 shadow text-center p-4 bg-body">
-        <div id="loadingSpinnerBox">
+        <!-- Login Welcome Box -->
+        <div id="loginWelcomeBox" class="d-none">
           <div class="spinner-border text-primary mx-auto mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
           <h6 class="fw-bold text-primary mb-2" style="font-size: 0.95rem;">WELCOME</h6>
           <h6 class="fw-bold text-body mb-1">BIN HUMAIDAN ROOM 110</h6>
-          <p class="text-muted small m-0" id="loadingSubText">വിവരങ്ങൾ ശേഖരിക്കുന്നു...</p>
+          <p class="text-muted small m-0">ലോഗിൻ പരിശോധിക്കുന്നു...</p>
         </div>
+
+        <!-- General Spinner Box (Month change, profile save etc.) -->
+        <div id="generalSpinnerBox" class="d-none">
+          <div class="spinner-border text-primary mx-auto mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div>
+          <p class="fw-bold text-body m-0" id="generalLoadingText">ലോഡ് ചെയ്യുന്നു...</p>
+        </div>
+
+        <!-- Closed Status Box -->
         <div id="closedAlertBox" class="d-none">
           <h5 class="fw-bold text-primary mb-3">WELCOME<br><span style="font-size: 0.85rem;" class="text-body">BIN HUMAIDAN ROOM 110</span></h5>
           <h4 class="fw-bold text-danger mb-2">SORRY!</h4>
@@ -455,6 +464,7 @@
     var currentMonthStatus = 'active';
 
     const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const MALAYALAM_MONTH_NAMES = ["ജനുവരി", "ഫെബ്രുവരി", "മാർച്ച്", "ഏപ്രിൽ", "മെയ്", "ജൂൺ", "ജൂലൈ", "ഓഗസ്റ്റ്", "സെപ്റ്റംബർ", "ഒക്ടോബർ", "നവംബർ", "ഡിസംബർ"];
 
     window.onload = function() {
       let modalEl = document.getElementById('loadingModal');
@@ -548,6 +558,14 @@
       return { monthNum: mNum, yearNum: year, monthName: MONTH_NAMES[mNum - 1] || '' };
     }
 
+    // മാസം മലയാളത്തിൽ പേരോടുകൂടി ലഭിക്കാൻ (ഉദാ: നവംബർ 2026)
+    function getMalayalamMonthNameStr(mStr) {
+      let parsed = parseMonthYearStr(mStr);
+      let mIndex = parsed.monthNum - 1;
+      let malayalamMonth = MALAYALAM_MONTH_NAMES[mIndex] || parsed.monthName;
+      return `${malayalamMonth} ${parsed.yearNum}`;
+    }
+
     function fetchDataSilent(targetMonth, callback) {
       let requestUrl = API_URL + '?t=' + new Date().getTime();
       if (targetMonth) requestUrl += '&month=' + encodeURIComponent(targetMonth);
@@ -564,12 +582,15 @@
         });
     }
 
-    // 1. മാസം മാറ്റുമ്പോൾ കാണിക്കേണ്ട ലോഡിങ്
+    // 1. മാസം മാറ്റുമ്പോൾ (മാസത്തിന്റെ പേരോടുകൂടി കാണിക്കുന്നു)
     function loadDataWithSpinner(month) {
       if (myLoadingModal) {
-        document.getElementById('loadingSpinnerBox').classList.remove('d-none');
+        document.getElementById('loginWelcomeBox').classList.add('d-none');
         document.getElementById('closedAlertBox').classList.add('d-none');
-        document.getElementById('loadingSubText').innerText = "മാസത്തെ വിവരങ്ങൾ ലോഡ് ചെയ്യുന്നു...";
+        document.getElementById('generalSpinnerBox').classList.remove('d-none');
+        
+        let monthDisplayName = getMalayalamMonthNameStr(month);
+        document.getElementById('generalLoadingText').innerText = `${monthDisplayName} മാസത്തെ വിവരങ്ങൾ ലോഡ് ചെയ്യുന്നു...`;
         myLoadingModal.show();
       }
       let requestUrl = API_URL + '?t=' + new Date().getTime();
@@ -612,7 +633,7 @@
       return digits.slice(-9);
     }
 
-    // 2. ലോഗിൻ ചെയ്യുമ്പോൾ കാണിക്കേണ്ട ലോഡിങ്
+    // 2. ലോഗിൻ ചെയ്യുമ്പോൾ മാത്രം WELCOME BIN HUMAIDAN കാണിക്കുന്നു
     function handleLogin(event) {
       event.preventDefault();
 
@@ -624,9 +645,9 @@
       errorAlert.classList.add('d-none');
 
       if (myLoadingModal) {
-        document.getElementById('loadingSpinnerBox').classList.remove('d-none');
+        document.getElementById('generalSpinnerBox').classList.add('d-none');
         document.getElementById('closedAlertBox').classList.add('d-none');
-        document.getElementById('loadingSubText').innerText = "ലോഗിൻ പരിശോധിക്കുന്നു...";
+        document.getElementById('loginWelcomeBox').classList.remove('d-none');
         myLoadingModal.show();
       }
 
@@ -651,7 +672,7 @@
 
           // Check if status is Closed
           if (matchedUser.status && matchedUser.status.toLowerCase() === 'closed') {
-            document.getElementById('loadingSpinnerBox').classList.add('d-none');
+            document.getElementById('loginWelcomeBox').classList.add('d-none');
             document.getElementById('closedAlertBox').classList.remove('d-none');
             return;
           }
@@ -1447,16 +1468,17 @@
       }
     }
 
-    // 3. പ്രൊഫൈൽ അപ്ഡേറ്റ് ചെയ്യുമ്പോൾ കാണിക്കേണ്ട ലോഡിങ്
+    // 3. പ്രൊഫൈൽ അപ്ഡേറ്റ് ചെയ്യുമ്പോൾ
     function handleProfileUpdate(event) {
       event.preventDefault();
       let newPhone = document.getElementById('profileEditPhone').value.trim();
       let newPhoto = uploadedBase64Image || loggedInUser.photo || '';
 
       if (myLoadingModal) {
-        document.getElementById('loadingSpinnerBox').classList.remove('d-none');
+        document.getElementById('loginWelcomeBox').classList.add('d-none');
         document.getElementById('closedAlertBox').classList.add('d-none');
-        document.getElementById('loadingSubText').innerText = "പ്രൊഫൈൽ സേവ് ചെയ്യുന്നു...";
+        document.getElementById('generalSpinnerBox').classList.remove('d-none');
+        document.getElementById('generalLoadingText').innerText = "പ്രൊഫൈൽ സേവ് ചെയ്യുന്നു...";
         myLoadingModal.show();
       }
       
