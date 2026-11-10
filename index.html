@@ -180,6 +180,13 @@
       opacity: 0.6 !important;
     }
 
+    #invoiceIframe {
+    width: 100%;
+    height: 75vh;
+    border: none;
+    max-width: 100%;
+  }
+
     #imageZoomModal {
       z-index: 1060 !important;
     }
@@ -388,9 +395,9 @@
     </div>
   </div>
 
-   <!-- 🖼️ INVOICE POPUP MODAL -->
+ <!-- 🖼️ INVOICE POPUP MODAL -->
   <div class="modal fade" id="invoiceModal" tabindex="-1" aria-labelledby="invoiceModalLabel" aria-hidden="true" style="z-index: 1070;">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down">
       <div class="modal-content rounded-4 border-0 shadow">
         <div class="modal-header py-2 bg-body d-flex justify-content-between align-items-center">
           <h6 class="modal-title fw-bold text-body m-0" id="invoiceModalLabel">
@@ -398,11 +405,12 @@
           </h6>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body p-0 text-center bg-dark rounded-bottom-4 position-relative" style="min-height: 480px;">
+        <div class="modal-body p-2 text-center bg-dark rounded-bottom-4 position-relative d-flex align-items-center justify-content-center" style="min-height: 400px; max-height: 80vh;">
           <div id="modalSpinner" class="position-absolute top-50 start-50 translate-middle text-white">
             <div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading Invoice...
           </div>
-          <iframe id="invoiceIframe" src="" style="width:100%; height:480px; border:none;" onload="document.getElementById('modalSpinner').style.display='none';"></iframe>
+          <!-- iframe-ന് പകരം ചിത്രം പൂർണ്ണമായി കാണാൻ object-fit: contain നൽകിയിരിക്കുന്നു -->
+          <iframe id="invoiceIframe" src="" style="width:100%; height:75vh; border:none; background: #fff;" onload="document.getElementById('modalSpinner').style.display='none';"></iframe>
         </div>
       </div>
     </div>
