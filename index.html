@@ -395,9 +395,9 @@
     </div>
   </div>
 
- <!-- 🖼️ INVOICE POPUP MODAL -->
+<!-- 🖼️ INVOICE POPUP MODAL -->
   <div class="modal fade" id="invoiceModal" tabindex="-1" aria-labelledby="invoiceModalLabel" aria-hidden="true" style="z-index: 1070;">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
       <div class="modal-content rounded-4 border-0 shadow">
         <div class="modal-header py-2 bg-body d-flex justify-content-between align-items-center">
           <h6 class="modal-title fw-bold text-body m-0" id="invoiceModalLabel">
@@ -409,8 +409,8 @@
           <div id="modalSpinner" class="position-absolute top-50 start-50 translate-middle text-white">
             <div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading Invoice...
           </div>
-          <!-- iframe-ന് പകരം ചിത്രം പൂർണ്ണമായി കാണാൻ object-fit: contain നൽകിയിരിക്കുന്നു -->
-          <iframe id="invoiceIframe" src="" style="width:100%; height:75vh; border:none; background: #fff;" onload="document.getElementById('modalSpinner').style.display='none';"></iframe>
+          <!-- iframe-ന് പകരം img ടാഗ് ഉപയോഗിക്കുന്നത് വഴി ഫോട്ടോ കൃത്യമായി സ്ക്രീനിൽ ഫിറ്റാകും -->
+          <img id="invoiceImg" src="" class="img-fluid rounded-3" style="max-height: 75vh; object-fit: contain;" onload="document.getElementById('modalSpinner').style.display='none';">
         </div>
       </div>
     </div>
@@ -1421,7 +1421,15 @@
     function openInvoiceModal(url) {
       if (!url) return;
       document.getElementById('modalSpinner').style.display = 'block';
-      document.getElementById('invoiceIframe').src = url;
+      
+      // iframe-ന് പകരം img ടാഗിലേക്കാണ് src നൽകുന്നത്
+      let imgTag = document.getElementById('invoiceImg');
+      imgTag.style.display = 'none'; // ലോഡ് ആകും മുമ്പ് ഹൈഡ് ചെയ്യുന്നു
+      imgTag.src = url;
+      imgTag.onload = function() {
+        document.getElementById('modalSpinner').style.display = 'none';
+        imgTag.style.display = 'block';
+      };
 
       if (!myInvoiceModal) {
         let modalEl = document.getElementById('invoiceModal');
