@@ -28,7 +28,6 @@
       transition: background-color 0.3s ease;
     }
 
-    /* 🔒 STICKY APP HEADER */
     .app-header {
       background: var(--primary-gradient);
       color: white;
@@ -41,7 +40,6 @@
       z-index: 1030;
     }
 
-    /* 🔒 STICKY FILTER BAR */
     .sticky-filter-container {
       position: sticky;
       top: 65px;
@@ -416,7 +414,7 @@
           <div class="spinner-border text-primary mx-auto mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
           <h6 class="fw-bold text-primary mb-2" style="font-size: 0.95rem;">WELCOME</h6>
           <h6 class="fw-bold text-body mb-1">BIN HUMAIDAN ROOM 110</h6>
-          <p class="text-muted small m-0">വിവരങ്ങൾ ശേഖരിക്കുന്നു...</p>
+          <p class="text-muted small m-0" id="loadingSubText">വിവരങ്ങൾ ശേഖരിക്കുന്നു...</p>
         </div>
         <div id="closedAlertBox" class="d-none">
           <h5 class="fw-bold text-primary mb-3">WELCOME<br><span style="font-size: 0.85rem;" class="text-body">BIN HUMAIDAN ROOM 110</span></h5>
@@ -566,10 +564,12 @@
         });
     }
 
+    // 1. മാസം മാറ്റുമ്പോൾ കാണിക്കേണ്ട ലോഡിങ്
     function loadDataWithSpinner(month) {
       if (myLoadingModal) {
         document.getElementById('loadingSpinnerBox').classList.remove('d-none');
         document.getElementById('closedAlertBox').classList.add('d-none');
+        document.getElementById('loadingSubText').innerText = "മാസത്തെ വിവരങ്ങൾ ലോഡ് ചെയ്യുന്നു...";
         myLoadingModal.show();
       }
       let requestUrl = API_URL + '?t=' + new Date().getTime();
@@ -612,6 +612,7 @@
       return digits.slice(-9);
     }
 
+    // 2. ലോഗിൻ ചെയ്യുമ്പോൾ കാണിക്കേണ്ട ലോഡിങ്
     function handleLogin(event) {
       event.preventDefault();
 
@@ -622,10 +623,10 @@
       let errorAlert = document.getElementById('loginErrorAlert');
       errorAlert.classList.add('d-none');
 
-      // Show Welcome / Loading Modal
       if (myLoadingModal) {
         document.getElementById('loadingSpinnerBox').classList.remove('d-none');
         document.getElementById('closedAlertBox').classList.add('d-none');
+        document.getElementById('loadingSubText').innerText = "ലോഗിൻ പരിശോധിക്കുന്നു...";
         myLoadingModal.show();
       }
 
@@ -1446,14 +1447,18 @@
       }
     }
 
+    // 3. പ്രൊഫൈൽ അപ്ഡേറ്റ് ചെയ്യുമ്പോൾ കാണിക്കേണ്ട ലോഡിങ്
     function handleProfileUpdate(event) {
       event.preventDefault();
       let newPhone = document.getElementById('profileEditPhone').value.trim();
       let newPhoto = uploadedBase64Image || loggedInUser.photo || '';
 
-      document.getElementById('loadingSpinnerBox').classList.remove('d-none');
-      document.getElementById('closedAlertBox').classList.add('d-none');
-      if (myLoadingModal) myLoadingModal.show();
+      if (myLoadingModal) {
+        document.getElementById('loadingSpinnerBox').classList.remove('d-none');
+        document.getElementById('closedAlertBox').classList.add('d-none');
+        document.getElementById('loadingSubText').innerText = "പ്രൊഫൈൽ സേവ് ചെയ്യുന്നു...";
+        myLoadingModal.show();
+      }
       
       let payload = {
         action: 'updateProfile',
