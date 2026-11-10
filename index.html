@@ -395,7 +395,8 @@
     </div>
   </div>
 
-<!-- 🖼️ INVOICE POPUP MODAL -->
+
+  <!-- 🖼️ INVOICE POPUP MODAL -->
   <div class="modal fade" id="invoiceModal" tabindex="-1" aria-labelledby="invoiceModalLabel" aria-hidden="true" style="z-index: 1070;">
     <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
       <div class="modal-content rounded-4 border-0 shadow">
@@ -409,8 +410,8 @@
           <div id="modalSpinner" class="position-absolute top-50 start-50 translate-middle text-white">
             <div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading Invoice...
           </div>
-          <!-- iframe-ന് പകരം img ടാഗ് ഉപയോഗിക്കുന്നത് വഴി ഫോട്ടോ കൃത്യമായി സ്ക്രീനിൽ ഫിറ്റാകും -->
-          <img id="invoiceImg" src="" class="img-fluid rounded-3" style="max-height: 75vh; object-fit: contain;" onload="document.getElementById('modalSpinner').style.display='none';">
+          <!-- iframe-ന് പകരം img ടാഗ് ഉപയോഗിക്കുന്നു -->
+          <img id="invoiceImg" src="" class="img-fluid rounded-3" style="max-height: 75vh; max-width: 100%; object-fit: contain; display: none;" alt="Invoice Image">
         </div>
       </div>
     </div>
@@ -1416,18 +1417,21 @@
       myMemberModal.show();
     }
 
-     var myInvoiceModal = null;
+
+    var myInvoiceModal = null;
 
     function openInvoiceModal(url) {
       if (!url) return;
-      document.getElementById('modalSpinner').style.display = 'block';
       
-      // iframe-ന് പകരം img ടാഗിലേക്കാണ് src നൽകുന്നത്
+      let spinner = document.getElementById('modalSpinner');
       let imgTag = document.getElementById('invoiceImg');
-      imgTag.style.display = 'none'; // ലോഡ് ആകും മുമ്പ് ഹൈഡ് ചെയ്യുന്നു
+      
+      spinner.style.display = 'block';
+      imgTag.style.display = 'none';
       imgTag.src = url;
+
       imgTag.onload = function() {
-        document.getElementById('modalSpinner').style.display = 'none';
+        spinner.style.display = 'none';
         imgTag.style.display = 'block';
       };
 
