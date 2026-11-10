@@ -388,23 +388,31 @@
     </div>
   </div>
 
-  <!-- 🖼️ INVOICE MODAL -->
-  <div class="modal fade" id="invoiceModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-md">
-      <div class="modal-content rounded-4 border-0 shadow">
-        <div class="modal-header py-2 bg-body d-flex justify-content-between align-items-center">
-          <h6 class="modal-title fw-bold text-body m-0">Invoice</h6>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+   <!-- 🖼️ DEDICATED PDF & IMAGE INVOICE MODAL -->
+  <div class="modal fade" id="universalInvoiceModal" tabindex="-1" aria-hidden="true" style="z-index: 1070;">
+
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content rounded-4 border-0 shadow bg-dark text-white">
+        <div class="modal-header border-0 py-2">
+          <h6 class="modal-title fw-bold"><i class="bi bi-file-earmark-text me-1"></i> Invoice Viewer</h6>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body p-2 text-center bg-dark rounded-bottom-4 position-relative d-flex align-items-center justify-content-center" style="min-height: 350px; max-height: 450px;">
-          <div id="modalSpinner" class="position-absolute top-50 start-50 translate-middle text-white">
-            <div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading...
+        <div class="modal-body p-2 text-center position-relative d-flex align-items-center justify-content-center" style="min-height: 450px; max-height: 80vh;">
+          <div id="invoiceLoadingSpinner" class="position-absolute top-50 start-50 translate-middle text-white">
+            <div class="spinner-border spinner-border-sm me-2" role="status"></div> ലോഡ് ചെയ്യുന്നു...
           </div>
-          <img id="invoiceImg" src="" class="img-fluid rounded shadow" style="max-height: 420px; max-width: 100%; object-fit: contain; display: none;" onload="document.getElementById('modalSpinner').style.display='none'; this.style.display='block';">
+          <!-- ഇമേജും പി.ഡി.എഫും ഒരുപോലെ കാണിക്കാൻ iframe & img ഉപയോഗിക്കുന്നു -->
+          <img id="invoiceModalImg" src="" class="img-fluid rounded shadow" style="max-height: 75vh; max-width: 100%; object-fit: contain; display: none;" onload="document.getElementById('invoiceLoadingSpinner').style.display='none'; this.style.display='block';">
+          <iframe id="invoiceModalPdf" src="" style="width: 100%; height: 75vh; border: none; display: none;" onload="document.getElementById('invoiceLoadingSpinner').style.display='none'; this.style.display='block';"></iframe>
+        </div>
+        <div class="modal-footer border-0 py-2 justify-content-between">
+          <a id="invoiceDownloadBtn" href="" target="_blank" class="btn btn-sm btn-outline-light rounded-pill"><i class="bi bi-download me-1"></i> Download / New Tab</a>
+          <button type="button" class="btn btn-sm btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
   </div>
+
 
   <!-- 🔄 LOADING MODAL (Login Welcome & General Spinner) -->
   <div class="modal fade" id="loadingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
@@ -1406,17 +1414,39 @@
       myMemberModal.show();
     }
 
-        function openInvoiceModal(url) {
+                var myUniversalInvoiceModal = null;
+
+    function openInvoiceModal(url) {
       if (!url) return;
       
-      // പിന്നിലുള്ള memberModal തുറന്നിട്ടുണ്ടെങ്കിൽ അത് ക്ലോസ് ചെയ്യുക
-      if (myMemberModal) {
-        myMemberModal.hide();
-      }
+      let imgTag = document.getElementById('invoiceModalImg');
+      let pdfFrame = document.getElementById('invoiceModalPdf');
+      let spinner = document.getElementById('invoiceLoadingSpinner');
+      let downloadBtn = document.getElementById('invoiceDownloadBtn');
       
-      // ഇൻവോയ്സ് കാണിക്കാൻ Zoom Modal ഉപയോഗിക്കുക (ഇത് തടസ്സമില്ലാതെ ക്ലോസ് ചെയ്യാൻ സാധിക്കും)
-      zoomProfileImage(url);
+      spinner.style.display = 'block';
+      imgTag.style.display = 'none';
+      pdfFrame.style.display = 'none';
+      downloadBtn.href = url;
+
+      let isPdf = url.toLowerCase().includes('.pdf') || url.toLowerCase().includes('application/pdf');
+
+      if (isPdf) {
+        pdfFrame.src = url;
+        pdfFrame.style.display = 'block';
+      } else {
+        imgTag.src = url;
+      }
+
+      if (!myUniversalInvoiceModal) {
+        let uniInvoiceEl = document.getElementById('universalInvoiceModal');
+        if (uniInvoiceEl) myUniversalInvoiceModal = new bootstrap.Modal(uniInvoiceEl);
+      }
+      if (myUniversalInvoiceModal) {
+        myUniversalInvoiceModal.show();
+      }
     }
+
 
 
     function openProfileModal() {
