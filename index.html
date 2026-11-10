@@ -1406,15 +1406,18 @@
       myMemberModal.show();
     }
 
-    function openInvoiceModal(url) {
-      document.getElementById('modalSpinner').style.display = 'block';
-      let img = document.getElementById('invoiceImg');
-      img.style.display = 'none';
-      img.src = url;
+        function openInvoiceModal(url) {
+      if (!url) return;
       
-      if (!myInvoiceModal) myInvoiceModal = new bootstrap.Modal(document.getElementById('invoiceModal'));
-      myInvoiceModal.show();
+      // പിന്നിലുള്ള memberModal തുറന്നിട്ടുണ്ടെങ്കിൽ അത് ക്ലോസ് ചെയ്യുക
+      if (myMemberModal) {
+        myMemberModal.hide();
+      }
+      
+      // ഇൻവോയ്സ് കാണിക്കാൻ Zoom Modal ഉപയോഗിക്കുക (ഇത് തടസ്സമില്ലാതെ ക്ലോസ് ചെയ്യാൻ സാധിക്കും)
+      zoomProfileImage(url);
     }
+
 
     function openProfileModal() {
       document.getElementById('profileModalImg').src = loggedInUser.photo || 'https://via.placeholder.com/90';
