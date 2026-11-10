@@ -398,20 +398,14 @@
 
   <!-- 🖼️ INVOICE POPUP MODAL -->
   <div class="modal fade" id="invoiceModal" tabindex="-1" aria-labelledby="invoiceModalLabel" aria-hidden="true" style="z-index: 1070;">
-    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
-      <div class="modal-content rounded-4 border-0 shadow">
-        <div class="modal-header py-2 bg-body d-flex justify-content-between align-items-center">
-          <h6 class="modal-title fw-bold text-body m-0" id="invoiceModalLabel">
-            <i class="bi bi-file-earmark-text text-primary me-1"></i> Invoice
-          </h6>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body p-2 text-center bg-dark rounded-bottom-4 position-relative d-flex align-items-center justify-content-center" style="min-height: 400px; max-height: 80vh;">
-          <div id="modalSpinner" class="position-absolute top-50 start-50 translate-middle text-white">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content bg-transparent border-0 shadow-none text-center">
+        <div class="position-relative d-inline-block mx-auto">
+          <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-2 bg-dark p-2 rounded-circle shadow" data-bs-dismiss="modal" aria-label="Close" style="z-index: 1080;"></button>
+          <div id="modalSpinner" class="text-white my-5">
             <div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading Invoice...
           </div>
-          <!-- iframe പൂർണ്ണമായി ഒഴിവാക്കി img ടാഗ് മാത്രം ഉപയോഗിച്ചിരിക്കുന്നു -->
-          <img id="invoiceImgTag" src="" class="img-fluid rounded-3" style="max-height: 75vh; max-width: 100%; object-fit: contain; display: none;" alt="Invoice Image">
+          <img id="invoiceImgTag" src="" class="img-fluid rounded-4 shadow-lg bg-body" style="max-height: 80vh; max-width: 100%; object-fit: contain; display: none;" alt="Invoice Image">
         </div>
       </div>
     </div>
