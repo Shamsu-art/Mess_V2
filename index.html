@@ -388,24 +388,21 @@
     </div>
   </div>
 
-   <!-- 🖼️ DEDICATED PDF & IMAGE INVOICE MODAL -->
-  <div class="modal fade" id="universalInvoiceModal" tabindex="-1" aria-hidden="true" style="z-index: 1070;">
+   <!-- 🖼️ INVOICE POPUP MODAL -->
+  <div class="modal fade" id="universalInvoiceModal" tabindex="-1" aria-labelledby="invoiceModalLabel" aria-hidden="true" style="z-index: 1070;">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content rounded-4 border-0 shadow bg-dark text-white">
-        <div class="modal-header border-0 py-2">
-          <h6 class="modal-title fw-bold"><i class="bi bi-file-earmark-text me-1"></i> Invoice Viewer</h6>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-content rounded-4 border-0 shadow">
+        <div class="modal-header py-2 bg-body d-flex justify-content-between align-items-center">
+          <h6 class="modal-title fw-bold text-body m-0" id="invoiceModalLabel">
+            <i class="bi bi-file-earmark-text text-primary me-1"></i> Invoice Viewer
+          </h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body p-2 text-center position-relative d-flex align-items-center justify-content-center" style="min-height: 450px; max-height: 80vh;">
+        <div class="modal-body p-0 text-center bg-dark rounded-bottom-4 position-relative" style="min-height: 480px;">
           <div id="invoiceLoadingSpinner" class="position-absolute top-50 start-50 translate-middle text-white">
-            <div class="spinner-border spinner-border-sm me-2" role="status"></div> ലോഡ് ചെയ്യുന്നു...
+            <div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading Invoice...
           </div>
-          <!-- പി.ഡി.എഫും ഇമേജും കൃത്യമായി കാണിക്കാൻ ഒരൊറ്റ iframe മാത്രം ഉപയോഗിക്കുന്നു -->
-          <iframe id="invoiceModalFrame" src="" style="width: 100%; height: 75vh; border: none; display: none;" onload="document.getElementById('invoiceLoadingSpinner').style.display='none'; this.style.display='block';"></iframe>
-        </div>
-        <div class="modal-footer border-0 py-2 justify-content-between">
-          <a id="invoiceDownloadBtn" href="" target="_blank" class="btn btn-sm btn-outline-light rounded-pill"><i class="bi bi-download me-1"></i> Download / New Tab</a>
-          <button type="button" class="btn btn-sm btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+          <iframe id="invoiceModalFrame" src="" style="width:100%; height:480px; border:none;" onload="document.getElementById('invoiceLoadingSpinner').style.display='none';"></iframe>
         </div>
       </div>
     </div>
@@ -1411,40 +1408,41 @@
       myMemberModal.show();
     }
 
-               var myUniversalInvoiceModal = null;
+     var myUniversalInvoiceModal = null;
 
     function openInvoiceModal(url) {
       if (!url) return;
       
       let iframe = document.getElementById('invoiceModalFrame');
       let spinner = document.getElementById('invoiceLoadingSpinner');
-      let downloadBtn = document.getElementById('invoiceDownloadBtn');
       
+      // പുതിയ ഫയൽ ലോഡ് ചെയ്യുമ്പോൾ സ്പിന്നർ വീണ്ടും കാണിക്കുക
       spinner.style.display = 'block';
-      iframe.style.display = 'none';
+      iframe.src = ''; // പഴയ ഫയൽ ക്ലിയർ ചെയ്യുന്നു
 
-      let finalUrl = url;
-      let downloadUrl = url;
+      let embedUrl = url;
 
-      // ഗൂഗിൾ ഡ്രൈവ് ലിങ്ക് ആണെങ്കിൽ അത് പി.ഡി.എഫ് ആണോ ഇമേജ് ആണോ എന്ന് നോക്കി സെറ്റ് ചെയ്യുന്നു
-      if (url.includes('drive.google.com')) {
-        // ഡ്രൈവ് വ്യൂ ലിങ്കിനെ പ്രിവ്യൂ/എംബെഡ് മോഡിലേക്ക് മാറ്റുന്നു (ഇത് വഴി PDF മുഴുവനായി സ്ക്രോൾ ചെയ്ത് കാണാം)
-        if (url.includes('/view')) {
-          finalUrl = url.replace('/view?usp=sharing', '/preview').replace('/view', '/preview');
-        }
-        // ഡൗൺലോഡ് ലിങ്ക് ശരിയാക്കാൻ
+      // ഗൂഗിൾ ഡ്രൈവ് ലിങ്ക് ആണെങ്കിൽ പ്രിവ്യൂ മോഡിലേക്ക് മാറ്റുന്നു (PDF / Image-ന് ഇത് പെർഫെക്റ്റ് ആണ്)
+      if (url.includes('drive.google.com') || url.includes('id=')) {
+        let fileId = "";
         if (url.includes('/file/d/')) {
-          let fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-          if (fileIdMatch && fileIdMatch[1]) {
-            let fileId = fileIdMatch[1];
-            finalUrl = `https://drive.google.com/file/d/${fileId}/preview`;
-            downloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
-          }
+          let match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+          if (match) fileId = match[1];
+        } else if (url.includes('id=')) {
+          let match = url.match(/id=([a-zA-Z0-9_-]+)/);
+          if (match) fileId = match[1];
         }
+
+        if (fileId) {
+          embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+        }
+      } 
+      // മറ്റ് വെബ് ലിങ്കുകൾ ആണെങ്കിൽ നേരിട്ട് കൊടുക്കാം
+      else {
+        embedUrl = url;
       }
 
-      iframe.src = finalUrl;
-      downloadBtn.href = downloadUrl;
+      iframe.src = embedUrl;
 
       if (!myUniversalInvoiceModal) {
         let uniInvoiceEl = document.getElementById('universalInvoiceModal');
@@ -1454,7 +1452,6 @@
         myUniversalInvoiceModal.show();
       }
     }
-
 
     function openProfileModal() {
       document.getElementById('profileModalImg').src = loggedInUser.photo || 'https://via.placeholder.com/90';
