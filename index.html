@@ -401,7 +401,11 @@
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content bg-transparent border-0 shadow-none text-center">
         <div class="position-relative d-inline-block mx-auto">
-          <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-2 bg-dark p-2 rounded-circle shadow" data-bs-dismiss="modal" aria-label="Close" style="z-index: 1080;"></button>
+          <!-- ചുവന്ന വട്ടവും ഉള്ളിൽ വെളുത്ത ഡോട്ടും മാത്രം (X ഇല്ലാതെ) -->
+          <button type="button" class="position-absolute top-0 end-0 m-2 rounded-circle shadow border-0 d-flex align-items-center justify-content-center" data-bs-dismiss="modal" aria-label="Close" style="z-index: 1080; background-color: #dc3545; width: 34px; height: 34px;">
+            <span class="rounded-circle bg-white" style="width: 12px; height: 12px; display: inline-block;"></span>
+          </button>
+          
           <div id="modalSpinner" class="text-white my-5">
             <div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading Invoice...
           </div>
