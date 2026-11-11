@@ -732,7 +732,7 @@
         })
         .catch(err => {
           if (myLoadingModal) myLoadingModal.hide();
-          alert("ലോഗിൻ ചെയ്യുന്നതിൽ തടസ്സം നേരിട്ടു: " + err.message);
+          showToast("ലോഗിൻ ചെയ്യുന്നതിൽ തടസ്സം നേരിട്ടു: " + err.message, false);
         });
     }
 
