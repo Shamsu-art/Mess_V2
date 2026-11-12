@@ -653,86 +653,73 @@
       let errorAlert = document.getElementById('loginErrorAlert');
       errorAlert.classList.add('d-none');
 
-      // ഡാറ്റ നേരത്തെ തന്നെ ലോഡ് ചെയ്തിട്ടുണ്ടെങ്കിൽ വീണ്ടും സെർവറിലേക്ക് റിക്വസ്റ്റ് അയക്കാതെ പെട്ടെന്ന് ചെക്ക് ചെയ്യുന്നു
-      if (globalData && globalData.summary) {
-        processLoginMatch(globalData, phoneInput, dobInput, rememberMe, errorAlert);
-      } else {
-        // ഡാറ്റ ഇതുവരെ ലോഡ് ആയിട്ടില്ലെങ്കിൽ മാത്രം ലോഡിങ് കാണിച്ച് ഫെച്ച് ചെയ്യുന്നു
-        if (myLoadingModal) {
-          document.getElementById('generalSpinnerBox').classList.add('d-none');
-          document.getElementById('closedAlertBox').classList.add('d-none');
-          document.getElementById('loginWelcomeBox').classList.remove('d-none');
-          myLoadingModal.show();
-        }
+      // ലോഡിങ് മോഡൽ ഓപ്പൺ ചെയ്ത് വെൽക്കം മെസ്സേജ് കാണിക്കുന്നു
+      let startTime = new Date().getTime(); // തുടക്കത്തിലുള്ള സമയം കുറിച്ചു വെക്കുന്നു
+      if (myLoadingModal) {
+        document.getElementById('generalSpinnerBox').classList.add('d-none');
+        document.getElementById('closedAlertBox').classList.add('d-none');
+        document.getElementById('loginWelcomeBox').classList.remove('d-none');
+        myLoadingModal.show();
+      }
 
+      // ഡാറ്റ പരിശോധിക്കുന്നതിനുള്ള കോഡ് (ആപ്പിലുള്ള ഡാറ്റ വെച്ചോ അല്ലെങ്കിൽ ഫെച്ച് ചെയ്തോ പരിശോധിക്കാം)
+      let executeLogin = (data) => {
+        globalData = data;
+
+        let matchedUser = globalData.summary.find(m => {
+          let mPhone = cleanPhone(m.phone);
+          let mDob = m.dob ? m.dob.toString().trim() : '';
+          return mPhone === phoneInput && mDob === dobInput;
+        });
+
+        let finishAction = () => {
+          if (!matchedUser) {
+            if (myLoadingModal) myLoadingModal.hide();
+            errorAlert.classList.remove('d-none');
+            return;
+          }
+
+          if (matchedUser.status && matchedUser.status.toLowerCase() === 'closed') {
+            document.getElementById('loginWelcomeBox').classList.add('d-none');
+            document.getElementById('closedAlertBox').classList.remove('d-none');
+            return;
+          }
+
+          loggedInUser = matchedUser;
+
+          if (rememberMe) {
+            localStorage.setItem('mess_saved_login', JSON.stringify({
+              phone: document.getElementById('loginPhone').value.trim()
+            }));
+          } else {
+            localStorage.removeItem('mess_saved_login');
+          }
+
+          if (myLoadingModal) myLoadingModal.hide();
+          showDashboard();
+        };
+
+        // കുറഞ്ഞത് 1 സെക്കൻഡ് (1000ms) സ്പിന്നർ കാണിക്കാൻ വേണ്ടി സമയം ക്രമീകരിക്കുന്നു
+        let elapsedTime = new Date().getTime() - startTime;
+        let remainingTime = Math.max(0, 1000 - elapsedTime);
+        setTimeout(finishAction, remainingTime);
+      };
+
+      // ഡാറ്റ നേരത്തെ ലോഡ് ആയിട്ടുണ്ടെങ്കിൽ അത് ഉപയോഗിക്കുന്നു, അല്ലെങ്കിൽ ഫെച്ച് ചെയ്യുന്നു
+      if (globalData && globalData.summary) {
+        executeLogin(globalData);
+      } else {
         let requestUrl = API_URL + '?t=' + new Date().getTime();
         fetch(requestUrl)
           .then(res => res.json())
           .then(data => {
-            globalData = data;
-            processLoginMatch(globalData, phoneInput, dobInput, rememberMe, errorAlert);
+            executeLogin(data);
           })
           .catch(err => {
             if (myLoadingModal) myLoadingModal.hide();
             showToast("ലോഗിൻ ചെയ്യുന്നതിൽ തടസ്സം നേരിട്ടു: " + err.message, false);
           });
       }
-    }
-
-    // ലോഗിൻ മാച്ച് പരിശോധിക്കുന്നതിനുള്ള പ്രത്യേക ഫംഗ്ഷൻ
-    function processLoginMatch(data, phoneInput, dobInput, rememberMe, errorAlert) {
-      let matchedUser = data.summary.find(m => {
-        let mPhone = cleanPhone(m.phone);
-        let mDob = m.dob ? m.dob.toString().trim() : '';
-        return mPhone === phoneInput && mDob === dobInput;
-      });
-
-      if (!matchedUser) {
-        if (myLoadingModal) myLoadingModal.hide();
-        errorAlert.classList.remove('d-none');
-        return;
-      }
-
-      if (matchedUser.status && matchedUser.status.toLowerCase() === 'closed') {
-        if (myLoadingModal) {
-          document.getElementById('loginWelcomeBox').classList.add('d-none');
-          document.getElementById('closedAlertBox').classList.remove('d-none');
-        }
-        return;
-      }
-
-      loggedInUser = matchedUser;
-
-      if (rememberMe) {
-        localStorage.setItem('mess_saved_login', JSON.stringify({
-          phone: document.getElementById('loginPhone').value.trim()
-        }));
-      } else {
-        localStorage.removeItem('mess_saved_login');
-      }
-
-      if (myLoadingModal) myLoadingModal.hide();
-      showDashboard();
-    }
-    
-              .catch(err => {
-                if (myLoadingModal) myLoadingModal.hide();
-                alert("Month loading error: " + err.message);
-              });
-
-          } else {
-            let found = globalData.summary.find(m => m.id.toLowerCase() === loggedInUser.id.toLowerCase());
-            if (found) {
-              loggedInUser = found;
-            }
-            if (myLoadingModal) myLoadingModal.hide();
-            showDashboard();
-          }
-        })
-        .catch(err => {
-          if (myLoadingModal) myLoadingModal.hide();
-          showToast("ലോഗിൻ ചെയ്യുന്നതിൽ തടസ്സം നേരിട്ടു: " + err.message, false);
-        });
     }
 
     function closeLoadingModalAndReset() {
