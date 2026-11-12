@@ -653,8 +653,7 @@
       let errorAlert = document.getElementById('loginErrorAlert');
       errorAlert.classList.add('d-none');
 
-      // ലോഡിങ് മോഡൽ ഓപ്പൺ ചെയ്ത് വെൽക്കം മെസ്സേജ് കാണിക്കുന്നു
-      let startTime = new Date().getTime(); // തുടക്കത്തിലുള്ള സമയം കുറിച്ചു വെക്കുന്നു
+      let startTime = new Date().getTime();
       if (myLoadingModal) {
         document.getElementById('generalSpinnerBox').classList.add('d-none');
         document.getElementById('closedAlertBox').classList.add('d-none');
@@ -662,7 +661,6 @@
         myLoadingModal.show();
       }
 
-      // ഡാറ്റ പരിശോധിക്കുന്നതിനുള്ള കോഡ് (ആപ്പിലുള്ള ഡാറ്റ വെച്ചോ അല്ലെങ്കിൽ ഫെച്ച് ചെയ്തോ പരിശോധിക്കാം)
       let executeLogin = (data) => {
         globalData = data;
 
@@ -695,17 +693,52 @@
             localStorage.removeItem('mess_saved_login');
           }
 
-          if (myLoadingModal) myLoadingModal.hide();
-          showDashboard();
+          // Smart Default Month കണ്ടുപിടിക്കുന്ന ഭാഗം ഇവിടെ ചേർത്തിരിക്കുന്നു
+          let targetSmartMonth = findSmartDefaultMonth(loggedInUser);
+
+          if (targetSmartMonth && targetSmartMonth !== globalData.selectedMonth) {
+            let targetUrl = API_URL +
+              '?t=' + new Date().getTime() +
+              '&month=' + encodeURIComponent(targetSmartMonth);
+
+            fetch(targetUrl)
+              .then(res => res.json())
+              .then(monthData => {
+                globalData = monthData;
+                let found = monthData.summary.find(m => m.id.toLowerCase() === loggedInUser.id.toLowerCase());
+                if (found) {
+                  loggedInUser = found;
+                }
+                
+                let elapsedTime = new Date().getTime() - startTime;
+                let remainingTime = Math.max(0, 1000 - elapsedTime);
+                setTimeout(() => {
+                  if (myLoadingModal) myLoadingModal.hide();
+                  showDashboard();
+                }, remainingTime);
+              })
+              .catch(err => {
+                if (myLoadingModal) myLoadingModal.hide();
+                showDashboard();
+              });
+          } else {
+            let found = globalData.summary.find(m => m.id.toLowerCase() === loggedInUser.id.toLowerCase());
+            if (found) {
+              loggedInUser = found;
+            }
+
+            let elapsedTime = new Date().getTime() - startTime;
+            let remainingTime = Math.max(0, 1000 - elapsedTime);
+            setTimeout(() => {
+              if (myLoadingModal) myLoadingModal.hide();
+              showDashboard();
+            }, remainingTime);
+          }
         };
 
-        // കുറഞ്ഞത് 1 സെക്കൻഡ് (1000ms) സ്പിന്നർ കാണിക്കാൻ വേണ്ടി സമയം ക്രമീകരിക്കുന്നു
-        let elapsedTime = new Date().getTime() - startTime;
-        let remainingTime = Math.max(0, 1000 - elapsedTime);
-        setTimeout(finishAction, remainingTime);
+        finishAction();
       };
 
-      // ഡാറ്റ നേരത്തെ ലോഡ് ആയിട്ടുണ്ടെങ്കിൽ അത് ഉപയോഗിക്കുന്നു, അല്ലെങ്കിൽ ഫെച്ച് ചെയ്യുന്നു
       if (globalData && globalData.summary) {
         executeLogin(globalData);
       } else {
