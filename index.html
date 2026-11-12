@@ -979,8 +979,9 @@
       container.innerHTML = `
         <!-- മുകളിൽ റൈറ്റ് സൈഡിൽ സെറ്റിങ്സ് ബട്ടണും അതിന്റെ അരികിലായി റിഫ്രഷ് ബട്ടണും നൽകാം -->
         <div class="position-absolute top-0 end-0 m-3 d-flex gap-1">
-          <button class="btn btn-sm btn-outline-primary rounded-circle" onclick="refreshDashboardData()" title="Refresh Data">
-  <i class="bi bi-arrow-clockwise"></i>
+          <button id="refreshBtn" class="btn btn-sm btn-outline-primary rounded-circle" onclick="refreshDashboardData()" title="Refresh Data">
+  <i id="refreshIcon" class="bi bi-arrow-clockwise"></i>
+  <span id="refreshSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
 </button>
           <button class="btn btn-sm btn-outline-secondary rounded-circle" onclick="openProfileModal()" title="Edit Profile">
             <i class="bi bi-gear-fill"></i>
@@ -1518,10 +1519,15 @@
     function refreshDashboardData() {
       let currentMonth = document.getElementById('monthSelect').value || globalData.selectedMonth;
       
+      // റിഫ്രഷ് ബട്ടണിലെ ഐക്കൺ മാറ്റി ചെറിയ സ്പിന്നർ കാണിക്കുന്നു
+      let icon = document.getElementById('refreshIcon');
+      let spinner = document.getElementById('refreshSpinner');
+      icon.classList.add('d-none');
+      spinner.classList.remove('d-none');
+
       let requestUrl = API_URL + '?t=' + new Date().getTime();
       if (currentMonth) requestUrl += '&month=' + encodeURIComponent(currentMonth);
 
-      // വലിയ സ്പിന്നർ കാണിക്കാതെ സൈലന്റായി ഡാറ്റ ഫെച്ച് ചെയ്ത് അപ്ഡേറ്റ് ചെയ്യുന്നു
       fetch(requestUrl)
         .then(res => res.json())
         .then(data => {
@@ -1537,10 +1543,18 @@
             }
           }
 
-          // വളരെ സിമ്പിളായ സ്റ്റാൻഡേർഡ് നോട്ടിഫിക്കേഷൻ മാത്രം കാണിക്കുന്നു
+          // സ്പിന്നർ തിരിച്ച് പഴയ ഐക്കൺ തന്നെ ആക്കുന്നു
+          icon.classList.remove('d-none');
+          spinner.classList.add('d-none');
+
+          // സിമ്പിൾ നോട്ടിഫിക്കേഷൻ കാണിക്കുന്നു
           showToast("ഡാറ്റ അപ്ഡേറ്റ് ചെയ്തു!", true);
         })
         .catch(err => {
+          // എറർ വന്നാലും സ്പിന്നർ മാറ്റി ഐക്കൺ തിരിച്ച് വെക്കുന്നു
+          icon.classList.remove('d-none');
+          spinner.classList.add('d-none');
+          
           showToast("ഡാറ്റ അപ്ഡേറ്റ് ചെയ്യുന്നതിൽ തടസ്സം നേരിട്ടു: " + err.message, false);
         });
     }
