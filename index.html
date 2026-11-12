@@ -1315,7 +1315,8 @@
       document.getElementById('memberModalSubTitle').innerText = `${memberName} - Total: ${memberTx.length}`;
 
       if (memberTx.length === 0) {
-        document.getElementById('memberModalContent').innerHTML = `<div class="text-center text-muted py-4"><i class="bi bi-info-circle fs-3 d-block mb-2"></i>ഈ മാസത്തിൽ ഇദ്ദേഹം പർച്ചേസ് ചെയ്ത ബില്ലുകൾ ഒന്നും ലഭ്യമല്ല.</div>`;
+        let msg = isSelf ? "ഈ മാസത്തിൽ താങ്കൾ പർച്ചേസ് ചെയ്ത ബില്ലുകൾ ഒന്നും ലഭ്യമല്ല." : `ഈ മാസത്തിൽ ${memberName} പർച്ചേസ് ചെയ്ത ബില്ലുകൾ ഒന്നും ലഭ്യമല്ല.`;
+        document.getElementById('memberModalContent').innerHTML = `<div class="text-center text-muted py-4"><i class="bi bi-info-circle fs-3 d-block mb-2"></i>${msg}</div>`;
       } else {
         let html = '<ul class="list-group list-group-flush small">';
         memberTx.forEach(e => {
