@@ -979,9 +979,9 @@
       container.innerHTML = `
         <!-- മുകളിൽ റൈറ്റ് സൈഡിൽ സെറ്റിങ്സ് ബട്ടണും അതിന്റെ അരികിലായി റിഫ്രഷ് ബട്ടണും നൽകാം -->
         <div class="position-absolute top-0 end-0 m-3 d-flex gap-1">
-          <button class="btn btn-sm btn-outline-primary rounded-circle" onclick="loadDataWithSpinner(globalData.selectedMonth)" title="Refresh Data">
-            <i class="bi bi-arrow-clockwise"></i>
-          </button>
+          <button class="btn btn-sm btn-outline-primary rounded-circle" onclick="refreshDashboardData()" title="Refresh Data">
+  <i class="bi bi-arrow-clockwise"></i>
+</button>
           <button class="btn btn-sm btn-outline-secondary rounded-circle" onclick="openProfileModal()" title="Edit Profile">
             <i class="bi bi-gear-fill"></i>
           </button>
@@ -1513,6 +1513,16 @@
         };
         reader.readAsDataURL(file);
       }
+    }
+
+    function refreshDashboardData() {
+      let currentMonth = document.getElementById('monthSelect').value || globalData.selectedMonth;
+      
+      // ഡാറ്റ ലോഡ് ചെയ്യുന്നു
+      loadDataWithSpinner(currentMonth);
+      
+      // സിമ്പിളായ നോട്ടിഫിക്കേഷൻ കാണിക്കുന്നു
+      showToast("ഡാറ്റ അപ്ഡേറ്റ് ചെയ്തു!", true);
     }
 
     // 3. പ്രൊഫൈൽ അപ്ഡേറ്റ് ചെയ്യുമ്പോൾ
