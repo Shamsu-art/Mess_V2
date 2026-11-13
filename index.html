@@ -1164,17 +1164,42 @@
       let m = globalData.summary.find(x => x.id.toLowerCase() === memberId.toLowerCase());
       if (!m) return;
 
+      let mIdTrim = memberId.toString().trim().toLowerCase();
+      let mNameTrim = memberName ? memberName.toString().trim().toLowerCase() : '';
+      let isSelf = loggedInUser && (loggedInUser.id.toLowerCase() === mIdTrim || (loggedInUser.name && loggedInUser.name.toLowerCase() === mNameTrim));
+
       let isAdmin = loggedInUser && loggedInUser.role && loggedInUser.role.toLowerCase() === 'admin';
-      let isViewingOther = isAdmin && (loggedInUser.id.toLowerCase() !== m.id.toLowerCase());
+      let isViewingOther = isAdmin && !isSelf;
 
-      let backBtnHtml = isViewingOther ? `<button onclick="showMemberFullCard('${m.id}')" class="btn btn-sm btn-outline-secondary rounded-circle ms-auto p-0 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-size: 0.9rem;" title="Back to Profile">←</button>` : '';
+      // ഡിഫോൾട്ട് ക്ലോസ് ബട്ടൺ ഹൈഡ് ചെയ്യുകയും ബാക്ക് ബട്ടൺ സെറ്റ് ചെയ്യുകയും ചെയ്യുന്നു
+      let defaultCloseBtn = document.querySelector('#memberModal .modal-header .btn-close');
+      if (defaultCloseBtn) defaultCloseBtn.style.display = isViewingOther ? 'none' : 'block';
 
-      document.getElementById('memberModalLabel').innerHTML = `<div class="d-flex align-items-center w-100"><span class="text-truncate"><i class="bi bi-pie-chart-fill text-primary me-1"></i> ${m.name} - Share Detail</span> ${backBtnHtml}</div>`;
+      // ഹെഡർ ടൈറ്റിൽ സെറ്റ് ചെയ്യുന്നു
+      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-pie-chart-fill text-primary me-1"></i> ${m.name} - Share Detail`;
       document.getElementById('memberModalSubTitle').innerText = "Category wise share calculation";
 
-      // ഡീഫോൾട്ട് ക്ലോസ് ബട്ടൺ ഹൈഡ് ചെയ്യുന്നു
-      let defaultCloseBtn = document.querySelector('#memberModal .modal-header .btn-close');
-      if (defaultCloseBtn) defaultCloseBtn.style.display = 'none';
+      // മോഡൽ ഹെഡറിന്റെ വലതുവശത്തെ അറ്റത്തുള്ള ക്ലോസ് ബട്ടണിന്റെ സ്ഥാനത്ത് ബാക്ക് ബട്ടൺ ഒട്ടിച്ചു വെക്കുന്നു
+      let modalHeaderEl = document.querySelector('#memberModal .modal-header');
+      let existingBackBtn = document.getElementById('modalCustomBackBtn');
+      if (existingBackBtn) existingBackBtn.remove();
+
+      if (isViewingOther) {
+        let backBtn = document.createElement('button');
+        backBtn.id = 'modalCustomBackBtn';
+        backBtn.className = 'btn btn-sm btn-outline-secondary rounded-circle p-0 d-flex align-items-center justify-content-center';
+        backBtn.style.width = '32px';
+        backBtn.style.height = '32px';
+        backBtn.style.fontSize = '1rem';
+        backBtn.style.marginLeft = 'auto';
+        backBtn.title = 'Back to Profile';
+        backBtn.innerHTML = '←';
+        backBtn.onclick = function() {
+          showMemberFullCard(m.id);
+        };
+        // ക്ലോസ് ബട്ടണിന് പകരം കൃത്യം ആ സ്ഥാനത്ത് ചേർക്കുന്നു
+        modalHeaderEl.appendChild(backBtn);
+      }
 
       let html = `<div class="list-group list-group-flush mb-3">`;
       
@@ -1198,8 +1223,6 @@
       }
       html += `</div>`;
 
-      let mIdTrim = memberId.toString().trim().toLowerCase();
-      let mNameTrim = memberName ? memberName.toString().trim().toLowerCase() : '';
       let memberTx = globalData.recentExpenses.filter(e => {
         let participants = e[7] ? e[7].toString().toLowerCase() : '';
         return participants.includes(mIdTrim) || (mNameTrim && participants.includes(mNameTrim));
@@ -1265,7 +1288,34 @@
       let isAdmin = loggedInUser && loggedInUser.role && loggedInUser.role.toLowerCase() === 'admin';
       let isViewingOther = isAdmin && !isSelf;
 
-      let backBtnHtml = isViewingOther ? `<button onclick="showMemberFullCard('${memberId}')" class="btn btn-sm btn-outline-secondary rounded-circle ms-auto p-0 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-size: 0.9rem;" title="Back to Profile">←</button>` : '';
+      // ഡിഫോൾട്ട് ക്ലോസ് ബട്ടൺ ഹൈഡ് ചെയ്യുകയും ബാക്ക് ബട്ടൺ സെറ്റ് ചെയ്യുകയും ചെയ്യുന്നു
+      let defaultCloseBtn = document.querySelector('#memberModal .modal-header .btn-close');
+      if (defaultCloseBtn) defaultCloseBtn.style.display = isViewingOther ? 'none' : 'block';
+
+      // ഹെഡർ ടൈറ്റിൽ സെറ്റ് ചെയ്യുന്നു
+      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-wallet2 text-success me-1"></i> Payments Details`;
+      document.getElementById('memberModalSubTitle').innerText = `${memberName} - Total Transactions: ${payments ? payments.length : 0}`;
+
+      // മോഡൽ ഹെഡറിന്റെ വലതുവശത്തെ അറ്റത്തുള്ള ക്ലോസ് ബട്ടണിന്റെ സ്ഥാനത്ത് ബാക്ക് ബട്ടൺ ചേർക്കുന്നു
+      let modalHeaderEl = document.querySelector('#memberModal .modal-header');
+      let existingBackBtn = document.getElementById('modalCustomBackBtn');
+      if (existingBackBtn) existingBackBtn.remove();
+
+      if (isViewingOther) {
+        let backBtn = document.createElement('button');
+        backBtn.id = 'modalCustomBackBtn';
+        backBtn.className = 'btn btn-sm btn-outline-secondary rounded-circle p-0 d-flex align-items-center justify-content-center';
+        backBtn.style.width = '32px';
+        backBtn.style.height = '32px';
+        backBtn.style.fontSize = '1rem';
+        backBtn.style.marginLeft = 'auto';
+        backBtn.title = 'Back to Profile';
+        backBtn.innerHTML = '←';
+        backBtn.onclick = function() {
+          showMemberFullCard(memberId);
+        };
+        modalHeaderEl.appendChild(backBtn);
+      }
 
       let payments = globalData.allPayments.filter(p => {
         let payMonth = p[2] ? String(p[2]).trim() : '';
@@ -1273,11 +1323,7 @@
         return payMonth === globalData.selectedMonth && (mId.toLowerCase() === memberId.toLowerCase() || mId.toLowerCase() === memberName.toLowerCase());
       });
 
-      document.getElementById('memberModalLabel').innerHTML = `<div class="d-flex align-items-center w-100"><span class="text-truncate"><i class="bi bi-wallet2 text-success me-1"></i> Payments Details</span> ${backBtnHtml}</div>`;
       document.getElementById('memberModalSubTitle').innerText = `${memberName} - Total Transactions: ${payments.length}`;
-
-      let defaultCloseBtn = document.querySelector('#memberModal .modal-header .btn-close');
-      if (defaultCloseBtn) defaultCloseBtn.style.display = isViewingOther ? 'none' : 'block';
 
       if (payments.length === 0) {
         let msg = isSelf ? "ഈ മാസത്തിൽ താങ്കൾ പെയ്‌മെന്റുകൾ ഒന്നും നടത്തിയിട്ടില്ല." : `ഈ മാസത്തിൽ ${memberName} പെയ്‌മെന്റുകൾ ഒന്നും നടത്തിയിട്ടില്ല.`;
@@ -1331,18 +1377,41 @@
       let isAdmin = loggedInUser && loggedInUser.role && loggedInUser.role.toLowerCase() === 'admin';
       let isViewingOther = isAdmin && !isSelf;
 
-      let backBtnHtml = isViewingOther ? `<button onclick="showMemberFullCard('${memberId}')" class="btn btn-sm btn-outline-secondary rounded-circle ms-auto p-0 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-size: 0.9rem;" title="Back to Profile">←</button>` : '';
+      // ഡിഫോൾട്ട് ക്ലോസ് ബട്ടൺ ഹൈഡ് ചെയ്യുകയും ബാക്ക് ബട്ടൺ സെറ്റ് ചെയ്യുകയും ചെയ്യുന്നു
+      let defaultCloseBtn = document.querySelector('#memberModal .modal-header .btn-close');
+      if (defaultCloseBtn) defaultCloseBtn.style.display = isViewingOther ? 'none' : 'block';
+
+      // ഹെഡർ ടൈറ്റിൽ സെറ്റ് ചെയ്യുന്നു
+      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-cart-fill text-danger me-1"></i> Purchased Bills`;
+      document.getElementById('memberModalSubTitle').innerText = `${memberName} - Total: 0`;
+
+      // മോഡൽ ഹെഡറിന്റെ വലതുവശത്തെ അറ്റത്തുള്ള ക്ലോസ് ബട്ടണിന്റെ സ്ഥാനത്ത് ബാക്ക് ബട്ടൺ ചേർക്കുന്നു
+      let modalHeaderEl = document.querySelector('#memberModal .modal-header');
+      let existingBackBtn = document.getElementById('modalCustomBackBtn');
+      if (existingBackBtn) existingBackBtn.remove();
+
+      if (isViewingOther) {
+        let backBtn = document.createElement('button');
+        backBtn.id = 'modalCustomBackBtn';
+        backBtn.className = 'btn btn-sm btn-outline-secondary rounded-circle p-0 d-flex align-items-center justify-content-center';
+        backBtn.style.width = '32px';
+        backBtn.style.height = '32px';
+        backBtn.style.fontSize = '1rem';
+        backBtn.style.marginLeft = 'auto';
+        backBtn.title = 'Back to Profile';
+        backBtn.innerHTML = '←';
+        backBtn.onclick = function() {
+          showMemberFullCard(memberId);
+        };
+        modalHeaderEl.appendChild(backBtn);
+      }
 
       let memberTx = globalData.recentExpenses.filter(e => {
         let paidBy = e[4] ? e[4].toString().trim().toLowerCase() : '';
         return (paidBy === mIdTrim) || (mNameTrim && paidBy === mNameTrim);
       });
 
-      document.getElementById('memberModalLabel').innerHTML = `<div class="d-flex align-items-center w-100"><span class="text-truncate"><i class="bi bi-cart-fill text-danger me-1"></i> Purchased Bills</span> ${backBtnHtml}</div>`;
       document.getElementById('memberModalSubTitle').innerText = `${memberName} - Total: ${memberTx.length}`;
-
-      let defaultCloseBtn = document.querySelector('#memberModal .modal-header .btn-close');
-      if (defaultCloseBtn) defaultCloseBtn.style.display = isViewingOther ? 'none' : 'block';
 
       if (memberTx.length === 0) {
         let msg = isSelf ? "ഈ മാസത്തിൽ താങ്കൾ പർച്ചേസ് ചെയ്ത ബില്ലുകൾ ഒന്നും ലഭ്യമല്ല." : `ഈ മാസത്തിൽ ${memberName} പർച്ചേസ് ചെയ്ത ബില്ലുകൾ ഒന്നും ലഭ്യമല്ല.`;
@@ -1378,44 +1447,8 @@
       if (!myMemberModal) myMemberModal = new bootstrap.Modal(document.getElementById('memberModal'));
       myMemberModal.show();
     }
+
     
-    function showAllExpensesModal() {
-      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-cart-fill text-danger me-1"></i> ALL EXPENSES`;
-      document.getElementById('memberModalSubTitle').innerHTML = `Mess: ${globalData.messTotalExp.toFixed(2)} | Water: ${globalData.waterTotalExp.toFixed(2)} | Special: ${globalData.specialTotalExp.toFixed(2)}`;
-
-      let txs = globalData.recentExpenses;
-      if (txs.length === 0) {
-        document.getElementById('memberModalContent').innerHTML = `<div class="text-center text-muted py-4">ചിലവുകൾ ഒന്നും രേഖപ്പെടുത്തിയിട്ടില്ല.</div>`;
-      } else {
-        let html = '<ul class="list-group list-group-flush small">';
-        txs.forEach(e => {
-          let formattedDate = formatDateDDMMYYYY(e[1]);
-          let item = e[3] || 'Expense';
-          let purchaser = e[4] || '-';
-          let amt = Number(e[5]).toFixed(2);
-          let invoiceUrl = e[8] || '';
-
-          html += `<li class="list-group-item border-bottom bg-transparent py-2 narrow-list-item">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <div class="fw-bold text-body fs-6 mb-1">${item}</div>
-                <div class="text-muted mb-1" style="font-size:0.75rem;"><i class="bi bi-calendar-event me-1 text-primary"></i>${formattedDate}</div>
-                <div class="text-muted" style="font-size:0.75rem;"><i class="bi bi-person-fill me-1 text-secondary"></i><strong>${purchaser}</strong></div>
-              </div>
-              <div class="text-end">
-                <span class="fw-bold text-danger fs-6">AED ${amt}</span>
-                ${invoiceUrl ? `<br><button onclick="openInvoiceModal('${invoiceUrl}')" class="btn btn-sm btn-outline-primary py-0 px-2 rounded-pill mt-1" style="font-size:0.7rem;"><i class="bi bi-file-earmark-image"></i> Invoice</button>` : ''}
-              </div>
-            </div>
-          </li>`;
-        });
-        html += '</ul>';
-        document.getElementById('memberModalContent').innerHTML = html;
-      }
-      if (!myMemberModal) myMemberModal = new bootstrap.Modal(document.getElementById('memberModal'));
-      myMemberModal.show();
-    }
-
     function showAllPaymentsModal() {
       document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-wallet2 text-success me-1"></i> ALL COLLECTIONS`;
       document.getElementById('memberModalSubTitle').innerText = `Total Collected: AED ${globalData.totalPaymentsMonth.toFixed(2)}`;
