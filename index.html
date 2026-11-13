@@ -1424,12 +1424,6 @@
         document.getElementById('memberModalContent').innerHTML = `<div class="text-center text-muted py-4"><i class="bi bi-info-circle fs-3 d-block mb-2"></i>${msg}</div>`;
       } else {
         let html = '<ul class="list-group list-group-flush small">';
-        memberTx.forEach(e => {
-          let formattedDate = formatDateDDMMYYYY(e[1]);
-          let item = e[3] || 'Expense';
-          let amount = Number(e[5] || 0).toFixed(2);
-          let purchaserName = e[4] || 'Unknown';
-          let invoiceUrl = e[8] || '';
 
           memberTx.forEach(e => {
           let formattedDate = formatDateDDMMYYYY(e[1]);
