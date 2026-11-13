@@ -1288,13 +1288,20 @@
       let isAdmin = loggedInUser && loggedInUser.role && loggedInUser.role.toLowerCase() === 'admin';
       let isViewingOther = isAdmin && !isSelf;
 
+      // ആദ്യം തന്നെ payments ഡാറ്റ ഫിൽട്ടർ ചെയ്ത് എടുക്കുന്നു
+      let payments = globalData.allPayments.filter(p => {
+        let payMonth = p[2] ? String(p[2]).trim() : '';
+        let mId = p[3] ? String(p[3]).trim() : '';
+        return payMonth === globalData.selectedMonth && (mId.toLowerCase() === memberId.toLowerCase() || mId.toLowerCase() === memberName.toLowerCase());
+      });
+
       // ഡിഫോൾട്ട് ക്ലോസ് ബട്ടൺ ഹൈഡ് ചെയ്യുകയും ബാക്ക് ബട്ടൺ സെറ്റ് ചെയ്യുകയും ചെയ്യുന്നു
       let defaultCloseBtn = document.querySelector('#memberModal .modal-header .btn-close');
       if (defaultCloseBtn) defaultCloseBtn.style.display = isViewingOther ? 'none' : 'block';
 
       // ഹെഡർ ടൈറ്റിൽ സെറ്റ് ചെയ്യുന്നു
       document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-wallet2 text-success me-1"></i> Payments Details`;
-      document.getElementById('memberModalSubTitle').innerText = `${memberName} - Total Transactions: ${payments ? payments.length : 0}`;
+      document.getElementById('memberModalSubTitle').innerText = `${memberName} - Total Transactions: ${payments.length}`;
 
       // മോഡൽ ഹെഡറിന്റെ വലതുവശത്തെ അറ്റത്തുള്ള ക്ലോസ് ബട്ടണിന്റെ സ്ഥാനത്ത് ബാക്ക് ബട്ടൺ ചേർക്കുന്നു
       let modalHeaderEl = document.querySelector('#memberModal .modal-header');
@@ -1316,14 +1323,6 @@
         };
         modalHeaderEl.appendChild(backBtn);
       }
-
-      let payments = globalData.allPayments.filter(p => {
-        let payMonth = p[2] ? String(p[2]).trim() : '';
-        let mId = p[3] ? String(p[3]).trim() : '';
-        return payMonth === globalData.selectedMonth && (mId.toLowerCase() === memberId.toLowerCase() || mId.toLowerCase() === memberName.toLowerCase());
-      });
-
-      document.getElementById('memberModalSubTitle').innerText = `${memberName} - Total Transactions: ${payments.length}`;
 
       if (payments.length === 0) {
         let msg = isSelf ? "ഈ മാസത്തിൽ താങ്കൾ പെയ്‌മെന്റുകൾ ഒന്നും നടത്തിയിട്ടില്ല." : `ഈ മാസത്തിൽ ${memberName} പെയ്‌മെന്റുകൾ ഒന്നും നടത്തിയിട്ടില്ല.`;
@@ -1368,6 +1367,7 @@
       if (!myMemberModal) myMemberModal = new bootstrap.Modal(document.getElementById('memberModal'));
       myMemberModal.show();
     }
+
     
     function showMemberTransactions(memberId, memberName) {
       let mIdTrim = memberId.toString().trim().toLowerCase();
@@ -1450,10 +1450,18 @@
 
     
     function showAllPaymentsModal() {
-      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-wallet2 text-success me-1"></i> ALL COLLECTIONS`;
-      document.getElementById('memberModalSubTitle').innerText = `Total Collected: AED ${globalData.totalPaymentsMonth.toFixed(2)}`;
+      // ഡിഫോൾട്ട് ക്ലോസ് ബട്ടൺ ഉറപ്പായും കാണするように സെറ്റ് ചെയ്യുന്നു
+      let defaultCloseBtn = document.querySelector('#memberModal .modal-header .btn-close');
+      if (defaultCloseBtn) defaultCloseBtn.style.display = 'block';
+      
+      let existingBackBtn = document.getElementById('modalCustomBackBtn');
+      if (existingBackBtn) existingBackBtn.remove();
 
-      let payments = globalData.allPayments.filter(p => String(p[2]).trim() === globalData.selectedMonth);
+      let payments = globalData.allPayments ? globalData.allPayments.filter(p => String(p[2]).trim() === globalData.selectedMonth) : [];
+
+      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-wallet2 text-success me-1"></i> ALL COLLECTIONS`;
+      document.getElementById('memberModalSubTitle').innerText = `Total Collected: AED ${globalData.totalPaymentsMonth ? globalData.totalPaymentsMonth.toFixed(2) : '0.00'}`;
+
       if (payments.length === 0) {
         document.getElementById('memberModalContent').innerHTML = `<div class="text-center text-muted py-4">Payments ഒന്നും രേഖപ്പെടുത്തിയിട്ടില്ല.</div>`;
       } else {
@@ -1502,7 +1510,6 @@
       if (!myMemberModal) myMemberModal = new bootstrap.Modal(document.getElementById('memberModal'));
       myMemberModal.show();
     }
-
 
     var myInvoiceModal = null;
 
