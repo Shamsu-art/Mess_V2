@@ -1167,10 +1167,14 @@
       let isAdmin = loggedInUser && loggedInUser.role && loggedInUser.role.toLowerCase() === 'admin';
       let isViewingOther = isAdmin && (loggedInUser.id.toLowerCase() !== m.id.toLowerCase());
 
-      let backBtnHtml = isViewingOther ? `<button onclick="showMemberFullCard('${m.id}')" class="btn btn-sm btn-outline-secondary rounded-pill mb-2 px-3 py-1" style="font-size: 0.75rem;"><i class="bi bi-arrow-left me-1"></i> Back to Profile</button>` : '';
+      let backBtnHtml = isViewingOther ? `<button onclick="showMemberFullCard('${m.id}')" class="btn btn-sm btn-outline-secondary rounded-circle ms-auto p-0 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-size: 0.9rem;" title="Back to Profile">←</button>` : '';
 
-      document.getElementById('memberModalLabel').innerHTML = `${backBtnHtml} <i class="bi bi-pie-chart-fill text-primary me-1"></i> ${m.name} - Share Detail`;
+      document.getElementById('memberModalLabel').innerHTML = `<div class="d-flex align-items-center w-100"><span class="text-truncate"><i class="bi bi-pie-chart-fill text-primary me-1"></i> ${m.name} - Share Detail</span> ${backBtnHtml}</div>`;
       document.getElementById('memberModalSubTitle').innerText = "Category wise share calculation";
+
+      // ഡീഫോൾട്ട് ക്ലോസ് ബട്ടൺ ഹൈഡ് ചെയ്യുന്നു
+      let defaultCloseBtn = document.querySelector('#memberModal .modal-header .btn-close');
+      if (defaultCloseBtn) defaultCloseBtn.style.display = 'none';
 
       let html = `<div class="list-group list-group-flush mb-3">`;
       
@@ -1261,7 +1265,7 @@
       let isAdmin = loggedInUser && loggedInUser.role && loggedInUser.role.toLowerCase() === 'admin';
       let isViewingOther = isAdmin && !isSelf;
 
-      let backBtnHtml = isViewingOther ? `<button onclick="showMemberFullCard('${memberId}')" class="btn btn-sm btn-outline-secondary rounded-pill mb-2 px-3 py-1" style="font-size: 0.75rem;"><i class="bi bi-arrow-left me-1"></i> Back to Profile</button>` : '';
+      let backBtnHtml = isViewingOther ? `<button onclick="showMemberFullCard('${memberId}')" class="btn btn-sm btn-outline-secondary rounded-circle ms-auto p-0 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-size: 0.9rem;" title="Back to Profile">←</button>` : '';
 
       let payments = globalData.allPayments.filter(p => {
         let payMonth = p[2] ? String(p[2]).trim() : '';
@@ -1269,8 +1273,11 @@
         return payMonth === globalData.selectedMonth && (mId.toLowerCase() === memberId.toLowerCase() || mId.toLowerCase() === memberName.toLowerCase());
       });
 
-      document.getElementById('memberModalLabel').innerHTML = `${backBtnHtml} <i class="bi bi-wallet2 text-success me-1"></i> Payments Details`;
+      document.getElementById('memberModalLabel').innerHTML = `<div class="d-flex align-items-center w-100"><span class="text-truncate"><i class="bi bi-wallet2 text-success me-1"></i> Payments Details</span> ${backBtnHtml}</div>`;
       document.getElementById('memberModalSubTitle').innerText = `${memberName} - Total Transactions: ${payments.length}`;
+
+      let defaultCloseBtn = document.querySelector('#memberModal .modal-header .btn-close');
+      if (defaultCloseBtn) defaultCloseBtn.style.display = isViewingOther ? 'none' : 'block';
 
       if (payments.length === 0) {
         let msg = isSelf ? "ഈ മാസത്തിൽ താങ്കൾ പെയ്‌മെന്റുകൾ ഒന്നും നടത്തിയിട്ടില്ല." : `ഈ മാസത്തിൽ ${memberName} പെയ്‌മെന്റുകൾ ഒന്നും നടത്തിയിട്ടില്ല.`;
@@ -1324,15 +1331,18 @@
       let isAdmin = loggedInUser && loggedInUser.role && loggedInUser.role.toLowerCase() === 'admin';
       let isViewingOther = isAdmin && !isSelf;
 
-      let backBtnHtml = isViewingOther ? `<button onclick="showMemberFullCard('${memberId}')" class="btn btn-sm btn-outline-secondary rounded-pill mb-2 px-3 py-1" style="font-size: 0.75rem;"><i class="bi bi-arrow-left me-1"></i> Back to Profile</button>` : '';
+      let backBtnHtml = isViewingOther ? `<button onclick="showMemberFullCard('${memberId}')" class="btn btn-sm btn-outline-secondary rounded-circle ms-auto p-0 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-size: 0.9rem;" title="Back to Profile">←</button>` : '';
 
       let memberTx = globalData.recentExpenses.filter(e => {
         let paidBy = e[4] ? e[4].toString().trim().toLowerCase() : '';
         return (paidBy === mIdTrim) || (mNameTrim && paidBy === mNameTrim);
       });
 
-      document.getElementById('memberModalLabel').innerHTML = `${backBtnHtml} <i class="bi bi-cart-fill text-danger me-1"></i> Purchased Bills`;
+      document.getElementById('memberModalLabel').innerHTML = `<div class="d-flex align-items-center w-100"><span class="text-truncate"><i class="bi bi-cart-fill text-danger me-1"></i> Purchased Bills</span> ${backBtnHtml}</div>`;
       document.getElementById('memberModalSubTitle').innerText = `${memberName} - Total: ${memberTx.length}`;
+
+      let defaultCloseBtn = document.querySelector('#memberModal .modal-header .btn-close');
+      if (defaultCloseBtn) defaultCloseBtn.style.display = isViewingOther ? 'none' : 'block';
 
       if (memberTx.length === 0) {
         let msg = isSelf ? "ഈ മാസത്തിൽ താങ്കൾ പർച്ചേസ് ചെയ്ത ബില്ലുകൾ ഒന്നും ലഭ്യമല്ല." : `ഈ മാസത്തിൽ ${memberName} പർച്ചേസ് ചെയ്ത ബില്ലുകൾ ഒന്നും ലഭ്യമല്ല.`;
