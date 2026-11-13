@@ -181,11 +181,11 @@
     }
 
     #invoiceIframe {
-    width: 100%;
-    height: 75vh;
-    border: none;
-    max-width: 100%;
-  }
+      width: 100%;
+      height: 75vh;
+      border: none;
+      max-width: 100%;
+    }
 
     #imageZoomModal {
       z-index: 1060 !important;
@@ -401,7 +401,6 @@
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content bg-transparent border-0 shadow-none text-center">
         <div class="position-relative d-inline-block mx-auto">
-          <!-- ചുവന്ന വട്ടവും ഉള്ളിൽ വെളുത്ത ഡോട്ടും മാത്രം (X ഇല്ലാതെ) -->
           <button type="button" class="position-absolute top-0 end-0 m-2 rounded-circle shadow border-0 d-flex align-items-center justify-content-center" data-bs-dismiss="modal" aria-label="Close" style="z-index: 1080; background-color: #dc3545; width: 34px; height: 34px;">
             <span class="rounded-circle bg-white" style="width: 12px; height: 12px; display: inline-block;"></span>
           </button>
@@ -415,11 +414,10 @@
     </div>
   </div>
   
-  <!-- 🔄 LOADING MODAL (Login Welcome & General Spinner) -->
+  <!-- 🔄 LOADING MODAL -->
   <div class="modal fade" id="loadingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-sm">
       <div class="modal-content rounded-4 border-0 shadow text-center p-4 bg-body">
-        <!-- Login Welcome Box -->
         <div id="loginWelcomeBox" class="d-none">
           <div class="spinner-border text-primary mx-auto mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
           <h6 class="fw-bold text-primary mb-2" style="font-size: 0.95rem;">WELCOME</h6>
@@ -427,13 +425,11 @@
           <p class="text-muted small m-0">ലോഗിൻ പരിശോധിക്കുന്നു...</p>
         </div>
 
-        <!-- General Spinner Box (Month change, profile save etc.) -->
         <div id="generalSpinnerBox" class="d-none">
           <div class="spinner-border text-primary mx-auto mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div>
           <p class="fw-bold text-body m-0" id="generalLoadingText">ലോഡ് ചെയ്യുന്നു...</p>
         </div>
 
-        <!-- Closed Status Box -->
         <div id="closedAlertBox" class="d-none">
           <h5 class="fw-bold text-primary mb-3">WELCOME<br><span style="font-size: 0.85rem;" class="text-body">BIN HUMAIDAN ROOM 110</span></h5>
           <h4 class="fw-bold text-danger mb-2">SORRY!</h4>
@@ -567,7 +563,6 @@
       return { monthNum: mNum, yearNum: year, monthName: MONTH_NAMES[mNum - 1] || '' };
     }
 
-    // മാസം മലയാളത്തിൽ പേരോടുകൂടി ലഭിക്കാൻ (ഉദാ: നവംബർ 2026)
     function getMalayalamMonthNameStr(mStr) {
       let parsed = parseMonthYearStr(mStr);
       let mIndex = parsed.monthNum - 1;
@@ -591,7 +586,6 @@
         });
     }
 
-    // 1. മാസം മാറ്റുമ്പോൾ (മാസത്തിന്റെ പേരോടുകൂടി കാണിക്കുന്നു)
     function loadDataWithSpinner(month) {
       if (myLoadingModal) {
         document.getElementById('loginWelcomeBox').classList.add('d-none');
@@ -642,7 +636,6 @@
       return digits.slice(-9);
     }
 
-    // 2. ലോഗിൻ ചെയ്യുമ്പോൾ മാത്രം WELCOME BIN HUMAIDAN കാണിക്കുന്നു
     function handleLogin(event) {
       event.preventDefault();
 
@@ -693,7 +686,6 @@
             localStorage.removeItem('mess_saved_login');
           }
 
-          // Smart Default Month കണ്ടുപിടിക്കുന്ന ഭാഗം ഇവിടെ ചേർത്തിരിക്കുന്നു
           let targetSmartMonth = findSmartDefaultMonth(loggedInUser);
 
           if (targetSmartMonth && targetSmartMonth !== globalData.selectedMonth) {
@@ -977,12 +969,11 @@
       container.className = `card member-card ${statusCardClass} position-relative shadow-sm mb-4 text-center`;
 
       container.innerHTML = `
-        <!-- മുകളിൽ റൈറ്റ് സൈഡിൽ സെറ്റിങ്സ് ബട്ടണും അതിന്റെ അരികിലായി റിഫ്രഷ് ബട്ടണും നൽകാം -->
         <div class="position-absolute top-0 end-0 m-3 d-flex gap-1">
           <button id="refreshBtn" class="btn btn-sm btn-outline-primary rounded-circle" onclick="refreshDashboardData()" title="Refresh Data">
-  <i id="refreshIcon" class="bi bi-arrow-clockwise"></i>
-  <span id="refreshSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-</button>
+            <i id="refreshIcon" class="bi bi-arrow-clockwise"></i>
+            <span id="refreshSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+          </button>
           <button class="btn btn-sm btn-outline-secondary rounded-circle" onclick="openProfileModal()" title="Edit Profile">
             <i class="bi bi-gear-fill"></i>
           </button>
@@ -1086,7 +1077,6 @@
       let m = globalData.summary.find(x => x.id.toLowerCase() === memberId.toLowerCase());
       if (!m) return;
 
-      // മെമ്പർ പ്രൊഫൈൽ ഫുൾ കാർഡ് കാണുമ്പോൾ സാധാരണ ക്ലോസ് ബട്ടൺ മാത്രം മതി (ബാക്ക് ബട്ടൺ ആവശ്യമില്ല)
       let defaultCloseBtn = document.querySelector('#memberModal .modal-header .btn-close');
       if (defaultCloseBtn) defaultCloseBtn.style.display = 'block';
 
@@ -1160,6 +1150,7 @@
       if (!myMemberModal) myMemberModal = new bootstrap.Modal(document.getElementById('memberModal'));
       myMemberModal.show();
     }
+
     function zoomProfileImage(imgUrl) {
       if (!imgUrl) return;
       document.getElementById('zoomedImageTag').src = imgUrl;
@@ -1177,15 +1168,12 @@
       let isAdmin = loggedInUser && loggedInUser.role && loggedInUser.role.toLowerCase() === 'admin';
       let isViewingOther = isAdmin && !isSelf;
 
-      // ഡിഫോൾട്ട് ക്ലോസ് ബട്ടൺ ഹൈഡ് ചെയ്യുകയും ബാക്ക് ബട്ടൺ സെറ്റ് ചെയ്യുകയും ചെയ്യുന്നു
       let defaultCloseBtn = document.querySelector('#memberModal .modal-header .btn-close');
       if (defaultCloseBtn) defaultCloseBtn.style.display = isViewingOther ? 'none' : 'block';
 
-      // ഹെഡർ ടൈറ്റിൽ സെറ്റ് ചെയ്യുന്നു
       document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-pie-chart-fill text-primary me-1"></i> ${m.name} - Share Detail`;
       document.getElementById('memberModalSubTitle').innerText = "Category wise share calculation";
 
-      // മോഡൽ ഹെഡറിന്റെ വലതുവശത്തെ അറ്റത്തുള്ള ക്ലോസ് ബട്ടണിന്റെ സ്ഥാനത്ത് ബാക്ക് ബട്ടൺ ഒട്ടിച്ചു വെക്കുന്നു
       let modalHeaderEl = document.querySelector('#memberModal .modal-header');
       let existingBackBtn = document.getElementById('modalCustomBackBtn');
       if (existingBackBtn) existingBackBtn.remove();
@@ -1203,7 +1191,6 @@
         backBtn.onclick = function() {
           showMemberFullCard(m.id);
         };
-        // ക്ലോസ് ബട്ടണിന് പകരം കൃത്യം ആ സ്ഥാനത്ത് ചേർക്കുന്നു
         modalHeaderEl.appendChild(backBtn);
       }
 
@@ -1294,22 +1281,18 @@
       let isAdmin = loggedInUser && loggedInUser.role && loggedInUser.role.toLowerCase() === 'admin';
       let isViewingOther = isAdmin && !isSelf;
 
-      // ആദ്യം തന്നെ payments ഡാറ്റ ഫിൽട്ടർ ചെയ്ത് എടുക്കുന്നു
       let payments = globalData.allPayments.filter(p => {
         let payMonth = p[2] ? String(p[2]).trim() : '';
         let mId = p[3] ? String(p[3]).trim() : '';
         return payMonth === globalData.selectedMonth && (mId.toLowerCase() === memberId.toLowerCase() || mId.toLowerCase() === memberName.toLowerCase());
       });
 
-      // ഡിഫോൾട്ട് ക്ലോസ് ബട്ടൺ ഹൈഡ് ചെയ്യുകയും ബാക്ക് ബട്ടൺ സെറ്റ് ചെയ്യുകയും ചെയ്യുന്നു
       let defaultCloseBtn = document.querySelector('#memberModal .modal-header .btn-close');
       if (defaultCloseBtn) defaultCloseBtn.style.display = isViewingOther ? 'none' : 'block';
 
-      // ഹെഡർ ടൈറ്റിൽ സെറ്റ് ചെയ്യുന്നു
       document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-wallet2 text-success me-1"></i> Payments Details`;
       document.getElementById('memberModalSubTitle').innerText = `${memberName} - Total Transactions: ${payments.length}`;
 
-      // മോഡൽ ഹെഡറിന്റെ വലതുവശത്തെ അറ്റത്തുള്ള ക്ലോസ് ബട്ടണിന്റെ സ്ഥാനത്ത് ബാക്ക് ബട്ടൺ ചേർക്കുന്നു
       let modalHeaderEl = document.querySelector('#memberModal .modal-header');
       let existingBackBtn = document.getElementById('modalCustomBackBtn');
       if (existingBackBtn) existingBackBtn.remove();
@@ -1383,15 +1366,12 @@
       let isAdmin = loggedInUser && loggedInUser.role && loggedInUser.role.toLowerCase() === 'admin';
       let isViewingOther = isAdmin && !isSelf;
 
-      // ഡിഫോൾട്ട് ക്ലോസ് ബട്ടൺ ഹൈഡ് ചെയ്യുകയും ബാക്ക് ബട്ടൺ സെറ്റ് ചെയ്യുകയും ചെയ്യുന്നു
       let defaultCloseBtn = document.querySelector('#memberModal .modal-header .btn-close');
       if (defaultCloseBtn) defaultCloseBtn.style.display = isViewingOther ? 'none' : 'block';
 
-      // ഹെഡർ ടൈറ്റിൽ സെറ്റ് ചെയ്യുന്നു
       document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-cart-fill text-danger me-1"></i> Purchased Bills`;
       document.getElementById('memberModalSubTitle').innerText = `${memberName} - Total: 0`;
 
-      // മോഡൽ ഹെഡറിന്റെ വലതുവശത്തെ അറ്റത്തുള്ള ക്ലോസ് ബട്ടണിന്റെ സ്ഥാനത്ത് ബാക്ക് ബട്ടൺ ചേർക്കുന്നു
       let modalHeaderEl = document.querySelector('#memberModal .modal-header');
       let existingBackBtn = document.getElementById('modalCustomBackBtn');
       if (existingBackBtn) existingBackBtn.remove();
@@ -1425,13 +1405,11 @@
       } else {
         let html = '<ul class="list-group list-group-flush small">';
 
-          memberTx.forEach(e => {
+        memberTx.forEach(e => {
           let formattedDate = formatDateDDMMYYYY(e[1]);
           let item = e[3] || 'Expense';
           let amount = Number(e[5] || 0).toFixed(2);
           let invoiceUrl = e[8] || '';
-
-          // ഇവിടെ ആരുടെയും പേര് കാണിക്കുന്നില്ല, കാരണം ഇത് ആ വ്യക്തിയുടെ മാത്രം പർച്ചേസ് ലിസ്റ്റ് ആണ്.
 
           html += `<li class="list-group-item px-1 py-2 border-bottom bg-transparent narrow-list-item">
             <div class="d-flex justify-content-between align-items-start">
@@ -1446,13 +1424,7 @@
             </div>
           </li>`;
         });
-              <div class="text-end">
-                <span class="fw-bold text-danger fs-6">AED ${amount}</span>
-                ${invoiceUrl ? `<br><button onclick="openInvoiceModal('${invoiceUrl}')" class="btn btn-sm btn-outline-primary py-0 px-2 rounded-pill mt-1" style="font-size:0.7rem;"><i class="bi bi-file-earmark-image"></i> Invoice</button>` : ''}
-              </div>
-            </div>
-          </li>`;
-        });
+
         html += '</ul>';
         document.getElementById('memberModalContent').innerHTML = html;
       }
@@ -1460,9 +1432,7 @@
       myMemberModal.show();
     }
 
-    
     function showAllExpensesModal() {
-      // സാധാരണ ക്ലോസ് ബട്ടൺ ഉറപ്പായും കാണするように സെറ്റ് ചെയ്യുന്നു
       let defaultCloseBtn = document.querySelector('#memberModal .modal-header .btn-close');
       if (defaultCloseBtn) defaultCloseBtn.style.display = 'block';
       
@@ -1472,13 +1442,6 @@
       document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-cart-fill text-danger me-1"></i> ALL EXPENSES`;
       document.getElementById('memberModalSubTitle').innerText = `Total Expenses: AED ${globalData.totalExpenseMonth ? globalData.totalExpenseMonth.toFixed(2) : '0.00'}`;
 
-      let expenses = globalData.recentExpenses ? globalData.recentExpenses.filter(e => {
-        let expMonth = e[1] ? String(e[1]).trim().substring(0, 7) : '';
-        // ഡേറ്റ് ഫോർമാറ്റ് അനുസരിച്ച് മാസം മാച്ച് ചെയ്യുന്ന രീതി
-        return true; // ആവശ്യമെങ്കിൽ മാസം ഫിൽട്ടർ ചെയ്യാം
-      }) : [];
-
-      // നിലവിൽ globalData.recentExpenses മുഴുവൻ ആ മാസത്തെ ബില്ലുകൾ ആണെങ്കിൽ:
       let monthExpenses = globalData.recentExpenses || [];
 
       if (monthExpenses.length === 0) {
@@ -1513,16 +1476,13 @@
       myMemberModal.show();
     }
 
-
     function showAllPaymentsModal() {
-      // ഡിഫോൾട്ട് ക്ലോസ് ബട്ടൺ ഉറപ്പായും കാണ하도록 സെറ്റ് ചെയ്യുന്നു
       let defaultCloseBtn = document.querySelector('#memberModal .modal-header .btn-close');
       if (defaultCloseBtn) defaultCloseBtn.style.display = 'block';
       
       let existingBackBtn = document.getElementById('modalCustomBackBtn');
       if (existingBackBtn) existingBackBtn.remove();
 
-      // സുരക്ഷിതമായി പേയ്മെന്റുകൾ ഫിൽട്ടർ ചെയ്യുന്നു
       let payments = [];
       if (globalData && globalData.allPayments && Array.isArray(globalData.allPayments)) {
         payments = globalData.allPayments.filter(p => {
@@ -1665,7 +1625,6 @@
     function refreshDashboardData() {
       let currentMonth = document.getElementById('monthSelect').value || globalData.selectedMonth;
       
-      // റിഫ്രഷ് ബട്ടണിലെ ഐക്കൺ മാറ്റി ചെറിയ സ്പിന്നർ കാണിക്കുന്നു
       let icon = document.getElementById('refreshIcon');
       let spinner = document.getElementById('refreshSpinner');
       icon.classList.add('d-none');
@@ -1689,23 +1648,17 @@
             }
           }
 
-          // സ്പിന്നർ തിരിച്ച് പഴയ ഐക്കൺ തന്നെ ആക്കുന്നു
           icon.classList.remove('d-none');
           spinner.classList.add('d-none');
-
-          // സിമ്പിൾ നോട്ടിഫിക്കേഷൻ കാണിക്കുന്നു
           showToast("ഡാറ്റ അപ്ഡേറ്റ് ചെയ്തു!", true);
         })
         .catch(err => {
-          // എറർ വന്നാലും സ്പിന്നർ മാറ്റി ഐക്കൺ തിരിച്ച് വെക്കുന്നു
           icon.classList.remove('d-none');
           spinner.classList.add('d-none');
-          
           showToast("ഡാറ്റ അപ്ഡേറ്റ് ചെയ്യുന്നതിൽ തടസ്സം നേരിട്ടു: " + err.message, false);
         });
     }
 
-    // 3. പ്രൊഫൈൽ അപ്ഡേറ്റ് ചെയ്യുമ്പോൾ
     function handleProfileUpdate(event) {
       event.preventDefault();
       let newPhone = document.getElementById('profileEditPhone').value.trim();
