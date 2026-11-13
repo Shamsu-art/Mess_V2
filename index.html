@@ -1164,7 +1164,12 @@
       let m = globalData.summary.find(x => x.id.toLowerCase() === memberId.toLowerCase());
       if (!m) return;
 
-      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-pie-chart-fill text-primary me-1"></i> ${m.name} - Share Detail`;
+      let isAdmin = loggedInUser && loggedInUser.role && loggedInUser.role.toLowerCase() === 'admin';
+      let isViewingOther = isAdmin && (loggedInUser.id.toLowerCase() !== m.id.toLowerCase());
+
+      let backBtnHtml = isViewingOther ? `<button onclick="showMemberFullCard('${m.id}')" class="btn btn-sm btn-outline-secondary rounded-pill mb-2 px-3 py-1" style="font-size: 0.75rem;"><i class="bi bi-arrow-left me-1"></i> Back to Profile</button>` : '';
+
+      document.getElementById('memberModalLabel').innerHTML = `${backBtnHtml} <i class="bi bi-pie-chart-fill text-primary me-1"></i> ${m.name} - Share Detail`;
       document.getElementById('memberModalSubTitle').innerText = "Category wise share calculation";
 
       let html = `<div class="list-group list-group-flush mb-3">`;
@@ -1249,18 +1254,23 @@
     }
 
     function showMemberPaymentsDetail(memberId, memberName) {
+      let mIdTrim = memberId.toString().trim().toLowerCase();
+      let mNameTrim = memberName ? memberName.toString().trim().toLowerCase() : '';
+      let isSelf = loggedInUser && (loggedInUser.id.toLowerCase() === mIdTrim || (loggedInUser.name && loggedInUser.name.toLowerCase() === mNameTrim));
+
+      let isAdmin = loggedInUser && loggedInUser.role && loggedInUser.role.toLowerCase() === 'admin';
+      let isViewingOther = isAdmin && !isSelf;
+
+      let backBtnHtml = isViewingOther ? `<button onclick="showMemberFullCard('${memberId}')" class="btn btn-sm btn-outline-secondary rounded-pill mb-2 px-3 py-1" style="font-size: 0.75rem;"><i class="bi bi-arrow-left me-1"></i> Back to Profile</button>` : '';
+
       let payments = globalData.allPayments.filter(p => {
         let payMonth = p[2] ? String(p[2]).trim() : '';
         let mId = p[3] ? String(p[3]).trim() : '';
         return payMonth === globalData.selectedMonth && (mId.toLowerCase() === memberId.toLowerCase() || mId.toLowerCase() === memberName.toLowerCase());
       });
 
-      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-wallet2 text-success me-1"></i> Payments Details`;
+      document.getElementById('memberModalLabel').innerHTML = `${backBtnHtml} <i class="bi bi-wallet2 text-success me-1"></i> Payments Details`;
       document.getElementById('memberModalSubTitle').innerText = `${memberName} - Total Transactions: ${payments.length}`;
-
-      let mIdTrim = memberId.toString().trim().toLowerCase();
-      let mNameTrim = memberName ? memberName.toString().trim().toLowerCase() : '';
-      let isSelf = loggedInUser && (loggedInUser.id.toLowerCase() === mIdTrim || (loggedInUser.name && loggedInUser.name.toLowerCase() === mNameTrim));
 
       if (payments.length === 0) {
         let msg = isSelf ? "ഈ മാസത്തിൽ താങ്കൾ പെയ്‌മെന്റുകൾ ഒന്നും നടത്തിയിട്ടില്ല." : `ഈ മാസത്തിൽ ${memberName} പെയ്‌മെന്റുകൾ ഒന്നും നടത്തിയിട്ടില്ല.`;
@@ -1305,18 +1315,23 @@
       if (!myMemberModal) myMemberModal = new bootstrap.Modal(document.getElementById('memberModal'));
       myMemberModal.show();
     }
-
+    
     function showMemberTransactions(memberId, memberName) {
       let mIdTrim = memberId.toString().trim().toLowerCase();
       let mNameTrim = memberName ? memberName.toString().trim().toLowerCase() : '';
       let isSelf = loggedInUser && (loggedInUser.id.toLowerCase() === mIdTrim || (loggedInUser.name && loggedInUser.name.toLowerCase() === mNameTrim));
+
+      let isAdmin = loggedInUser && loggedInUser.role && loggedInUser.role.toLowerCase() === 'admin';
+      let isViewingOther = isAdmin && !isSelf;
+
+      let backBtnHtml = isViewingOther ? `<button onclick="showMemberFullCard('${memberId}')" class="btn btn-sm btn-outline-secondary rounded-pill mb-2 px-3 py-1" style="font-size: 0.75rem;"><i class="bi bi-arrow-left me-1"></i> Back to Profile</button>` : '';
 
       let memberTx = globalData.recentExpenses.filter(e => {
         let paidBy = e[4] ? e[4].toString().trim().toLowerCase() : '';
         return (paidBy === mIdTrim) || (mNameTrim && paidBy === mNameTrim);
       });
 
-      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-cart-fill text-danger me-1"></i> Purchased Bills`;
+      document.getElementById('memberModalLabel').innerHTML = `${backBtnHtml} <i class="bi bi-cart-fill text-danger me-1"></i> Purchased Bills`;
       document.getElementById('memberModalSubTitle').innerText = `${memberName} - Total: ${memberTx.length}`;
 
       if (memberTx.length === 0) {
@@ -1353,7 +1368,7 @@
       if (!myMemberModal) myMemberModal = new bootstrap.Modal(document.getElementById('memberModal'));
       myMemberModal.show();
     }
-
+    
     function showAllExpensesModal() {
       document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-cart-fill text-danger me-1"></i> ALL EXPENSES`;
       document.getElementById('memberModalSubTitle').innerHTML = `Mess: ${globalData.messTotalExp.toFixed(2)} | Water: ${globalData.waterTotalExp.toFixed(2)} | Special: ${globalData.specialTotalExp.toFixed(2)}`;
