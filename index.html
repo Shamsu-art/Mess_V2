@@ -1431,15 +1431,27 @@
           let purchaserName = e[4] || 'Unknown';
           let invoiceUrl = e[8] || '';
 
-          let purchaserHtml = isSelf ? '' : `<div class="text-muted" style="font-size:0.75rem;"><i class="bi bi-person-fill me-1 text-secondary"></i><strong>${purchaserName}</strong></div>`;
+          memberTx.forEach(e => {
+          let formattedDate = formatDateDDMMYYYY(e[1]);
+          let item = e[3] || 'Expense';
+          let amount = Number(e[5] || 0).toFixed(2);
+          let invoiceUrl = e[8] || '';
+
+          // ഇവിടെ ആരുടെയും പേര് കാണിക്കുന്നില്ല, കാരണം ഇത് ആ വ്യക്തിയുടെ മാത്രം പർച്ചേസ് ലിസ്റ്റ് ആണ്.
 
           html += `<li class="list-group-item px-1 py-2 border-bottom bg-transparent narrow-list-item">
             <div class="d-flex justify-content-between align-items-start">
               <div>
                 <div class="fw-bold text-body fs-6 mb-1">${item}</div>
                 <div class="text-muted mb-1" style="font-size:0.75rem;"><i class="bi bi-calendar-event me-1 text-primary"></i>${formattedDate}</div>
-                ${purchaserHtml}
               </div>
+              <div class="text-end">
+                <span class="fw-bold text-danger fs-6">AED ${amount}</span>
+                ${invoiceUrl ? `<br><button onclick="openInvoiceModal('${invoiceUrl}')" class="btn btn-sm btn-outline-primary py-0 px-2 rounded-pill mt-1" style="font-size:0.7rem;"><i class="bi bi-file-earmark-image"></i> Invoice</button>` : ''}
+              </div>
+            </div>
+          </li>`;
+        });
               <div class="text-end">
                 <span class="fw-bold text-danger fs-6">AED ${amount}</span>
                 ${invoiceUrl ? `<br><button onclick="openInvoiceModal('${invoiceUrl}')" class="btn btn-sm btn-outline-primary py-0 px-2 rounded-pill mt-1" style="font-size:0.7rem;"><i class="bi bi-file-earmark-image"></i> Invoice</button>` : ''}
