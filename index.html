@@ -1507,6 +1507,79 @@
       myMemberModal.show();
     }
 
+
+    function showAllPaymentsModal() {
+      // ഡിഫോൾട്ട് ക്ലോസ് ബട്ടൺ ഉറപ്പായും കാണ하도록 സെറ്റ് ചെയ്യുന്നു
+      let defaultCloseBtn = document.querySelector('#memberModal .modal-header .btn-close');
+      if (defaultCloseBtn) defaultCloseBtn.style.display = 'block';
+      
+      let existingBackBtn = document.getElementById('modalCustomBackBtn');
+      if (existingBackBtn) existingBackBtn.remove();
+
+      // സുരക്ഷിതമായി പേയ്മെന്റുകൾ ഫിൽട്ടർ ചെയ്യുന്നു
+      let payments = [];
+      if (globalData && globalData.allPayments && Array.isArray(globalData.allPayments)) {
+        payments = globalData.allPayments.filter(p => {
+          let pMonth = p[2] ? String(p[2]).trim() : '';
+          return pMonth === globalData.selectedMonth;
+        });
+      }
+
+      let totalCollected = globalData && globalData.totalPaymentsMonth ? globalData.totalPaymentsMonth : 0;
+
+      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-wallet2 text-success me-1"></i> ALL COLLECTIONS`;
+      document.getElementById('memberModalSubTitle').innerText = `Total Collected: AED ${totalCollected.toFixed(2)}`;
+
+      if (payments.length === 0) {
+        document.getElementById('memberModalContent').innerHTML = `<div class="text-center text-muted py-4"><i class="bi bi-info-circle fs-3 d-block mb-2"></i>Payments ഒന്നും രേഖപ്പെടുത്തിയിട്ടില്ല.</div>`;
+      } else {
+        let html = '<ul class="list-group list-group-flush small">';
+        payments.forEach(p => {
+          let formattedDate = formatDateDDMMYYYY(p[1] || p[0]);
+          let mIdOrName = p[3] ? String(p[3]).trim() : '';
+          
+          let matched = globalData.summary && globalData.summary.find(x => x.id.toLowerCase() === mIdOrName.toLowerCase());
+          let resolvedName = matched ? matched.name : mIdOrName;
+          
+          let rawValStr = String(p[4] !== undefined && p[4] !== null ? p[4] : '0').replace(/[^0-9.-]+/g, "");
+          let amtVal = parseFloat(rawValStr) || 0;
+          amtVal = Math.round(amtVal * 100) / 100;
+          if (Object.is(amtVal, -0)) amtVal = 0;
+
+          let amtText = '';
+          let amtClass = 'text-success';
+
+          if (amtVal === 0) {
+            amtText = 'AED 0.00';
+          } else if (amtVal > 0) {
+            amtText = 'AED ' + amtVal.toFixed(2);
+          } else {
+            amtText = 'Refund: AED ' + Math.abs(amtVal).toFixed(2);
+            amtClass = 'text-danger';
+          }
+
+          let noteStr = p[5] ? String(p[5]).trim() : '';
+          let noteHtml = noteStr ? `<div class="text-muted mt-1" style="font-size:0.75rem;"><i class="bi bi-chat-left-text me-1"></i>${noteStr}</div>` : '';
+
+          html += `<li class="list-group-item border-bottom bg-transparent py-2 narrow-list-item">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="fw-bold text-body mb-1" style="font-size: 0.95rem;"><i class="bi bi-person-fill me-1 text-secondary"></i>${resolvedName}</div>
+                <div class="text-muted mb-1" style="font-size: 0.75rem;"><i class="bi bi-calendar-event me-1 text-primary"></i>${formattedDate}</div>
+                ${noteHtml}
+              </div>
+              <span class="fw-bold ${amtClass} fs-6">${amtText}</span>
+            </div>
+          </li>`;
+        });
+        html += '</ul>';
+        document.getElementById('memberModalContent').innerHTML = html;
+      }
+      
+      if (!myMemberModal) myMemberModal = new bootstrap.Modal(document.getElementById('memberModal'));
+      myMemberModal.show();
+    }
+    
     var myInvoiceModal = null;
 
     function openInvoiceModal(url) {
