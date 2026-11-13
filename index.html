@@ -1086,6 +1086,13 @@
       let m = globalData.summary.find(x => x.id.toLowerCase() === memberId.toLowerCase());
       if (!m) return;
 
+      // മെമ്പർ പ്രൊഫൈൽ ഫുൾ കാർഡ് കാണുമ്പോൾ സാധാരണ ക്ലോസ് ബട്ടൺ മാത്രം മതി (ബാക്ക് ബട്ടൺ ആവശ്യമില്ല)
+      let defaultCloseBtn = document.querySelector('#memberModal .modal-header .btn-close');
+      if (defaultCloseBtn) defaultCloseBtn.style.display = 'block';
+
+      let existingBackBtn = document.getElementById('modalCustomBackBtn');
+      if (existingBackBtn) existingBackBtn.remove();
+
       let net = Math.round((m.netBalance || 0) * 100) / 100;
       if (Object.is(net, -0)) net = 0;
       let shareVal = m.share || 0;
@@ -1153,7 +1160,6 @@
       if (!myMemberModal) myMemberModal = new bootstrap.Modal(document.getElementById('memberModal'));
       myMemberModal.show();
     }
-
     function zoomProfileImage(imgUrl) {
       if (!imgUrl) return;
       document.getElementById('zoomedImageTag').src = imgUrl;
@@ -1449,58 +1455,48 @@
     }
 
     
-    function showAllPaymentsModal() {
-      // ഡിഫോൾട്ട് ക്ലോസ് ബട്ടൺ ഉറപ്പായും കാണするように സെറ്റ് ചെയ്യുന്നു
+    function showAllExpensesModal() {
+      // സാധാരണ ക്ലോസ് ബട്ടൺ ഉറപ്പായും കാണするように സെറ്റ് ചെയ്യുന്നു
       let defaultCloseBtn = document.querySelector('#memberModal .modal-header .btn-close');
       if (defaultCloseBtn) defaultCloseBtn.style.display = 'block';
       
       let existingBackBtn = document.getElementById('modalCustomBackBtn');
       if (existingBackBtn) existingBackBtn.remove();
 
-      let payments = globalData.allPayments ? globalData.allPayments.filter(p => String(p[2]).trim() === globalData.selectedMonth) : [];
+      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-cart-fill text-danger me-1"></i> ALL EXPENSES`;
+      document.getElementById('memberModalSubTitle').innerText = `Total Expenses: AED ${globalData.totalExpenseMonth ? globalData.totalExpenseMonth.toFixed(2) : '0.00'}`;
 
-      document.getElementById('memberModalLabel').innerHTML = `<i class="bi bi-wallet2 text-success me-1"></i> ALL COLLECTIONS`;
-      document.getElementById('memberModalSubTitle').innerText = `Total Collected: AED ${globalData.totalPaymentsMonth ? globalData.totalPaymentsMonth.toFixed(2) : '0.00'}`;
+      let expenses = globalData.recentExpenses ? globalData.recentExpenses.filter(e => {
+        let expMonth = e[1] ? String(e[1]).trim().substring(0, 7) : '';
+        // ഡേറ്റ് ഫോർമാറ്റ് അനുസരിച്ച് മാസം മാച്ച് ചെയ്യുന്ന രീതി
+        return true; // ആവശ്യമെങ്കിൽ മാസം ഫിൽട്ടർ ചെയ്യാം
+      }) : [];
 
-      if (payments.length === 0) {
-        document.getElementById('memberModalContent').innerHTML = `<div class="text-center text-muted py-4">Payments ഒന്നും രേഖപ്പെടുത്തിയിട്ടില്ല.</div>`;
+      // നിലവിൽ globalData.recentExpenses മുഴുവൻ ആ മാസത്തെ ബില്ലുകൾ ആണെങ്കിൽ:
+      let monthExpenses = globalData.recentExpenses || [];
+
+      if (monthExpenses.length === 0) {
+        document.getElementById('memberModalContent').innerHTML = `<div class="text-center text-muted py-4">ചിലവുകൾ ഒന്നും രേഖപ്പെടുത്തിയിട്ടില്ല.</div>`;
       } else {
         let html = '<ul class="list-group list-group-flush small">';
-        payments.forEach(p => {
-          let formattedDate = formatDateDDMMYYYY(p[1] || p[0]);
-          let mIdOrName = p[3] ? String(p[3]).trim() : '';
-          
-          let matched = globalData.summary.find(x => x.id.toLowerCase() === mIdOrName.toLowerCase());
-          let resolvedName = matched ? matched.name : mIdOrName;
-          
-          let rawValStr = String(p[4] !== undefined && p[4] !== null ? p[4] : '0').replace(/[^0-9.-]+/g, "");
-          let amtVal = parseFloat(rawValStr) || 0;
-          amtVal = Math.round(amtVal * 100) / 100;
-          if (Object.is(amtVal, -0)) amtVal = 0;
+        monthExpenses.forEach(e => {
+          let formattedDate = formatDateDDMMYYYY(e[1]);
+          let item = e[3] || 'Expense';
+          let amount = Number(e[5] || 0).toFixed(2);
+          let purchaserName = e[4] || 'Unknown';
+          let invoiceUrl = e[8] || '';
 
-          let amtText = '';
-          let amtClass = 'text-success';
-
-          if (amtVal === 0) {
-            amtText = 'AED 0.00';
-          } else if (amtVal > 0) {
-            amtText = 'AED ' + amtVal.toFixed(2);
-          } else {
-            amtText = 'Refund: AED ' + Math.abs(amtVal).toFixed(2);
-            amtClass = 'text-danger';
-          }
-
-          let noteStr = p[5] ? String(p[5]).trim() : '';
-          let noteHtml = noteStr ? `<div class="text-muted mt-1" style="font-size:0.75rem;"><i class="bi bi-chat-left-text me-1"></i>${noteStr}</div>` : '';
-
-          html += `<li class="list-group-item border-bottom bg-transparent py-2 narrow-list-item">
-            <div class="d-flex justify-content-between align-items-center">
+          html += `<li class="list-group-item px-1 py-2 border-bottom bg-transparent narrow-list-item">
+            <div class="d-flex justify-content-between align-items-start">
               <div>
-                <div class="fw-bold text-body mb-1" style="font-size: 0.95rem;"><i class="bi bi-person-fill me-1 text-secondary"></i>${resolvedName}</div>
-                <div class="text-muted mb-1" style="font-size: 0.75rem;"><i class="bi bi-calendar-event me-1 text-primary"></i>${formattedDate}</div>
-                ${noteHtml}
+                <div class="fw-bold text-body fs-6 mb-1">${item}</div>
+                <div class="text-muted mb-1" style="font-size:0.75rem;"><i class="bi bi-calendar-event me-1 text-primary"></i>${formattedDate}</div>
+                <div class="text-muted" style="font-size:0.75rem;"><i class="bi bi-person-fill me-1 text-secondary"></i><strong>വാങ്ങിയത്: ${purchaserName}</strong></div>
               </div>
-              <span class="fw-bold ${amtClass} fs-6">${amtText}</span>
+              <div class="text-end">
+                <span class="fw-bold text-danger fs-6">AED ${amount}</span>
+                ${invoiceUrl ? `<br><button onclick="openInvoiceModal('${invoiceUrl}')" class="btn btn-sm btn-outline-primary py-0 px-2 rounded-pill mt-1" style="font-size:0.7rem;"><i class="bi bi-file-earmark-image"></i> Invoice</button>` : ''}
+              </div>
             </div>
           </li>`;
         });
